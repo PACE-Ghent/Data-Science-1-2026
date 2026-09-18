@@ -92,9 +92,9 @@ code; nothing else in the notebook needs to change.
 
 | File | Session | Covers |
 |---|---|---|
-| `lab3_data_processing_I.py` | 1 — Dataverwerking I | load, explore, filter, new columns, cleaning |
-| `lab4_data_processing_II.py` | 2 — Dataverwerking II | groupby/agg, merge, melt/pivot, time series (zones, rolling, resample) |
-| `lab5_data_visualization_I.py` | 3 — Datavisualisatie I | chart selection, plotly express, color/facet/size, HR zone bands, marimo interactivity, mini-dashboard |
+| `lab3_data_processing_I.py` | 3 - Dataverwerking I | load, explore, filter, new columns, cleaning |
+| `lab4_data_processing_II.py` | 4 - Dataverwerking II | groupby/agg, merge, melt/pivot, time series (zones, rolling, resample) |
+| `lab5_data_visualization_I.py` | 5 - Datavisualisatie I | chart selection, plotly express, color/facet/size, HR zone bands, marimo interactivity, mini-dashboard |
 
 Two things are intentionally unusual and worth knowing before teaching from
 these:
