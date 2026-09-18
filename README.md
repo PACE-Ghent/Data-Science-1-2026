@@ -73,27 +73,6 @@ To run a notebook read-only, as students would see a shared app:
 marimo run labs/lab3_data_processing_I.py
 ```
 
-### Deploying for the actual class (molab / WASM)
-
-Each notebook loads its data through one variable, `DATA_DIR`, near the
-top:
-
-```python
-DATA_DIR = str(mo.notebook_dir() / ".." / "data")   # local default
-```
-
-This works out of the box when running locally, since it resolves relative
-to the notebook's own location. For **molab** or a shared **WASM notebook
-link**, there is no local filesystem — push `data/` to a GitHub repo and
-replace that one line with the repo's raw URL:
-
-```python
-DATA_DIR = "https://raw.githubusercontent.com/<org>/<repo>/main/data"
-```
-
-`pandas.read_csv` accepts both local paths and URLs, so nothing else in the
-notebook needs to change.
-
 ## `labs/` — student notebooks
 
 One "starter notebook" per session, matching the lesson plan's structure:
