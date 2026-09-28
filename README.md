@@ -92,6 +92,8 @@ code; nothing else in the notebook needs to change.
 
 | File | Session | Covers |
 |---|---|---|
+| `lab1_introduction_python_I.py` | 1 - Introductie Python I | variables, data types, overwriting variables, arithmetic / relational / logical operators, `if`/`elif`/`else`, reading errors, built-in functions, `import math` |
+| `lab2_introduction_python_II.py` | 2 - Introductie Python II | writing functions, string methods, scope, collections (list/tuple/dict/set), `for`/`while` loops, reading `athletes.csv` with the `csv` module |
 | `lab3_data_processing_I.py` | 3 - Dataverwerking I | load, explore, filter, new columns, cleaning |
 | `lab4_data_processing_II.py` | 4 - Dataverwerking II | groupby/agg, merge, melt/pivot, time series (zones, rolling, resample) |
 | `lab5_data_visualization_I.py` | 5 - Datavisualisatie I | chart selection, plotly express, color/facet/size, HR zone bands, marimo interactivity, mini-dashboard |
@@ -99,19 +101,23 @@ code; nothing else in the notebook needs to change.
 Two things are intentionally unusual and worth knowing before teaching from
 these:
 
-- **Lab 2 opens with a broken cell on purpose** (`## 1. Recap`): a tiny
+- **Lab 1's "reading errors" section has four broken cells on purpose**
+  (a `NameError`, `TypeError`, `ValueError` and `ZeroDivisionError`) that
+  students fix after learning to read a traceback. Running the lab
+  end-to-end as shipped stops at the first of these - that's expected.
+- **Lab 4 opens with a broken cell on purpose** (`## 1. Recap`): a tiny
   cleaning pipeline with two bugs (a typo, a missing comma→dot conversion)
   that students fix live as a warm-up repair exercise. Running the lab
   end-to-end as shipped will show exactly one real Python error there —
   that's expected, not a bug in the notebook.
-- **Lab 3's "principles" section shows one good and one deliberately
+- **Lab 5's "principles" section shows one good and one deliberately
   misleading chart** (a truncated y-axis), for students to critique before
   building their own charts.
 
 ## `solutions/` — instructor answer keys
 
 Identical notebooks, with every `...` replaced by a correct, verified
-solution (and Lab 2's recap bug already fixed). Use these to:
+solution (and the deliberately broken cells in Labs 1 and 4 already fixed). Use these to:
 
 - teach from directly, or project during class
 - check a student's approach against a reference implementation
