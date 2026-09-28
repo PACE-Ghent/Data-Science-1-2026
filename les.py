@@ -1,9 +1,7 @@
 import marimo
 
-__generated_with = "0.23.16"
-app = marimo.App(
-    width="wide",
-)
+__generated_with = "0.24.0"
+app = marimo.App(width="wide")
 
 
 @app.cell
@@ -86,26 +84,36 @@ def _(mo):
 
 @app.cell
 def _():
+    return
+
+
+@app.cell
+def _():
     name: str = "Anna"
     age: int = 24
     height_m: float = 1.72
     weight_kg: float = 63.5
     is_injured: bool = False
-    return age, height_m, is_injured, name, weight_kg
+    return age, height_m, name, weight_kg
 
 
 @app.cell
-def _(age: int, height_m: float, is_injured: bool, mo, name: str):
-    mo.md(f"""
-    `name` is of type `{type(name).__name__}`
-    `age` is of type `{type(age).__name__}`
-    `height_m` is of type `{type(height_m).__name__}`
-    `is_injured` is of type `{type(is_injured).__name__}`
+def _(name: str):
+    print(name);
+    return
 
-    Try changing the values in the cell above — this cell updates
-    automatically the moment you re-run it, no need to manually re-execute
-    anything downstream.
-    """)
+
+@app.cell
+def _():
+    print("test", "tes2t2", sep=" | ", end=".")
+    print("test3")
+    return
+
+
+@app.cell
+def _(age: int):
+    print(age.__add__(23))
+    print(age + 23)
     return
 
 
