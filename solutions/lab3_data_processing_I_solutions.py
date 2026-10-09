@@ -128,26 +128,26 @@ def _(mo):
     mo.md(r"""
     ## Where does the data come from?
 
-    For local development, this notebook reads the CSV files from the
-    `data/` folder next to this project. When you deploy the notebook on
-    **molab** (or share a WASM notebook link), there is no local
-    filesystem to read from - point `DATA_DIR` at the raw URL of a
-    GitHub repository instead, for example:
-
-    ```python
-    DATA_DIR = "https://raw.githubusercontent.com/<org>/<repo>/main/data"
-    ```
-
-    `pandas.read_csv` accepts both local paths and URLs, so nothing else
-    in this notebook needs to change.
+    When you run this notebook locally, it reads the CSV files from the
+    `data/` folder next to this project. When you run it online
+    (marimo.app, molab or a WASM link) there is no local filesystem, so
+    the notebook automatically reads the same files from the course's
+    GitHub repository instead. `pandas.read_csv` accepts both local paths
+    and URLs, so nothing else in this notebook needs to change.
     """)
     return
 
 
 @app.cell
 def _(mo):
-    # Local development default. For molab / WASM, replace with a raw GitHub URL.
-    DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+    import sys
+
+    # In the browser (marimo.app / WASM) there is no local data/ folder,
+    # so read the CSV files straight from GitHub instead.
+    if sys.platform == "emscripten":
+        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    else:
+        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
     return (DATA_DIR,)
 
 

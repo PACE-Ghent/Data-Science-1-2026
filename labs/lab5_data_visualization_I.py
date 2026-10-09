@@ -39,9 +39,14 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    # Local development default. For molab / WASM, replace with a raw GitHub URL,
-    # e.g. "https://raw.githubusercontent.com/<org>/<repo>/main/data".
-    DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+    import sys
+
+    # In the browser (marimo.app / WASM) there is no local data/ folder,
+    # so read the CSV files straight from GitHub instead.
+    if sys.platform == "emscripten":
+        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    else:
+        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
     return (DATA_DIR,)
 
 
