@@ -59,17 +59,12 @@ installing Python or marimo:
 3. Paste the raw GitHub URL for the notebook you want to use. For example:
    `https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/labs/lab3_data_processing_I.py`
 
-The online playground has no access to this repository's local `data/`
-folder. In the notebook's `DATA_DIR` cell, use the repository's raw data URL:
-
-```python
-DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
-```
-
-The other notebooks use the same `DATA_DIR` setting. After changing it, the
-cells can read the CSV files directly from GitHub. Use marimo's **Save to
-molab** or **Create permalink** options if you want to keep or share your
-online work.
+The online playground has no local `data/` folder, so the notebooks detect
+when they run in the browser and automatically read the CSV files from this
+repository's `main` branch on GitHub (see the `DATA_DIR` cell). No changes
+are needed, but the repository must be public and the `data/` files must be
+pushed to `main`. Use marimo's **Save to molab** or **Create permalink**
+options if you want to keep or share your online work.
 
 ## `labs/` — student notebooks
 
