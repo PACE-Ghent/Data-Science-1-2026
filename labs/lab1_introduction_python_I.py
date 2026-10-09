@@ -11,7 +11,7 @@ def _():
     return (mo,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Introduction to Python I - Variables, Types and Decisions
@@ -36,7 +36,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## A few things about marimo before we start
@@ -55,13 +55,13 @@ def _(mo):
     return (demo_slider,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(demo_slider, mo):
     mo.md(f"{demo_slider.value} squared is **{demo_slider.value ** 2}**.")
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Notice that you didn't have to re-run anything by hand - moving the
@@ -101,7 +101,7 @@ def _(mo):
     return (check_exercise,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Variables (13:15-13:40)
@@ -144,7 +144,7 @@ def _():
     return birth_year, height_cm, is_injured, name, sprint_30m_s, weight_kg
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - store a goalkeeper's profile
@@ -152,7 +152,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Lotte Janssens is one of the club's goalkeepers. She was born in
@@ -194,7 +194,7 @@ def _(
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Data types (13:40-14:10)
@@ -229,7 +229,7 @@ def _(birth_year, height_cm, is_injured, name):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The type decides what you can do with a value. `2010 + 1` is `2011`,
@@ -282,7 +282,7 @@ def _(mo, type_quiz):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - convert text to numbers
@@ -290,7 +290,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     A registration form delivered the weight and the jersey number of a
@@ -329,7 +329,7 @@ def _(check_exercise, jersey_number, weight_from_text):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. Overwriting variables (14:10-14:25)
@@ -380,7 +380,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - update a session counter
@@ -388,7 +388,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Stan has attended 12 training sessions so far. This week he attends 3
@@ -414,7 +414,7 @@ def _(check_exercise, season_sessions):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. Arithmetic operators (14:25-15:00)
@@ -456,7 +456,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 4 - Yo-Yo test duration
@@ -464,7 +464,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     An athlete ran the Yo-Yo intermittent recovery test for 1385 seconds.
@@ -494,7 +494,7 @@ def _(check_exercise, yoyo_minutes, yoyo_seconds):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 5 - Lotte's BMI
@@ -502,7 +502,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Body Mass Index is weight in kg divided by the **square** of height in
@@ -532,7 +532,7 @@ def _(check_exercise, keeper_bmi):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## ☕ Break (15:00-15:10)
@@ -540,7 +540,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Relational (comparison) operators (15:10-15:30)
@@ -577,7 +577,7 @@ def _(height_cm, sprint_30m_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 6 - compare with the club norms
@@ -585,7 +585,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The coach considers a 30 m sprint **under 5.0 s** "fast", and a
@@ -620,7 +620,7 @@ def _(check_exercise, is_explosive, is_fast):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Logical operators (15:30-15:50)
@@ -653,7 +653,7 @@ def _(height_cm, is_injured, sprint_30m_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 7 - U16 eligibility
@@ -661,7 +661,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     An athlete may play in the U16 competition of the 2026 season if they
@@ -691,7 +691,7 @@ def _(check_exercise, eligible_u16):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 7. Control flow: `if` / `elif` / `else` (15:50-16:30)
@@ -740,7 +740,7 @@ def _(sprint_slider):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 8 - classify a jump
@@ -748,7 +748,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Classify the CMJ height from the slider below into `jump_category`:
@@ -792,7 +792,7 @@ def _(check_exercise, cmj_slider, jump_category):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 9 - heart rate zones
@@ -800,7 +800,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     A common way to express training intensity is the heart rate as a
@@ -857,7 +857,7 @@ def _(check_exercise, heart_rate_slider, hr_max, hr_percent, hr_zone):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 8. Learning to read errors (16:30-16:55)
@@ -972,7 +972,7 @@ def _(average_session_min, check_exercise):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 9. Using functions and importing modules (16:55-17:20)
@@ -1029,7 +1029,7 @@ def _(math, name):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 10 - best sprint of the day
@@ -1037,7 +1037,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Bram ran three 30 m sprints. Use built-in functions to store his best
@@ -1071,7 +1071,7 @@ def _(best_sprint_s, check_exercise, sprint_spread_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 11 - how long is lane 8?
@@ -1079,7 +1079,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     A standard 400 m track has two straights of **84.39 m** and two
@@ -1127,7 +1127,7 @@ def _(check_exercise, cones_needed, lane_8_length_m, lane_8_radius_m):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 10. Challenge (17:20-17:30) - who makes the U16 selection?
@@ -1215,7 +1215,7 @@ def _(
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ## Exit ticket

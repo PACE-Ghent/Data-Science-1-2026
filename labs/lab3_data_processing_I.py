@@ -19,7 +19,7 @@ def _():
     return (pd,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Data Processing I - From File to Tidy Table
@@ -50,7 +50,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## A few things about marimo before we start
@@ -69,7 +69,7 @@ def _(mo):
     return (demo_slider,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(demo_slider, mo):
     mo.md(f"""
     {demo_slider.value} squared is **{demo_slider.value ** 2}**.
@@ -77,7 +77,7 @@ def _(demo_slider, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Notice that you didn't have to re-run anything by hand - moving the
@@ -125,7 +125,7 @@ def _(mo):
     return (check_exercise,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Where does the data come from?
@@ -153,7 +153,7 @@ def _(mo):
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Warm-up: why not just use Excel?
@@ -182,7 +182,7 @@ def _(DATA_DIR, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Readable, but every value is just text, there is no notion of a column type, and there is no easy way to filter or aggregate. That is exactly what pandas gives us.
@@ -190,7 +190,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Loading and exploring a dataset (13:20-14:00)
@@ -234,7 +234,7 @@ def _(athletes_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     marimo can also render any dataframe as an interactive, sortable, searchable table with `mo.ui.table`. Try sorting by `height_cm` or searching for a name.
@@ -249,7 +249,7 @@ def _(athletes_raw, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - load `tests.csv`
@@ -257,7 +257,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Load `tests.csv` into a variable called `tests_raw`, and store its `.shape` in `tests_raw_shape`.
@@ -287,7 +287,7 @@ def _(check_exercise, tests_raw, tests_raw_shape):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. Selecting and filtering (14:00-14:50)
@@ -318,7 +318,7 @@ def _(athletes_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Only the rows spelled exactly `"Forward"` matched - `"forward "` and `"FWD"` did not. Keep that in mind; we'll fix it soon. For now, let's filter using something that isn't affected by spelling: the birthdate. Athletes born after 2010-09-01 are younger than 16 for the 2026 season.
@@ -333,7 +333,7 @@ def _(athletes_raw, pd):
     return (younger_than_16,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Sorting: which 30 m sprint times look the *slowest*? Sort descending and look at the top of the table.
@@ -348,7 +348,7 @@ def _(tests_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The very top rows are in the thousands - over 1500 "seconds" for a 30 m sprint would mean the athlete stopped for a coffee halfway. Those are the values stored in milliseconds instead of seconds (5.97 s became 5970). Another thing to fix during cleaning.
@@ -356,7 +356,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - forwards younger than 16
@@ -364,7 +364,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Combine a position filter with the age filter above into `forwards_u16_raw`: rows from `athletes_raw` where `position` is exactly `"Forward"` **and** the athlete was born after 2010-09-01. (Yes, the exact-spelling condition will miss some forwards - that's expected for now.)
@@ -397,7 +397,7 @@ def _(athletes_raw, check_exercise, forwards_u16_raw, younger_than_16):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - find the suspicious (raw) 30 m sprints
@@ -405,7 +405,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Select the rows from `tests_raw` where `sprint_30m_s` is (strictly) greater than 20 - no real 30 m sprint takes that long, so these must be the millisecond-bug rows. Store the result in `suspicious_30m_raw`, sorted from most to least extreme.
@@ -442,7 +442,7 @@ def _(check_exercise, suspicious_30m_raw, tests_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. New columns (15:05-15:50)
@@ -489,7 +489,7 @@ def _(tests_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     A max speed over 1000 km/h confirms it: some sprint times are in milliseconds. We'll fix the units properly in the cleaning section, then this computation will make sense.
@@ -504,7 +504,7 @@ def _(athletes_raw):
     return (position_counts_raw,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo, position_counts_raw):
     mo.md(f"""
     `value_counts()` on the raw `position` column returns "
@@ -514,7 +514,7 @@ def _(mo, position_counts_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 4 - BMI
@@ -522,7 +522,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Body Mass Index is `weight_kg / (height_cm / 100) ** 2`. Using
@@ -556,7 +556,7 @@ def _(athletes_with_bmi, check_exercise, weight_kg_numeric):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 5 - age in years
@@ -564,7 +564,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Create a column `age` on `athletes_raw` using the same approach as `age_years` above, and store the result in `athletes_with_age`.
@@ -596,7 +596,7 @@ def _(REFERENCE_DATE, athletes_with_age, check_exercise, pd):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Cleaning (15:50-17:00)
@@ -619,7 +619,7 @@ def _(tests_raw):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     **`dropna()` vs `fillna()`** - neither is automatically "correct":
@@ -666,7 +666,7 @@ def _(cleaning_quiz, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Cleaning text: `position`
@@ -703,7 +703,7 @@ def _(position_normalized):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 6 - clean positions on a fresh copy
@@ -711,7 +711,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `athletes_step1`: a copy of `athletes_raw` where the `position` column has been replaced by `position_clean` (defined above).
@@ -739,7 +739,7 @@ def _(athletes_step1, check_exercise):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Cleaning numbers: milliseconds vs seconds
@@ -761,7 +761,7 @@ def _(tests_raw):
     return (fix_sprint_units,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 7 - fix `sprint_30m_s`
@@ -769,7 +769,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Use `fix_sprint_units` on `tests_raw["sprint_30m_s"]` and store it in `sprint_30m_fixed`.
@@ -795,7 +795,7 @@ def _(check_exercise, sprint_30m_fixed):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Duplicates
@@ -813,7 +813,7 @@ def _(athletes_step1):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Same name, same birthdate, two different `athlete_id`s - a data entry mistake. `drop_duplicates(subset=..., keep="first")` removes the extra row.
@@ -821,7 +821,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 8 - remove the duplicate athlete
@@ -829,7 +829,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `athletes_deduped` from `athletes_step1` by dropping duplicate `(name, birthdate)` combinations, keeping the first occurrence.
@@ -859,7 +859,7 @@ def _(athletes_deduped, athletes_step1, check_exercise):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Putting it all together
@@ -914,7 +914,7 @@ def _(fix_sprint_units, tests_raw):
     return (tests_clean,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Challenge (17:00-17:30) - fastest 5 per position
@@ -932,7 +932,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `fastest_per_position`: merge `athletes_clean` and `tests_clean` on `athlete_id`, keep each athlete's *best* (minimum) `sprint_30m_s` per `athlete_id`, sort ascending by `sprint_30m_s`, then keep the top 5 rows per `position`.
@@ -977,7 +977,7 @@ def _(athletes_clean, check_exercise, fastest_per_position, tests_clean):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ## Exit ticket
