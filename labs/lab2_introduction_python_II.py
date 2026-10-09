@@ -117,7 +117,7 @@ def _():
     return flying_20m_kmh, flying_20m_s
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, flying_20m_kmh, flying_20m_s):
     def _check():
         assert flying_20m_s is not ... and flying_20m_kmh is not ..., "Replace both `...`."
@@ -251,7 +251,7 @@ def _():
     return (bmi,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(bmi, check_exercise):
     def _check():
         assert bmi(65.5, 167.1) is not ..., "Replace `return ...` with the BMI computation."
@@ -301,7 +301,7 @@ def _():
     return (hr_zone,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, hr_zone):
     def _check():
         assert hr_zone(150) is not ..., "Replace `return ...` with your zone logic."
@@ -415,7 +415,7 @@ def _():
     return (parse_weight,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, parse_weight):
     def _check():
         assert parse_weight("65,5") is not ..., "Replace `return ...`."
@@ -462,7 +462,7 @@ def _():
     return (clean_position,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, clean_position):
     def _check():
         assert clean_position("Forward") is not ..., "Replace `return ...`."
@@ -511,7 +511,7 @@ def _():
     return (birth_year_from_date,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(birth_year_from_date, check_exercise):
     def _check():
         assert birth_year_from_date("2010-05-27") is not ..., "Replace `return ...`."
@@ -637,7 +637,7 @@ def _():
     return (age_in_season,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(age_in_season, check_exercise):
     def _check():
         assert age_in_season(2010) == 16, f"age_in_season(2010) should be 16, got {age_in_season(2010)!r}."
@@ -821,7 +821,7 @@ def _():
     return emma_average_s, emma_best_s, emma_last_two, emma_n_tests
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, emma_average_s, emma_best_s, emma_last_two, emma_n_tests):
     def _check():
         for label, value in [("emma_n_tests", emma_n_tests), ("emma_best_s", emma_best_s),
@@ -875,7 +875,7 @@ def _():
     return (clean_position_v2,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, clean_position_v2):
     def _check():
         assert clean_position_v2("FWD") is not ..., "Replace `return ...` in clean_position_v2."
@@ -1027,7 +1027,7 @@ def _():
     return n_under_5_5, test_day_kmh, test_day_s
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, n_under_5_5, test_day_kmh, test_day_s):
     def _check():
         assert n_under_5_5 is not ... and test_day_kmh is not ..., "Replace both `...`."
@@ -1066,7 +1066,7 @@ def _(clean_position_v2, raw_positions):
     return (position_counts,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, position_counts):
     def _check():
         assert position_counts is not ..., "Replace `...` with a counting loop."
@@ -1108,7 +1108,7 @@ def _():
     return level_reached, weeks_to_target
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, level_reached, weeks_to_target):
     def _check():
         assert weeks_to_target is not ... and level_reached is not ..., "Replace both `...`."
@@ -1184,7 +1184,7 @@ def _(athlete_rows, clean_position_v2):
     return average_height_by_position, squad_counts
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athlete_rows, average_height_by_position, check_exercise, squad_counts):
     def _check():
         assert squad_counts is not ..., "Replace `...` for `squad_counts`."

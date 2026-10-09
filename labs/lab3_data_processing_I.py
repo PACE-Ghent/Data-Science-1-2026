@@ -273,7 +273,7 @@ def _(DATA_DIR, pd):
     return tests_raw, tests_raw_shape
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, tests_raw, tests_raw_shape):
     def _check():
         assert tests_raw_shape is not ..., "Replace `...` with `tests_raw.shape`."
@@ -379,7 +379,7 @@ def _():
     return (forwards_u16_raw,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athletes_raw, check_exercise, forwards_u16_raw, younger_than_16):
     def _check():
         assert forwards_u16_raw is not ..., "Replace `...` with a filtered dataframe."
@@ -420,7 +420,7 @@ def _():
     return (suspicious_30m_raw,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, suspicious_30m_raw, tests_raw):
     def _check():
         assert suspicious_30m_raw is not ..., "Replace `...` with your filtered, sorted dataframe."
@@ -542,7 +542,7 @@ def _(athletes_raw):
     return (athletes_with_bmi,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athletes_with_bmi, check_exercise, weight_kg_numeric):
     def _check():
         assert athletes_with_bmi["bmi"].iloc[0] is not Ellipsis, "Replace `...` with the BMI formula."
@@ -580,7 +580,7 @@ def _(athletes_raw):
     return (athletes_with_age,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(REFERENCE_DATE, athletes_with_age, check_exercise, pd):
     def _check():
         assert athletes_with_age["age"].iloc[0] is not Ellipsis, "Replace `...` with an age computation."
@@ -727,7 +727,7 @@ def _(athletes_raw):
     return (athletes_step1,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athletes_step1, check_exercise):
     def _check():
         assert athletes_step1["position"].iloc[0] is not Ellipsis, "Assign `position_clean` to the column."
@@ -784,7 +784,7 @@ def _():
     return (sprint_30m_fixed,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, sprint_30m_fixed):
     def _check():
         assert sprint_30m_fixed is not ..., "Replace `...` with fix_sprint_units(tests_raw['sprint_30m_s'])."
@@ -844,7 +844,7 @@ def _():
     return (athletes_deduped,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athletes_deduped, athletes_step1, check_exercise):
     def _check():
         assert athletes_deduped is not ..., "Replace `...` with a drop_duplicates call."
@@ -953,7 +953,7 @@ def _():
     return (fastest_per_position,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athletes_clean, check_exercise, fastest_per_position, tests_clean):
     def _check():
         assert fastest_per_position is not ..., "Replace `...` with your merged, ranked dataframe."
