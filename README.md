@@ -49,29 +49,27 @@ values baked in (row counts, position counts, etc.) that assume the current
 seed. Changing the generator without re-checking the labs' assertions will
 break the auto-checks.
 
-## Running the notebooks
+## Running notebooks online
 
-Install once:
+You can open and edit the notebooks in marimo's online playground without
+installing Python or marimo:
 
-```bash
-pip install -r requirements.txt
+1. Go to [marimo.app](https://marimo.app/).
+2. Choose **New → Open from URL...**.
+3. Paste the raw GitHub URL for the notebook you want to use. For example:
+   `https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/labs/lab3_data_processing_I.py`
+
+The online playground has no access to this repository's local `data/`
+folder. In the notebook's `DATA_DIR` cell, use the repository's raw data URL:
+
+```python
+DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
 ```
 
-Open a notebook for editing (either a student lab or an instructor
-solution):
-
-```bash
-marimo edit labs/lab3_data_processing_I.py
-```
-
-This opens an interactive, reactive notebook in the browser. Cells re-run
-automatically when their dependencies change.
-
-To run a notebook read-only, as students would see a shared app:
-
-```bash
-marimo run labs/lab3_data_processing_I.py
-```
+The other notebooks use the same `DATA_DIR` setting. After changing it, the
+cells can read the CSV files directly from GitHub. Use marimo's **Save to
+molab** or **Create permalink** options if you want to keep or share your
+online work.
 
 ## `labs/` — student notebooks
 
@@ -134,3 +132,27 @@ trigger its own "Correct!" callout — not just "runs without crashing."
 - Run `marimo check path/to/notebook.py` after any manual edit to a
   notebook file — it catches structural issues (e.g. a cell reading a
   variable no other cell defines) before you open it in the browser.
+
+## Running notebooks locally
+
+To work with the notebooks from a local checkout, install the dependencies
+once:
+
+```bash
+pip install -r requirements.txt
+```
+
+Open a notebook for editing (either a student lab or an instructor
+solution):
+
+```bash
+marimo edit labs/lab3_data_processing_I.py
+```
+
+This opens an interactive, reactive notebook in your browser. Cells re-run
+automatically when their dependencies change. To run a notebook read-only,
+as students would see a shared app:
+
+```bash
+marimo run labs/lab3_data_processing_I.py
+```
