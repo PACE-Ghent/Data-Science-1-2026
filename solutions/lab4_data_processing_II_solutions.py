@@ -50,23 +50,25 @@ def _(mo):
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab4_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
 @app.cell(hide_code=True)
@@ -100,13 +102,8 @@ def _(pd):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, mini_clean):
-    def _check():
-        assert len(mini_clean) == 5
-        assert set(mini_clean["position"]) == {"FORWARD", "MIDFIELDER"}
-        assert mini_clean["weight_kg"].dtype.kind == "f"
-
-    check_exercise(_check, "The mini cleaning pipeline runs correctly now.")
+def _(checks, mini_clean):
+    checks.mini_clean(mini_clean)
     return
 
 
@@ -234,22 +231,8 @@ def _(athletes_with_age_group):
 
 
 @app.cell(hide_code=True)
-def _(athletes_with_age_group, check_exercise, gender_age_summary):
-    def _check():
-        assert gender_age_summary is not ..., "Replace `...` with your grouped, aggregated dataframe."
-        expected = athletes_with_age_group.groupby(
-            ["gender", "age_group"], observed=True
-        ).agg(
-            mean_height_cm=("height_cm", "mean"), mean_weight_kg=("weight_kg", "mean")
-        )
-        assert set(gender_age_summary.columns) >= {"mean_height_cm", "mean_weight_kg"}, (
-            "Expected columns named `mean_height_cm` and `mean_weight_kg`."
-        )
-        assert len(gender_age_summary) == len(expected), (
-            f"Expected {len(expected)} groups, got {len(gender_age_summary)}."
-        )
-
-    check_exercise(_check, "Your group summary has the right shape and columns.")
+def _(athletes_with_age_group, checks, gender_age_summary):
+    checks.gender_age_summary(athletes_with_age_group, gender_age_summary)
     return
 
 
@@ -343,22 +326,8 @@ def _(combined, merged_inner):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, combined, merged_inner, rows_lost_to_dedup):
-    def _check():
-        assert rows_lost_to_dedup is not ..., "Replace `...` with your row count."
-        dropped_ids = set(merged_inner["athlete_id"]) - set(combined["athlete_id"])
-        expected = merged_inner["athlete_id"].isin(dropped_ids).sum()
-        assert rows_lost_to_dedup == expected, (
-            f"Expected {expected} rows lost, got {rows_lost_to_dedup}."
-        )
-
-    check_exercise(
-        _check,
-        "That's how many test records would have silently vanished from "
-        "view if you had not deliberately checked.",
-    )
-
-    check_exercise(_check, "`combined` is merged and free of duplicate athletes.")
+def _(checks, combined, merged_inner, rows_lost_to_dedup):
+    checks.rows_lost_to_dedup(combined, merged_inner, rows_lost_to_dedup)
     return
 
 
@@ -439,20 +408,8 @@ def _(combined):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, cmj_progress_1_to_2, cmj_wide, combined):
-    def _check():
-        assert cmj_wide is not ..., "Replace `...` with a pivot_table call."
-        expected_wide = combined.pivot_table(
-            index="athlete_id", columns="test_moment", values="cmj_height_cm"
-        )
-        assert set(cmj_wide.columns) >= {1, 2}, "cmj_wide needs at least columns 1 and 2."
-        assert cmj_progress_1_to_2 is not ..., "Replace `...` with cmj_wide[2] - cmj_wide[1]."
-        expected_progress = expected_wide[2] - expected_wide[1]
-        assert (cmj_progress_1_to_2.dropna().round(3) == expected_progress.dropna().round(3)).all(), (
-            "cmj_progress_1_to_2 should equal test moment 2 minus test moment 1."
-        )
-
-    check_exercise(_check, "Your wide table and progress column are both correct.")
+def _(checks, cmj_progress_1_to_2, cmj_wide, combined):
+    checks.cmj_progress(cmj_progress_1_to_2, cmj_wide, combined)
     return
 
 
@@ -582,24 +539,8 @@ def _(hr_zoned):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, hr_zoned, zone_4_5_minutes):
-    def _check():
-        assert zone_4_5_minutes is not ..., "Replace `...` with your grouped computation."
-        expected = (
-            hr_zoned.loc[hr_zoned["hr_zone"].isin(["Zone 4", "Zone 5"])]
-            .groupby("athlete_id")
-            .size()
-            / 60
-        )
-        assert set(zone_4_5_minutes.index) == set(expected.index), (
-            "The set of athletes does not match."
-        )
-        aligned = zone_4_5_minutes.reindex(expected.index)
-        assert (aligned.round(2) == expected.round(2)).all(), (
-            "The minute counts don't match a Zone 4/5 filter + count / 60."
-        )
-
-    check_exercise(_check, "Time in zone 4-5 is computed correctly for every athlete.")
+def _(checks, hr_zoned, zone_4_5_minutes):
+    checks.zone_4_5_minutes(hr_zoned, zone_4_5_minutes)
     return
 
 
@@ -637,20 +578,8 @@ def _(hr_zoned):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, hr_zoned, training_report):
-    def _check():
-        assert training_report is not ..., "Replace `...` with your one-row-per-athlete summary."
-        for col in ["zone_4_5_minutes", "max_speed_kmh", "distance_km"]:
-            assert col in training_report.columns, f"Missing column `{col}`."
-        assert set(training_report.index) == set(hr_zoned["athlete_id"].unique()) or set(
-            training_report.get("athlete_id", [])
-        ) == set(hr_zoned["athlete_id"].unique()), (
-            "The report should have exactly one row per athlete in hr_zoned."
-        )
-        assert (training_report["distance_km"] > 0).all(), "Distance should be positive for every athlete."
-        assert (training_report["max_speed_kmh"] <= 30).all(), "Max speed looks unrealistically high."
-
-    check_exercise(_check, "Nice - that's a coach-ready training report.")
+def _(checks, hr_zoned, training_report):
+    checks.training_report(hr_zoned, training_report)
     return
 
 

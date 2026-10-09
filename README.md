@@ -63,7 +63,8 @@ The online playground has no local `data/` folder, so the notebooks detect
 when they run in the browser and automatically read the CSV files from this
 repository's `main` branch on GitHub (see the `DATA_DIR` cell). No changes
 are needed, but the repository must be public and the `data/` files must be
-pushed to `main`. Use marimo's **Save to molab** or **Create permalink**
+pushed to `main`. The answer checks are fetched the same way from `checks/`
+(see below), so those files must be pushed to `main` as well. Use marimo's **Save to molab** or **Create permalink**
 options if you want to keep or share your online work.
 
 ## `labs/` — student notebooks
@@ -82,6 +83,12 @@ The cell right below it checks the answer automatically and shows a
 callout — green ("Correct!") or amber ("Not yet correct", with a hint)
 — every time the notebook re-runs. Students replace `...` with their own
 code; nothing else in the notebook needs to change.
+
+The checks themselves are not in the notebooks: each lab loads them from
+`checks/labN_checks.py` (one function per exercise), so that a student
+cannot read the answer off the cell below the exercise. The hints are
+deliberately general - they say what is wrong, not what the answer is.
+The lab and its solutions notebook share the same checks file.
 
 | File | Session | Covers |
 |---|---|---|

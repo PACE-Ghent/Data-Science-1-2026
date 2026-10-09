@@ -50,23 +50,25 @@ def _(mo):
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab5_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
 @app.cell(hide_code=True)
@@ -362,14 +364,8 @@ def _(athletes, px):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, weight_histogram):
-    def _check():
-        assert weight_histogram is not ..., "Replace `...` with a px.histogram figure."
-        assert weight_histogram.data[0].type == "histogram", "The chart should be a histogram."
-        assert weight_histogram.layout.title.text, "Add a `title=` to the chart."
-        assert weight_histogram.layout.xaxis.title.text, "Add an x-axis label via `labels=`."
-
-    check_exercise(_check, "A properly labeled histogram.")
+def _(checks, weight_histogram):
+    checks.weight_histogram(weight_histogram)
     return
 
 
@@ -435,16 +431,8 @@ def _(POSITION_COLORS, combined, px):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, yoyo_by_age):
-    def _check():
-        assert yoyo_by_age is not ..., "Replace `...` with a px.box figure."
-        assert yoyo_by_age.data[0].type == "box", "The chart should be a box plot."
-        facet_annotations = [a.text for a in yoyo_by_age.layout.annotations]
-        assert any("F" in t or "M" in t for t in facet_annotations), (
-            "No facet columns found - did you pass facet_col='gender'?"
-        )
-
-    check_exercise(_check, "Faceting by gender works.")
+def _(checks, yoyo_by_age):
+    checks.yoyo_by_age(yoyo_by_age)
     return
 
 
@@ -533,13 +521,8 @@ def _(one_athlete_hr, px):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, speed_line):
-    def _check():
-        assert speed_line is not ..., "Replace `...` with a px.line figure."
-        assert "lines" in speed_line.data[0].mode, "The chart should be a line chart."
-        assert speed_line.layout.title.text, "Add a `title=` to the chart."
-
-    check_exercise(_check, "A proper speed-over-time line chart.")
+def _(checks, speed_line):
+    checks.speed_line(speed_line)
     return
 
 
@@ -677,16 +660,8 @@ def _(dashboard_charts, dashboard_selector, mo):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, dashboard_charts, dashboard_selector):
-    def _check():
-        assert dashboard_selector is not ..., "Replace `...` with an mo.ui element."
-        assert hasattr(dashboard_selector, "value"), "dashboard_selector should be an mo.ui element."
-        assert dashboard_charts is not ..., "Replace `...` with a list of 3 figures."
-        assert len(dashboard_charts) == 3, f"Expected exactly 3 charts, got {len(dashboard_charts)}."
-        for fig in dashboard_charts:
-            assert hasattr(fig, "data"), "Every item in dashboard_charts should be a plotly figure."
-
-    check_exercise(_check, "That's a coach-ready mini-dashboard.")
+def _(checks, dashboard_charts, dashboard_selector):
+    checks.dashboard(dashboard_charts, dashboard_selector)
     return
 
 
