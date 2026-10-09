@@ -1161,8 +1161,14 @@ def _(mo):
 def _(DATA_DIR):
     import csv
     from pathlib import Path
+    from urllib.request import urlopen
 
-    athlete_lines = Path(DATA_DIR, "athletes.csv").read_text().splitlines()
+    # Path only understands local files; in the browser DATA_DIR is a URL.
+    if DATA_DIR.startswith("http"):
+        athletes_text = urlopen(f"{DATA_DIR}/athletes.csv").read().decode("utf-8")
+    else:
+        athletes_text = Path(DATA_DIR, "athletes.csv").read_text()
+    athlete_lines = athletes_text.splitlines()
     athlete_rows = list(csv.DictReader(athlete_lines))
 
     print(len(athlete_rows), "athletes")

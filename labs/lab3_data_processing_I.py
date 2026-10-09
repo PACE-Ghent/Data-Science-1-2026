@@ -170,8 +170,14 @@ def _(mo):
 @app.cell
 def _(DATA_DIR, mo):
     from pathlib import Path
+    from urllib.request import urlopen
 
-    raw_lines_preview = Path(DATA_DIR, "tests.csv").read_text().splitlines()[:6]
+    # Path only understands local files; in the browser DATA_DIR is a URL.
+    if DATA_DIR.startswith("http"):
+        tests_text = urlopen(f"{DATA_DIR}/tests.csv").read().decode("utf-8")
+    else:
+        tests_text = Path(DATA_DIR, "tests.csv").read_text()
+    raw_lines_preview = tests_text.splitlines()[:6]
     mo.vstack([mo.md("**First lines of `tests.csv`, as plain text:**"), mo.md("```\n" + "\n".join(raw_lines_preview) + "\n```")])
     return
 
