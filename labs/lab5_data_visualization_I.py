@@ -357,7 +357,7 @@ def _():
     return (weight_histogram,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, weight_histogram):
     def _check():
         assert weight_histogram is not ..., "Replace `...` with a px.histogram figure."
@@ -423,7 +423,7 @@ def _():
     return (yoyo_by_age,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, yoyo_by_age):
     def _check():
         assert yoyo_by_age is not ..., "Replace `...` with a px.box figure."
@@ -516,7 +516,7 @@ def _():
     return (speed_line,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, speed_line):
     def _check():
         assert speed_line is not ..., "Replace `...` with a px.line figure."
@@ -649,7 +649,7 @@ def _():
     return (dashboard_charts,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, dashboard_charts, dashboard_selector):
     def _check():
         assert hasattr(dashboard_selector, "value"), "dashboard_selector should be an mo.ui element."

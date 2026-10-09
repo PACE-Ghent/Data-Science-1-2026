@@ -173,7 +173,7 @@ def _():
     return keeper_birth_year, keeper_height_cm, keeper_name, keeper_weight_kg
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(
     check_exercise,
     keeper_birth_year,
@@ -312,7 +312,7 @@ def _():
     return jersey_number, weight_from_text
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, jersey_number, weight_from_text):
     def _check():
         assert weight_from_text is not ..., "Replace `...` for `weight_from_text`."
@@ -405,7 +405,7 @@ def _():
     return (season_sessions,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, season_sessions):
     def _check():
         assert season_sessions == 15, f"Expected 15 sessions, got {season_sessions}."
@@ -483,7 +483,7 @@ def _():
     return yoyo_minutes, yoyo_seconds
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, yoyo_minutes, yoyo_seconds):
     def _check():
         assert yoyo_minutes is not ... and yoyo_seconds is not ..., "Replace both `...`."
@@ -519,7 +519,7 @@ def _(keeper_height_cm, keeper_weight_kg):
     return (keeper_bmi,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, keeper_bmi):
     def _check():
         assert keeper_bmi is not ..., "Replace `...` with the BMI formula."
@@ -605,7 +605,7 @@ def _(sprint_30m_s):
     return is_explosive, is_fast
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, is_explosive, is_fast):
     def _check():
         assert isinstance(is_fast, bool) and isinstance(is_explosive, bool), (
@@ -679,7 +679,7 @@ def _(birth_year, is_injured):
     return (eligible_u16,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, eligible_u16):
     def _check():
         assert isinstance(eligible_u16, bool), "`eligible_u16` should be True or False."
@@ -778,7 +778,7 @@ def _(cmj_slider):
     return (jump_category,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, cmj_slider, jump_category):
     def _check():
         jump = cmj_slider.value
@@ -837,7 +837,7 @@ def _(heart_rate_slider):
     return hr_max, hr_percent, hr_zone
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, heart_rate_slider, hr_max, hr_percent, hr_zone):
     def _check():
         assert hr_percent is not ..., "Compute `hr_percent` first."
@@ -905,7 +905,7 @@ def _():
     return (greeting,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, greeting):
     def _check():
         assert greeting == "Welcome, Emma Verhoeven", f"Got {greeting!r}."
@@ -922,7 +922,7 @@ def _():
     return (age_message,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(age_message, check_exercise):
     def _check():
         assert age_message == "Age: 16", f"Got {age_message!r}."
@@ -939,7 +939,7 @@ def _():
     return (parsed_weight_kg,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, parsed_weight_kg):
     def _check():
         assert parsed_weight_kg == 61.1, f"Got {parsed_weight_kg!r}."
@@ -963,7 +963,7 @@ def _():
     return (average_session_min,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(average_session_min, check_exercise):
     def _check():
         assert average_session_min == 0, f"Got {average_session_min!r}."
@@ -1058,7 +1058,7 @@ def _():
     return best_sprint_s, sprint_spread_s
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(best_sprint_s, check_exercise, sprint_spread_s):
     def _check():
         assert best_sprint_s is not ... and sprint_spread_s is not ..., "Replace both `...`."
@@ -1106,7 +1106,7 @@ def _(math):
     return cones_needed, lane_8_length_m, lane_8_radius_m
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, cones_needed, lane_8_length_m, lane_8_radius_m):
     def _check():
         assert lane_8_radius_m is not ..., "Compute `lane_8_radius_m` first."
@@ -1186,7 +1186,7 @@ def _(
     return selected, selection_message
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(
     candidate_birth_year,
     candidate_has_exemption,

@@ -361,7 +361,7 @@ def _(athletes, px):
     return (weight_histogram,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, weight_histogram):
     def _check():
         assert weight_histogram is not ..., "Replace `...` with a px.histogram figure."
@@ -434,7 +434,7 @@ def _(POSITION_COLORS, combined, px):
     return (yoyo_by_age,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, yoyo_by_age):
     def _check():
         assert yoyo_by_age is not ..., "Replace `...` with a px.box figure."
@@ -532,7 +532,7 @@ def _(one_athlete_hr, px):
     return (speed_line,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, speed_line):
     def _check():
         assert speed_line is not ..., "Replace `...` with a px.line figure."
@@ -676,7 +676,7 @@ def _(dashboard_charts, dashboard_selector, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, dashboard_charts, dashboard_selector):
     def _check():
         assert dashboard_selector is not ..., "Replace `...` with an mo.ui element."

@@ -100,7 +100,7 @@ def _(pd):
     return (mini_clean,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, mini_clean):
     def _check():
         assert len(mini_clean) == 5
@@ -233,7 +233,7 @@ def _():
     return (gender_age_summary,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(athletes_with_age_group, check_exercise, gender_age_summary):
     def _check():
         assert gender_age_summary is not ..., "Replace `...` with your grouped, aggregated dataframe."
@@ -343,7 +343,7 @@ def _():
     return (rows_lost_to_dedup,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, combined, merged_inner, rows_lost_to_dedup):
     def _check():
         assert rows_lost_to_dedup is not ..., "Replace `...` with your row count."
@@ -440,7 +440,7 @@ def _():
     return cmj_progress_1_to_2, cmj_wide
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, cmj_progress_1_to_2, cmj_wide, combined):
     def _check():
         assert cmj_wide is not ..., "Replace `...` with a pivot_table call."
@@ -582,7 +582,7 @@ def _():
     return (zone_4_5_minutes,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, hr_zoned, zone_4_5_minutes):
     def _check():
         assert zone_4_5_minutes is not ..., "Replace `...` with your grouped computation."
@@ -642,7 +642,7 @@ def _():
     return (training_report,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(check_exercise, hr_zoned, training_report):
     def _check():
         assert training_report is not ..., "Replace `...` with your one-row-per-athlete summary."
