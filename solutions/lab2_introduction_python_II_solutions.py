@@ -11,7 +11,7 @@ def _():
     return (mo,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Introduction to Python II - Functions, Strings, Collections and Loops
@@ -34,7 +34,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Quick marimo reminder: each variable can be defined by **only one
@@ -76,7 +76,7 @@ def _(mo):
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Warm-up: recap of last week (13:00-13:15)
@@ -89,7 +89,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - flying 20 m
@@ -97,7 +97,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Compute the time between 10 m and 30 m, rounded to 2 decimals, in
@@ -133,7 +133,7 @@ def _(check_exercise, flying_20m_kmh, flying_20m_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Writing your own functions (13:15-14:00)
@@ -177,7 +177,7 @@ def _():
     return (speed_kmh,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### `return` is not the same as `print`
@@ -199,7 +199,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Default values
@@ -222,7 +222,7 @@ def _(speed_kmh):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - a BMI function
@@ -230,7 +230,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Write a function `bmi(weight_kg, height_cm)` that **returns** the BMI
@@ -262,7 +262,7 @@ def _(bmi, check_exercise):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - heart rate zones as a function
@@ -270,7 +270,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Turn last week's heart rate zone logic into a function
@@ -326,7 +326,7 @@ def _(check_exercise, hr_zone):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. String methods (14:00-14:40)
@@ -373,7 +373,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Formatting numbers in f-strings
@@ -395,7 +395,7 @@ def _(speed_kmh):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 4 - parse a weight
@@ -403,7 +403,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The club's export stores weights as text with a **comma** as decimal
@@ -435,7 +435,7 @@ def _(check_exercise, parse_weight):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 5 - clean a position label
@@ -443,7 +443,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The `position` column of the club's export is a mess: `"Forward"`,
@@ -498,7 +498,7 @@ def _(check_exercise, clean_position):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 6 - birth year from a date
@@ -506,7 +506,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Birthdates are stored as text in the format `"YYYY-MM-DD"`. Write
@@ -539,7 +539,7 @@ def _(birth_year_from_date, check_exercise):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. Scope: where is a variable visible? (14:40-15:00)
@@ -606,7 +606,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Good practice: a function should get everything it needs through its
@@ -621,7 +621,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 7 - remove a hidden global
@@ -629,7 +629,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The function `age_in_season` below depends on the global
@@ -665,7 +665,7 @@ def _(age_in_season, check_exercise):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## ☕ Break (15:00-15:10)
@@ -673,7 +673,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Collections (15:10-16:00)
@@ -718,7 +718,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Tuples
@@ -744,7 +744,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Dictionaries
@@ -781,7 +781,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Sets
@@ -803,7 +803,7 @@ def _():
     return (raw_positions,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 8 - a season of sprints
@@ -811,7 +811,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Using the list `emma_sprints_s` below, compute:
@@ -849,7 +849,7 @@ def _(check_exercise, emma_average_s, emma_best_s, emma_last_two, emma_n_tests):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 9 - a lookup table for positions
@@ -857,7 +857,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The long `if` / `elif` chain in `clean_position` works, but a
@@ -907,7 +907,7 @@ def _(check_exercise, clean_position_v2):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Loops (16:00-16:50)
@@ -991,7 +991,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     **Bonus - list comprehensions.** The "transform into a new list"
@@ -1011,7 +1011,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 10 - loop over the test day
@@ -1019,7 +1019,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     `test_day_s` holds the 30 m times of everyone tested today. With a
@@ -1057,7 +1057,7 @@ def _(check_exercise, n_under_5_5, test_day_kmh, test_day_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 11 - count athletes per position
@@ -1065,7 +1065,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Loop over `raw_positions` (defined in the section on sets), clean each
@@ -1096,7 +1096,7 @@ def _(check_exercise, position_counts):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 12 - how many weeks to reach the target?
@@ -1104,7 +1104,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     An athlete is at Yo-Yo level **15.5** and the target is level **18**.
@@ -1141,7 +1141,7 @@ def _(check_exercise, level_reached, weeks_to_target):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 7. Challenge (16:50-17:20) - the club's real athlete file
@@ -1177,7 +1177,7 @@ def _(DATA_DIR):
     return (athlete_rows,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Build two dictionaries, keyed on the **clean** position (use
@@ -1248,7 +1248,7 @@ def _(athlete_rows, average_height_by_position, check_exercise, squad_counts):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ## Exit ticket

@@ -18,7 +18,7 @@ def _():
     return (pd,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Data Processing II - Combine, Summarize, Reshape
@@ -69,7 +69,7 @@ def _(mo):
     return (check_exercise,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Recap - repair a broken cleaning cell (13:00-13:15)
@@ -110,7 +110,7 @@ def _(check_exercise, mini_clean):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Loading last week's cleaned data
@@ -162,7 +162,7 @@ def _(DATA_DIR, fix_sprint_units, pd):
     return (tests,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. groupby + agg (13:15-14:10)
@@ -181,7 +181,7 @@ def _(athletes):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     `pd.cut` turns a numeric column into categories based on bin edges - perfect for age categories such as U13 / U15 / U17.
@@ -209,7 +209,7 @@ def _(athletes_with_age_group):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - group by gender and age group
@@ -217,7 +217,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Using `athletes_with_age_group`, group by `gender` and `age_group`, then use `.agg(...)` to compute the mean `height_cm` and mean `weight_kg` per group. Store the result in `gender_age_summary` (use `observed=True` in `groupby` to skip empty combinations).
@@ -253,7 +253,7 @@ def _(athletes_with_age_group, check_exercise, gender_age_summary):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. merge (14:10-14:55)
@@ -274,7 +274,7 @@ def _(athletes, tests):
     return (merged_inner,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Both joins have the same length here because every athlete has at least one test result - with real-world data that is rarely guaranteed, which is exactly why the two behave differently in general. Now look for the duplicate athlete.
@@ -290,7 +290,7 @@ def _(merged_inner):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Same person, two different `athlete_id`s - the join itself works perfectly (it doesn't know these are the same person), but any summary statistic computed after the merge will silently count this athlete twice unless we deduplicate **by identity** (name + birthdate), not by ID.
@@ -298,7 +298,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The fix is to deduplicate **before** merging, not after: drop duplicate `(name, birthdate)` rows from `athletes` first, so every remaining athlete keeps all of their own test moments once merged. Deduplicating *after* merging would incorrectly throw away an athlete's other test moments too, since those rows also share the same name + birthdate.
@@ -315,7 +315,7 @@ def _(athletes, tests):
     return (combined,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - what did deduplication cost us?
@@ -327,7 +327,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Compute `rows_lost_to_dedup`: the number of rows in `merged_inner` (the un-deduplicated merge) whose `athlete_id` does **not** appear in `combined`.
@@ -362,7 +362,7 @@ def _(check_exercise, combined, merged_inner, rows_lost_to_dedup):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Wide ↔ long: `melt` and `pivot` (15:10-15:50)
@@ -383,7 +383,7 @@ def _(combined):
     return (sprint_wide,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     In wide format, computing progress between two test moments is a single subtraction. A negative number means the athlete got *faster* (a lower time).
@@ -398,7 +398,7 @@ def _(sprint_wide):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     `melt` is the inverse of `pivot`: it turns wide columns back into long `(id, variable, value)` rows - the format plotly express prefers, as we'll see next session.
@@ -415,7 +415,7 @@ def _(sprint_wide):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - progress in jump height
@@ -423,7 +423,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Pivot `combined` to `cmj_wide` (index `athlete_id`, columns `test_moment`, values `cmj_height_cm`), then compute `cmj_progress_1_to_2` as the *difference* between test moment 2 and test moment 1 (moment 2 minus moment 1, so a **positive** number means the athlete jumped higher).
@@ -456,7 +456,7 @@ def _(check_exercise, cmj_progress_1_to_2, cmj_wide, combined):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Time series with `hr_session.csv` (15:50-16:50)
@@ -477,7 +477,7 @@ def _(DATA_DIR, pd):
     return (hr_session,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Heart-rate *zones* are usually expressed as a percentage of maximum heart rate. We estimate `hr_max` per athlete with the common rule-of-thumb `220 - age`, then use `pd.cut` to bucket `% hr_max` into 5 zones.
@@ -509,7 +509,7 @@ def _(hr_with_age, pd):
     return (hr_zoned,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Time per zone, per athlete, in minutes (each row is 1 second, so dividing a row count by 60 gives minutes):
@@ -526,7 +526,7 @@ def _(hr_zoned):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     A **rolling average** smooths out second-to-second noise; `resample` regroups a time-indexed series into fixed intervals (here, 1-minute bins) - both need the data sorted by time first.
@@ -557,7 +557,7 @@ def _(one_athlete):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 4 - time in zone 4-5 per athlete
@@ -565,7 +565,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Using `hr_zoned`, compute `zone_4_5_minutes`: a Series indexed by `athlete_id` with the total minutes each athlete spent in `"Zone 4"` or `"Zone 5"` combined.
@@ -603,7 +603,7 @@ def _(check_exercise, hr_zoned, zone_4_5_minutes):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 7. Mini-case, in pairs: training report (16:50-17:30)
@@ -617,7 +617,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `training_report`: one row per `athlete_id`, with columns `zone_4_5_minutes`, `max_speed_kmh` and `distance_km`. A `.agg` with a dictionary of named aggregations is one clean way to do this in a single `groupby` call - but any correct approach is fine.
@@ -654,7 +654,7 @@ def _(check_exercise, hr_zoned, training_report):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     See you next week for Datavisualisatie I, where `combined` and `hr_zoned` become the basis for a set of plotly charts and a small interactive dashboard.

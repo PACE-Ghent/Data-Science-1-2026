@@ -19,7 +19,7 @@ def _():
     return pd, px
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Data Visualization I - Tell the Story with Plotly
@@ -69,7 +69,7 @@ def _(mo):
     return (check_exercise,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Setup: reload the cleaned data
@@ -128,7 +128,7 @@ def _(DATA_DIR, pd):
     return athletes, combined, hr_zoned
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Chart colors
@@ -159,7 +159,7 @@ def _():
     return POSITION_COLORS, ZONE_COLORS
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Principles: the right chart for the right question (13:00-13:30)
@@ -194,7 +194,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The bars start at zero, so their *heights* honestly represent the differences between positions.
@@ -221,7 +221,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The y-axis no longer starts at zero: the same small real differences now look enormous. This is one of the most common ways sports graphics mislead - a truncated or non-zero baseline.
@@ -252,7 +252,7 @@ def _(chart_critique, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Basic plotly express charts (13:30-14:30)
@@ -311,7 +311,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     A line chart needs something to walk along the x-axis - here, `test_moment`. Because `combined` is already long (one row per athlete per test moment), we can plot every athlete's progress directly, no pivoting required.
@@ -334,7 +334,7 @@ def _(combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - a histogram of your own
@@ -342,7 +342,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `weight_histogram`: a `px.histogram` of `athletes["weight_kg"]`, with a `title` and an `x` label set through `labels=`.
@@ -373,7 +373,7 @@ def _(check_exercise, weight_histogram):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. More dimensions: color, facet, size (14:30-15:15)
@@ -404,7 +404,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - add a facet
@@ -412,7 +412,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `yoyo_by_age`: a `px.box` of `yoyo_level` (y) by `position` (x, colored using `POSITION_COLORS`), **faceted** by `gender` using `facet_col`.
@@ -448,7 +448,7 @@ def _(check_exercise, yoyo_by_age):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. Heart-rate time series with zone bands (15:30-16:15)
@@ -504,7 +504,7 @@ def _(hr_zoned, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - speed over time
@@ -512,7 +512,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `speed_line`: a `px.line` of `speed_kmh` over `timestamp` for `one_athlete_hr` (defined above), with a title and axis labels.
@@ -543,7 +543,7 @@ def _(check_exercise, speed_line):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Interactivity in marimo (16:15-16:45)
@@ -587,7 +587,7 @@ def _(athlete_picker, hr_zoned, px, time_window):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Move the dropdown or the slider - the chart above redraws on its own. **Optional**: `mo.ui.plotly` goes one step further and makes *selections on the chart itself* reactive - lasso a few points in the scatter below, then look at the table underneath it.
@@ -618,7 +618,7 @@ def _(pd, selectable_scatter):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Mini-dashboard assignment (16:45-17:30)
@@ -632,7 +632,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `dashboard_selector` (any `mo.ui` element) and `dashboard_charts`: a list of exactly 3 plotly figures, where at least one uses `dashboard_selector.value`.
@@ -690,7 +690,7 @@ def _(check_exercise, dashboard_charts, dashboard_selector):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Congratulations - you've gone from a messy CSV export to an interactive dashboard in three sessions. See you at the case presentations.
