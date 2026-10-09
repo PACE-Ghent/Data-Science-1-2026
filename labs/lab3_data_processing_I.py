@@ -106,23 +106,25 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab3_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
 @app.cell(hide_code=True)
@@ -274,16 +276,8 @@ def _(DATA_DIR, pd):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, tests_raw, tests_raw_shape):
-    def _check():
-        assert tests_raw_shape is not ..., "Replace `...` with `tests_raw.shape`."
-        assert tests_raw_shape == tests_raw.shape, "That is not `tests_raw.shape`."
-        assert tests_raw_shape[1] == 8, f"Expected 8 columns, got {tests_raw_shape[1]}."
-
-    check_exercise(
-        _check,
-        f"`tests.csv` has {tests_raw.shape[0]} rows and {tests_raw.shape[1]} columns.",
-    )
+def _(checks, tests_raw, tests_raw_shape):
+    checks.tests_raw_shape(tests_raw, tests_raw_shape)
     return
 
 
@@ -380,20 +374,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(athletes_raw, check_exercise, forwards_u16_raw, younger_than_16):
-    def _check():
-        assert forwards_u16_raw is not ..., "Replace `...` with a filtered dataframe."
-        expected = athletes_raw.loc[
-            (athletes_raw["position"] == "Forward") & younger_than_16
-        ]
-        assert len(forwards_u16_raw) == len(expected), (
-            f"Expected {len(expected)} rows, got {len(forwards_u16_raw)}."
-        )
-        assert (forwards_u16_raw["position"] == "Forward").all(), (
-            "All rows must have position == 'Forward'."
-        )
-
-    check_exercise(_check, "That combination of filters is correct.")
+def _(athletes_raw, checks, forwards_u16_raw, younger_than_16):
+    checks.forwards_u16(athletes_raw, forwards_u16_raw, younger_than_16)
     return
 
 
@@ -421,24 +403,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, suspicious_30m_raw, tests_raw):
-    def _check():
-        assert suspicious_30m_raw is not ..., "Replace `...` with your filtered, sorted dataframe."
-        expected = tests_raw.loc[tests_raw["sprint_30m_s"] > 20].sort_values(
-            "sprint_30m_s", ascending=False
-        )
-        assert len(suspicious_30m_raw) == len(expected), (
-            f"Expected {len(expected)} rows, got {len(suspicious_30m_raw)}."
-        )
-        assert list(suspicious_30m_raw["sprint_30m_s"]) == list(expected["sprint_30m_s"]), (
-            "The rows are not sorted from most to least extreme."
-        )
-
-    check_exercise(
-        _check,
-        "You just found every row with an implausible sprint time - "
-        "all of them are the millisecond bug, not real speed.",
-    )
+def _(checks, suspicious_30m_raw, tests_raw):
+    checks.suspicious_30m(suspicious_30m_raw, tests_raw)
     return
 
 
@@ -543,16 +509,8 @@ def _(athletes_raw):
 
 
 @app.cell(hide_code=True)
-def _(athletes_with_bmi, check_exercise, weight_kg_numeric):
-    def _check():
-        assert athletes_with_bmi["bmi"].iloc[0] is not Ellipsis, "Replace `...` with the BMI formula."
-        assert not athletes_with_bmi["bmi"].isna().all(), "The bmi column should not be all-missing."
-        expected_first = weight_kg_numeric.iloc[0] / (athletes_with_bmi["height_cm"].iloc[0] / 100) ** 2
-        assert abs(athletes_with_bmi["bmi"].iloc[0] - expected_first) < 1e-6, (
-            "The formula does not match weight_kg / (height_cm / 100) ** 2."
-        )
-
-    check_exercise(_check, "Your BMI column is computed correctly.")
+def _(athletes_with_bmi, checks, weight_kg_numeric):
+    checks.bmi_column(athletes_with_bmi, weight_kg_numeric)
     return
 
 
@@ -581,18 +539,8 @@ def _(athletes_raw):
 
 
 @app.cell(hide_code=True)
-def _(REFERENCE_DATE, athletes_with_age, check_exercise, pd):
-    def _check():
-        assert athletes_with_age["age"].iloc[0] is not Ellipsis, "Replace `...` with an age computation."
-        expected = (REFERENCE_DATE - pd.to_datetime(athletes_with_age["birthdate"])).dt.days // 365
-        assert (athletes_with_age["age"].dropna() == expected.dropna()).all(), (
-            "The ages don't match REFERENCE_DATE - birthdate, in whole years."
-        )
-        assert athletes_with_age["age"].dropna().between(10, 19).all(), (
-            "Some ages fall outside a plausible youth-club range (10-19)."
-        )
-
-    check_exercise(_check, "Ages look correct and plausible.")
+def _(REFERENCE_DATE, athletes_with_age, checks):
+    checks.age_column(REFERENCE_DATE, athletes_with_age)
     return
 
 
@@ -728,14 +676,8 @@ def _(athletes_raw):
 
 
 @app.cell(hide_code=True)
-def _(athletes_step1, check_exercise):
-    def _check():
-        assert athletes_step1["position"].iloc[0] is not Ellipsis, "Assign `position_clean` to the column."
-        assert set(athletes_step1["position"].unique()) == {
-            "Forward", "Midfielder", "Defender", "Goalkeeper",
-        }, "There should be exactly 4 clean position labels left."
-
-    check_exercise(_check, "Exactly the 4 real positions remain.")
+def _(athletes_step1, checks):
+    checks.clean_positions(athletes_step1)
     return
 
 
@@ -785,13 +727,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, sprint_30m_fixed):
-    def _check():
-        assert sprint_30m_fixed is not ..., "Replace `...` with fix_sprint_units(tests_raw['sprint_30m_s'])."
-        assert sprint_30m_fixed.max() < 20, f"Max value {sprint_30m_fixed.max()} still looks like milliseconds."
-        assert sprint_30m_fixed.min() > 3, "Minimum sprint time looks unrealistically low."
-
-    check_exercise(_check, "All 30 m sprint times are now in a realistic range (seconds).")
+def _(checks, sprint_30m_fixed):
+    checks.sprint_units(sprint_30m_fixed)
     return
 
 
@@ -845,17 +782,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(athletes_deduped, athletes_step1, check_exercise):
-    def _check():
-        assert athletes_deduped is not ..., "Replace `...` with a drop_duplicates call."
-        assert len(athletes_deduped) == len(athletes_step1) - 1, (
-            f"Expected exactly one row removed, went from {len(athletes_step1)} to {len(athletes_deduped)}."
-        )
-        assert not athletes_deduped.duplicated(subset=["name", "birthdate"]).any(), (
-            "There is still a duplicate name+birthdate combination."
-        )
-
-    check_exercise(_check, "The duplicate athlete is gone.")
+def _(athletes_deduped, athletes_step1, checks):
+    checks.deduplicate(athletes_deduped, athletes_step1)
     return
 
 
@@ -954,26 +882,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(athletes_clean, check_exercise, fastest_per_position, tests_clean):
-    def _check():
-        assert fastest_per_position is not ..., "Replace `...` with your merged, ranked dataframe."
-        assert "position" in fastest_per_position.columns and "sprint_30m_s" in fastest_per_position.columns, (
-            "The result needs both a `position` and a `sprint_30m_s` column."
-        )
-        counts = fastest_per_position.groupby("position").size()
-        assert (counts <= 5).all(), "Some positions have more than 5 rows."
-        best_sprint = tests_clean.groupby("athlete_id")["sprint_30m_s"].min().reset_index()
-        expected = (
-            athletes_clean.merge(best_sprint, on="athlete_id")
-            .sort_values("sprint_30m_s")
-            .groupby("position")
-            .head(5)
-        )
-        assert set(fastest_per_position["athlete_id"]) == set(expected["athlete_id"]), (
-            "The set of selected athletes does not match the expected top 5 per position."
-        )
-
-    check_exercise(_check, "That's the coach's shortlist - nicely done.")
+def _(athletes_clean, checks, fastest_per_position, tests_clean):
+    checks.fastest_per_position(athletes_clean, fastest_per_position, tests_clean)
     return
 
 

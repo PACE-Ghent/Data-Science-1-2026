@@ -82,23 +82,25 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab1_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
 @app.cell(hide_code=True)
@@ -174,23 +176,13 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(
-    check_exercise,
-    keeper_birth_year,
-    keeper_height_cm,
-    keeper_name,
-    keeper_weight_kg,
-):
-    def _check():
-        assert keeper_name is not ..., "Replace every `...` with a value."
-        assert keeper_name == "Lotte Janssens", (
-            f"`keeper_name` should be the text \"Lotte Janssens\", got {keeper_name!r}."
-        )
-        assert keeper_birth_year == 2010, f"`keeper_birth_year` should be 2010, got {keeper_birth_year!r}."
-        assert keeper_height_cm == 176.3, f"`keeper_height_cm` should be 176.3, got {keeper_height_cm!r}."
-        assert keeper_weight_kg == 66.2, f"`keeper_weight_kg` should be 66.2, got {keeper_weight_kg!r}."
-
-    check_exercise(_check, "Lotte's profile is stored in four well-named variables.")
+def _(checks, keeper_birth_year, keeper_height_cm, keeper_name, keeper_weight_kg):
+    checks.keeper_profile(
+        keeper_birth_year,
+        keeper_height_cm,
+        keeper_name,
+        keeper_weight_kg,
+    )
     return
 
 
@@ -313,19 +305,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, jersey_number, weight_from_text):
-    def _check():
-        assert weight_from_text is not ..., "Replace `...` for `weight_from_text`."
-        assert jersey_number is not ..., "Replace `...` for `jersey_number`."
-        assert isinstance(weight_from_text, float), (
-            f"`weight_from_text` should be a float, it is a {type(weight_from_text).__name__}."
-        )
-        assert isinstance(jersey_number, int), (
-            f"`jersey_number` should be an int, it is a {type(jersey_number).__name__}."
-        )
-        assert weight_from_text == 63.9 and jersey_number == 7, "The values changed during conversion."
-
-    check_exercise(_check, "Both values are now real numbers you can compute with.")
+def _(checks, jersey_number, weight_from_text):
+    checks.type_conversion(jersey_number, weight_from_text)
     return
 
 
@@ -406,11 +387,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, season_sessions):
-    def _check():
-        assert season_sessions == 15, f"Expected 15 sessions, got {season_sessions}."
-
-    check_exercise(_check, "Stan is at 15 sessions.")
+def _(checks, season_sessions):
+    checks.season_sessions(season_sessions)
     return
 
 
@@ -484,13 +462,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, yoyo_minutes, yoyo_seconds):
-    def _check():
-        assert yoyo_minutes is not ... and yoyo_seconds is not ..., "Replace both `...`."
-        assert yoyo_minutes == 23, f"Expected 23 whole minutes, got {yoyo_minutes}."
-        assert yoyo_seconds == 5, f"Expected 5 remaining seconds, got {yoyo_seconds}."
-
-    check_exercise(_check, "1385 s is 23 min 5 s.")
+def _(checks, yoyo_minutes, yoyo_seconds):
+    checks.yoyo_time(yoyo_minutes, yoyo_seconds)
     return
 
 
@@ -520,15 +493,8 @@ def _(keeper_height_cm, keeper_weight_kg):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, keeper_bmi):
-    def _check():
-        assert keeper_bmi is not ..., "Replace `...` with the BMI formula."
-        assert abs(keeper_bmi - 66.2 / 1.763**2) < 0.01, (
-            f"Expected a BMI of about 21.3, got {keeper_bmi}. "
-            "Did you convert cm to m, and put parentheses around the height?"
-        )
-
-    check_exercise(_check, "Lotte's BMI is about 21.3.")
+def _(checks, keeper_bmi):
+    checks.keeper_bmi(keeper_bmi)
     return
 
 
@@ -606,17 +572,8 @@ def _(sprint_30m_s):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, is_explosive, is_fast):
-    def _check():
-        assert isinstance(is_fast, bool) and isinstance(is_explosive, bool), (
-            "Both variables should hold a comparison result (True or False)."
-        )
-        assert is_fast is False, "5.34 s is not under 5.0 s, so `is_fast` should be False."
-        assert is_explosive is True, (
-            "30.0 cm is 'at least 30 cm', so `is_explosive` should be True. Did you use `>` instead of `>=`?"
-        )
-
-    check_exercise(_check, "Yana is explosive, but not (yet) fast.")
+def _(checks, is_explosive, is_fast):
+    checks.comparisons(is_explosive, is_fast)
     return
 
 
@@ -680,14 +637,8 @@ def _(birth_year, is_injured):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, eligible_u16):
-    def _check():
-        assert isinstance(eligible_u16, bool), "`eligible_u16` should be True or False."
-        assert eligible_u16 is False, (
-            "Yana (born 2010) turns 16 in 2026, so she is no longer eligible for U16."
-        )
-
-    check_exercise(_check, "Yana is too old for U16 this season.")
+def _(checks, eligible_u16):
+    checks.eligible_u16(eligible_u16)
     return
 
 
@@ -779,16 +730,8 @@ def _(cmj_slider):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, cmj_slider, jump_category):
-    def _check():
-        jump = cmj_slider.value
-        expected = "below average" if jump < 25 else "average" if jump < 32 else "above average"
-        assert jump_category is not ..., "Replace `...` with an if / elif / else."
-        assert jump_category == expected, (
-            f"For {jump} cm the category should be {expected!r}, got {jump_category!r}."
-        )
-
-    check_exercise(_check, f"{cmj_slider.value} cm is {jump_category!r}. Try the other branches too!")
+def _(checks, cmj_slider, jump_category):
+    checks.jump_category(cmj_slider, jump_category)
     return
 
 
@@ -838,22 +781,8 @@ def _(heart_rate_slider):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, heart_rate_slider, hr_max, hr_percent, hr_zone):
-    def _check():
-        assert hr_percent is not ..., "Compute `hr_percent` first."
-        expected_percent = heart_rate_slider.value / hr_max * 100
-        assert abs(hr_percent - expected_percent) < 1e-9, (
-            f"`hr_percent` should be {expected_percent:.1f}, got {hr_percent}."
-        )
-        expected_zone = 1
-        for limit in (60, 70, 80, 90):
-            if expected_percent >= limit:
-                expected_zone += 1
-        assert hr_zone == expected_zone, (
-            f"At {expected_percent:.1f}% of HRmax the zone should be {expected_zone}, got {hr_zone!r}."
-        )
-
-    check_exercise(_check, f"{heart_rate_slider.value} bpm is zone {hr_zone}.")
+def _(checks, heart_rate_slider, hr_max, hr_percent, hr_zone):
+    checks.hr_zone(heart_rate_slider, hr_max, hr_percent, hr_zone)
     return
 
 
@@ -906,11 +835,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, greeting):
-    def _check():
-        assert greeting == "Welcome, Emma Verhoeven", f"Got {greeting!r}."
-
-    check_exercise(_check, "NameError fixed - it was a typo in the variable name.")
+def _(checks, greeting):
+    checks.fix_name_error(greeting)
     return
 
 
@@ -923,11 +849,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(age_message, check_exercise):
-    def _check():
-        assert age_message == "Age: 16", f"Got {age_message!r}."
-
-    check_exercise(_check, "TypeError fixed - you can't add text and a number; convert with `str()` or use an f-string.")
+def _(age_message, checks):
+    checks.fix_type_error(age_message)
     return
 
 
@@ -940,15 +863,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, parsed_weight_kg):
-    def _check():
-        assert parsed_weight_kg == 61.1, f"Got {parsed_weight_kg!r}."
-
-    check_exercise(
-        _check,
-        "ValueError fixed. Next week you'll learn to do this automatically "
-        "with the string method `.replace(\",\", \".\")`.",
-    )
+def _(checks, parsed_weight_kg):
+    checks.fix_value_error(parsed_weight_kg)
     return
 
 
@@ -964,11 +880,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(average_session_min, check_exercise):
-    def _check():
-        assert average_session_min == 0, f"Got {average_session_min!r}."
-
-    check_exercise(_check, "ZeroDivisionError avoided with a simple `if`.")
+def _(average_session_min, checks):
+    checks.fix_zero_division_error(average_session_min)
     return
 
 
@@ -1059,15 +972,8 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(best_sprint_s, check_exercise, sprint_spread_s):
-    def _check():
-        assert best_sprint_s is not ... and sprint_spread_s is not ..., "Replace both `...`."
-        assert best_sprint_s == 5.29, f"The fastest time is 5.29 s, got {best_sprint_s}."
-        assert sprint_spread_s == 0.12, (
-            f"The spread should be 0.12 s, got {sprint_spread_s}. Did you round to 2 decimals?"
-        )
-
-    check_exercise(_check, "Best 5.29 s, with only 0.12 s between his best and worst run.")
+def _(best_sprint_s, checks, sprint_spread_s):
+    checks.sprint_summary(best_sprint_s, sprint_spread_s)
     return
 
 
@@ -1107,23 +1013,8 @@ def _(math):
 
 
 @app.cell(hide_code=True)
-def _(check_exercise, cones_needed, lane_8_length_m, lane_8_radius_m):
-    def _check():
-        assert lane_8_radius_m is not ..., "Compute `lane_8_radius_m` first."
-        assert abs(lane_8_radius_m - 45.34) < 1e-6, f"The radius should be 45.34 m, got {lane_8_radius_m}."
-        assert lane_8_length_m is not ..., "Compute `lane_8_length_m`."
-        assert abs(lane_8_length_m - 453.66) < 0.01, (
-            f"Lane 8 should be about 453.66 m, got {lane_8_length_m}."
-        )
-        assert cones_needed == 91, (
-            f"Expected 91 cones (453.66 / 5 = 90.7, rounded up), got {cones_needed}."
-        )
-
-    check_exercise(
-        _check,
-        "A lap in lane 8 is about 453.7 m - almost 54 m more than lane 1. "
-        "That's why the start line is staggered!",
-    )
+def _(checks, cones_needed, lane_8_length_m, lane_8_radius_m):
+    checks.lane_8(cones_needed, lane_8_length_m, lane_8_radius_m)
     return
 
 
@@ -1194,24 +1085,20 @@ def _(
     candidate_name,
     candidate_sprint_30m_s,
     candidate_yoyo_level,
-    check_exercise,
+    checks,
     selected,
     selection_message,
 ):
-    def _check():
-        expected = (
-            (2026 - candidate_birth_year < 16 or candidate_has_exemption)
-            and (candidate_sprint_30m_s < 5.5 or candidate_yoyo_level >= 17)
-            and not candidate_is_injured
-        )
-        assert isinstance(selected, bool), "`selected` should be True or False."
-        assert selected == expected, f"With these inputs `selected` should be {expected}."
-        expected_message = f"{candidate_name} is {'' if expected else 'not '}selected."
-        assert selection_message == expected_message, (
-            f"Expected the message {expected_message!r}, got {selection_message!r}."
-        )
-
-    check_exercise(_check, "Your selection logic matches the coach's rules.")
+    checks.selection(
+        candidate_birth_year,
+        candidate_has_exemption,
+        candidate_is_injured,
+        candidate_name,
+        candidate_sprint_30m_s,
+        candidate_yoyo_level,
+        selected,
+        selection_message,
+    )
     return
 
 
