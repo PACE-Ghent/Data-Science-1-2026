@@ -1,0 +1,546 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{cursus}
+\author{dr. Maarten Slembrouck}
+
+\begin{document}
+
+\labotitel{Labo 4 -- Dataverwerking II}{Combineren, samenvatten, herschikken}{Cursustekst bij het notebook \code{lab4\_data\_processing\_II.py}}
+
+\section*{Waarover gaat dit labo?}
+
+Vorige week maakte je van rommelige exports nette tabellen: één rij per
+atleet, één rij per test. Maar de vragen van een coach gaan zelden over
+één rij. ``Hoe groot zijn onze verdedigers gemiddeld?'' gaat over een
+\emph{groep} rijen. ``Hoe snel sprinten onze keepers?'' heeft informatie
+uit \emph{twee} tabellen nodig. ``Is iedereen vooruitgegaan sinds de
+eerste test?'' vraagt om de tabel anders te \emph{schikken}. En de
+hartslagdata van een training is een \emph{tijdreeks}, met één meting per
+seconde.
+
+\textbf{Na dit labo kun je} data per groep samenvatten met
+\code{groupby}, tabellen koppelen met \code{merge}, data herschikken met
+\code{melt} en \code{pivot\_table}, en eenvoudige kenmerken van een
+tijdreeks berekenen (hartslagzones, voortschrijdend gemiddelde,
+hersampling).
+
+Net als vorige week is elk voorbeeld echt uitgevoerd op de data van de
+club. Lees deze tekst naast het notebook en typ de voorbeelden zelf over.
+
+% ---------------------------------------------------------------------------
+\section{Vertrekpunt: de opgekuiste data van vorige week}
+
+Het notebook begint met de opkuis van labo 3, in compacte vorm. Twee
+hulpfuncties doen het werk: \code{clean\_positions} vertaalt de 13
+schrijfwijzen naar 4 posities, \code{fix\_sprint\_units} zet
+milliseconden om naar seconden.
+
+\begin{python}[noout]
+import pandas as pd
+
+def clean_positions(position_column):
+    position_map = {
+        "forward": "Forward", "fwd": "Forward",
+        "midfielder": "Midfielder", "mid": "Midfielder",
+        "defender": "Defender", "def": "Defender",
+        "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
+    }
+    return position_column.str.strip().str.lower().map(position_map)
+
+def fix_sprint_units(seconds_column):
+    return seconds_column.where(seconds_column < 20, seconds_column / 1000)
+
+REFERENCE_DATE = pd.Timestamp("2026-09-14")
+
+athletes = pd.read_csv(f"{DATA_DIR}/athletes.csv").assign(
+    position=lambda d: clean_positions(d["position"]),
+    weight_kg=lambda d: d["weight_kg"].str.replace(",", ".").astype(float),
+    age=lambda d: (REFERENCE_DATE - pd.to_datetime(d["birthdate"])).dt.days // 365,
+)
+tests = pd.read_csv(f"{DATA_DIR}/tests.csv").assign(
+    sprint_10m_s=lambda d: fix_sprint_units(d["sprint_10m_s"]),
+    sprint_30m_s=lambda d: fix_sprint_units(d["sprint_30m_s"]),
+)
+\end{python}
+
+Lees deze code rustig: alles erin heb je vorige week gezien. Merk op dat
+de dubbele atleet hier \emph{bewust} nog niet verwijderd is. Dat wordt
+belangrijk in sectie~\ref{sec:merge}.
+
+\subsection*{Herhaling: foutmeldingen lezen}
+
+Het notebook start met een kapotte cel die je moet herstellen. Een
+foutmelding ziet er eng uit, maar de belangrijkste informatie staat
+altijd op de \textbf{laatste regel}: het soort fout en een korte uitleg.
+Twee fouten die je vandaag zeker tegenkomt:
+
+\begin{python}[error]
+athletes["positio"]
+\end{python}
+
+Een \code{KeyError} betekent: deze sleutel (hier: kolomnaam) bestaat
+niet. Bijna altijd een tikfout.
+
+\begin{python}[error]
+pd.Series(["57,5", "60,3"]).astype(float)
+\end{python}
+
+Een \code{ValueError} bij \code{astype(float)} betekent: deze tekst kan
+ik niet omzetten naar een getal. Hier staat de komma in de weg.
+
+% ---------------------------------------------------------------------------
+\section{Groepen samenvatten met \code{groupby}}
+
+\subsection{Splitsen, toepassen, combineren}
+
+Stel dat de coach de gemiddelde leeftijd per positie wil kennen. In
+gedachten doe je drie dingen:
+
+\begin{enumerate}
+  \item \textbf{splitsen}: de atleten in vier groepjes verdelen, één per
+        positie;
+  \item \textbf{toepassen}: per groepje het gemiddelde berekenen;
+  \item \textbf{combineren}: de vier gemiddelden in één tabel zetten.
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[font=\small\sffamily, box/.style={rounded corners=2pt, minimum width=2.3cm, minimum height=0.6cm, text=white}]
+  \node[draw=none, fill=tint, rounded corners=3pt, minimum width=2.3cm, minimum height=3.2cm, text=pitch, align=center] (all) at (0,0) {alle\\atleten};
+  \foreach \p/\c/\y in {Forward/forward/1.2, Midfielder/midfielder/0.4, Defender/defender/-0.4, Goalkeeper/goalkeeper/-1.2} {
+    \node[box, fill=\c] (\p) at (3.6,\y) {\p};
+    \draw[-{Stealth}, muted] (all.east) -- (\p.west);
+    \node[text=muted, font=\small\itshape] (m\p) at (6.1,\y) {gemiddelde};
+    \draw[-{Stealth}, muted] (\p.east) -- (m\p.west);
+    \draw[-{Stealth}, muted] (m\p.east) -- (8.2,0);
+  }
+  \node[draw=none, fill=pitch, rounded corners=3pt, minimum width=2.1cm, minimum height=2.0cm, text=white, align=center] at (9.3,0) {één rij\\per positie};
+  \node[text=pitch, font=\small\bfseries\sffamily] at (1.8,2.1) {splitsen};
+  \node[text=pitch, font=\small\bfseries\sffamily] at (5.0,2.1) {toepassen};
+  \node[text=pitch, font=\small\bfseries\sffamily] at (8.4,2.1) {combineren};
+\end{tikzpicture}
+\end{center}
+
+In pandas is dat één regel. \code{groupby("position")} splitst,
+\code{["age"]} kiest de kolom, \code{.mean()} past het gemiddelde toe en
+combineert:
+
+\begin{python}
+mean_age_per_position = athletes.groupby("position")["age"].mean().round(1)
+mean_age_per_position
+\end{python}
+
+Het resultaat is een Series met de posities als \emph{index}. In plaats
+van \code{.mean()} kun je ook \code{.median()}, \code{.min()},
+\code{.max()}, \code{.sum()} of \code{.count()} gebruiken.
+
+\begin{opgelet}[\code{size()} of \code{count()}?]
+\code{.size()} telt het aantal rijen per groep. \code{.count()} telt het
+aantal \emph{ingevulde} waarden in een kolom en slaat \code{NaN} over.
+Wil je weten hoeveel atleten er per positie zijn, gebruik dan
+\code{.size()}.
+\end{opgelet}
+
+\begin{python}
+athletes.groupby("position").size()
+\end{python}
+
+\subsection{Getallen in categorieën: \code{pd.cut}}
+
+Jeugdploegen worden ingedeeld in leeftijdscategorieën: U13, U15, U17,
+U19. \code{pd.cut} verdeelt een getallenkolom in vakjes. Je geeft de
+grenzen (\code{bins}) en de namen van de vakjes (\code{labels}) mee:
+
+\begin{python}
+athletes_with_age_group = athletes.assign(
+    age_group=lambda d: pd.cut(
+        d["age"], bins=[10, 12, 14, 16, 18], labels=["U13", "U15", "U17", "U19"]
+    )
+)
+athletes_with_age_group[["name", "age", "age_group"]].head()
+\end{python}
+
+Vijf grenzen maken vier vakjes: van 10 tot 12, van 12 tot 14, enzovoort.
+Een vakje bevat zijn \emph{rechtergrens} maar niet zijn linkergrens: een
+atleet van 12 valt in U13 (10 tot en met 12), een atleet van 13 in U15.
+Er is dus altijd één label minder dan er grenzen zijn.
+
+\subsection{Groeperen op meerdere kolommen en \code{agg}}
+
+Je kunt op twee kolommen tegelijk groeperen door een lijst mee te geven.
+Met \code{.agg(...)} bereken je meerdere statistieken in één keer en geef
+je elke nieuwe kolom zelf een naam:
+
+\begin{python}
+athletes_with_age_group.groupby(["position", "age_group"], observed=True).agg(
+    n_athletes=("athlete_id", "size"),
+    mean_height_cm=("height_cm", "mean"),
+)
+\end{python}
+
+Lees \code{mean\_height\_cm=("height\_cm", "mean")} als: ``maak een
+kolom \code{mean\_height\_cm}, door op de kolom \code{height\_cm} de
+functie \code{mean} toe te passen''. Een paar extra dingen:
+
+\begin{itemize}
+  \item De index heeft nu twee niveaus (positie en leeftijdscategorie):
+        een \emph{MultiIndex}. Met \code{.reset\_index()} maak je er weer
+        gewone kolommen van.
+  \item \code{age\_group} is een \emph{categorische} kolom (gemaakt door
+        \code{pd.cut}). \code{observed=True} zorgt ervoor dat combinaties
+        zonder atleten (bv.\ keepers in U13) niet als lege rij verschijnen.
+\end{itemize}
+
+\begin{probeer}
+Bereken de maximale lengte per positie. Groepeer daarna op geslacht en
+tel met \code{.size()} hoeveel jongens en meisjes er zijn.
+\end{probeer}
+
+% ---------------------------------------------------------------------------
+\section{Tabellen koppelen met \code{merge}}\label{sec:merge}
+
+\subsection{Een sleutel in twee tabellen}
+
+\code{athletes} weet van elke atleet de positie, \code{tests} kent de
+sprinttijden. Om de sprinttijd per positie te bekijken, moet je de twee
+koppelen. Dat kan omdat beide tabellen een kolom \code{athlete\_id}
+hebben: de \textbf{sleutel}.
+
+Een klein voorbeeld maakt duidelijk wat er gebeurt:
+
+\begin{python}
+people = pd.DataFrame({"athlete_id": ["A1", "A2", "A3"],
+                       "name": ["Yana", "Stan", "Emma"]})
+results = pd.DataFrame({"athlete_id": ["A1", "A1", "A2", "A9"],
+                        "sprint_s": [5.3, 5.2, 5.9, 6.1]})
+people.merge(results, on="athlete_id", how="inner")
+\end{python}
+
+Voor elke rij in \code{people} zoekt pandas de rijen in \code{results}
+met dezelfde \code{athlete\_id}. Yana heeft twee resultaten, dus ze
+verschijnt twee keer. Emma (A3) heeft geen resultaat en A9 heeft geen
+naam: met \code{how="inner"} vallen ze allebei weg.
+
+\begin{python}
+people.merge(results, on="athlete_id", how="left")
+\end{python}
+
+Met \code{how="left"} blijft \emph{elke} rij van de linkertabel
+behouden. Emma staat erin, met \code{NaN} als sprinttijd.
+
+\begin{kernidee}[De soorten joins]
+\textbf{inner}: alleen sleutels die in beide tabellen staan.
+\textbf{left}: alle rijen van de linkertabel, aangevuld waar mogelijk.
+\textbf{right}: hetzelfde, vanuit de rechtertabel.
+\textbf{outer}: alles uit beide tabellen.
+Controleer na elke merge het aantal rijen: dat vertelt je of er iets
+wegviel of verdubbelde.
+\end{kernidee}
+
+Met de echte data:
+
+\begin{python}
+merged_inner = athletes.merge(tests, on="athlete_id", how="inner")
+merged_left = athletes.merge(tests, on="athlete_id", how="left")
+(len(athletes), len(tests), len(merged_inner), len(merged_left))
+\end{python}
+
+Hier zijn beide even lang, omdat elke atleet minstens één testresultaat
+heeft. Met echte data is dat zelden gegarandeerd.
+
+\subsection{De dubbele atleet}
+
+Eén atleet staat twee keer in \code{athletes}, met twee verschillende
+ID's. Je vindt die rijen met \code{duplicated}; met \code{keep=False}
+worden \emph{alle} exemplaren gemarkeerd, niet alleen de tweede:
+
+\begin{python}
+same_person = athletes.duplicated(subset=["name", "birthdate"], keep=False)
+athletes.loc[same_person, ["athlete_id", "name", "birthdate"]]
+\end{python}
+
+De merge doet perfect wat gevraagd is, maar weet niet dat het om dezelfde
+persoon gaat. Na de merge staan de testen van die atleet onder twee ID's:
+
+\begin{python}
+dupe_name = athletes.loc[same_person, "name"].iloc[0]
+merged_inner.loc[merged_inner["name"] == dupe_name,
+                 ["athlete_id", "name", "test_moment", "sprint_30m_s"]]
+\end{python}
+
+Elke statistiek die je na deze merge berekent, telt deze atleet dubbel.
+De oplossing: verwijder de dubbels \emph{vóór} de merge, op naam en
+geboortedatum. Na de merge kan dat niet meer, want dan delen ook de
+verschillende testmomenten van één atleet dezelfde naam en
+geboortedatum: je zou echte testresultaten weggooien.
+
+\begin{python}
+athletes_unique = athletes.drop_duplicates(subset=["name", "birthdate"], keep="first")
+combined = athletes_unique.merge(tests, on="athlete_id", how="inner")
+combined.shape
+\end{python}
+
+\subsection{Verzamelingen en \code{isin}}
+
+Om te weten welke rijen bij het ontdubbelen verdwenen, heb je twee
+hulpmiddelen nodig.
+
+Een \textbf{verzameling} (\code{set}) is een lijst zonder dubbels en
+zonder volgorde. Het verschil van twee verzamelingen (\code{a - b}) geeft
+de elementen die in \code{a} zitten maar niet in \code{b}:
+
+\begin{python}
+set(["A1", "A2", "A3"]) - set(["A2"])
+\end{python}
+
+\code{.isin(...)} geeft een masker dat \code{True} is voor elke rij
+waarvan de waarde in de opgegeven lijst of verzameling staat:
+
+\begin{python}
+results["athlete_id"].isin({"A1", "A9"})
+\end{python}
+
+Met deze twee bouwstenen (en \code{.sum()} op een masker) kun je
+oefening 2 in het notebook oplossen.
+
+% ---------------------------------------------------------------------------
+\section{Lang en breed: \code{pivot\_table} en \code{melt}}
+
+\subsection{Twee vormen voor dezelfde data}
+
+\code{combined} is \textbf{lang}: één rij per atleet \emph{per
+testmoment}. Een atleet met drie testen staat er drie keer in. Dezelfde
+informatie kan ook \textbf{breed}: één rij per atleet, met een kolom per
+testmoment.
+
+\begin{python}
+sprint_wide = combined.pivot_table(
+    index="athlete_id", columns="test_moment", values="sprint_30m_s"
+)
+sprint_wide.head()
+\end{python}
+
+De drie argumenten lees je zo:
+\begin{itemize}
+  \item \code{index}: wat wordt een rij (één per atleet);
+  \item \code{columns}: welke waarden worden kolommen (de testmomenten
+        1, 2 en 3);
+  \item \code{values}: welke waarde komt in de cellen (de sprinttijd).
+\end{itemize}
+
+Ontbreekt een combinatie, dan krijg je \code{NaN}. Zijn er meerdere rijen
+voor dezelfde combinatie, dan neemt \code{pivot\_table} standaard het
+gemiddelde.
+
+\subsection{Waarom breed handig is}
+
+In de brede vorm is vooruitgang tussen twee testmomenten één
+aftrekking. Let op: de kolomnamen zijn hier \emph{getallen}, geen tekst.
+Je schrijft dus \code{sprint\_wide[2]}, niet \code{sprint\_wide["2"]}.
+
+\begin{python}
+sprint_progress_1_to_2 = sprint_wide[2] - sprint_wide[1]
+sprint_progress_1_to_2.describe()
+\end{python}
+
+Een negatief getal betekent hier vooruitgang: een lagere sprinttijd is
+sneller. Bij spronghoogte is het omgekeerd: daar is hoger beter.
+
+\subsection{Terug naar lang: \code{melt}}
+
+\code{melt} doet het omgekeerde van \code{pivot\_table}: kolommen worden
+weer rijen. Plotly express (labo 5) werkt het liefst met lange data.
+Eerst maak je met \code{.reset\_index()} van de index weer een gewone
+kolom:
+
+\begin{python}
+sprint_long_again = sprint_wide.reset_index().melt(
+    id_vars="athlete_id", var_name="test_moment", value_name="sprint_30m_s"
+)
+sprint_long_again.head()
+\end{python}
+
+\code{id\_vars} zijn de kolommen die blijven staan, \code{var\_name} is
+de naam van de nieuwe kolom met de vroegere kolomnamen, \code{value\_name}
+de naam van de kolom met de waarden.
+
+% ---------------------------------------------------------------------------
+\section{Tijdreeksen: de hartslag tijdens een training}
+
+\code{hr\_session.csv} bevat per seconde de hartslag en snelheid van vijf
+atleten tijdens één training. Een tabel waarin elke rij een moment in de
+tijd is, heet een \textbf{tijdreeks}.
+
+\subsection{Een tijdstempel maken}
+
+Het bestand heeft een datum en het aantal seconden sinds de start
+(\code{time\_s}). Samen maken ze een tijdstempel.
+\code{pd.to\_timedelta(..., unit="s")} zet een aantal seconden om in een
+tijdsduur, die je bij een datum kunt optellen:
+
+\begin{python}
+hr_session = pd.read_csv(f"{DATA_DIR}/hr_session.csv")
+hr_session["timestamp"] = pd.to_datetime(hr_session["date"]) + pd.to_timedelta(
+    hr_session["time_s"], unit="s"
+)
+hr_session.head(3)
+\end{python}
+
+\subsection{Hartslagzones}
+
+Trainers drukken intensiteit uit als percentage van de \emph{maximale}
+hartslag. Een veelgebruikte vuistregel schat die als 220 min de leeftijd.
+De leeftijd staat in \code{athletes}, dus eerst een merge:
+
+\begin{python}
+ages = athletes[["athlete_id", "age"]]
+hr_with_age = hr_session.merge(ages, on="athlete_id", how="left")
+hr_with_age["hr_max"] = 220 - hr_with_age["age"]
+hr_with_age["pct_hr_max"] = (
+    100 * hr_with_age["heart_rate_bpm"] / hr_with_age["hr_max"]
+)
+hr_with_age[["athlete_id", "heart_rate_bpm", "hr_max", "pct_hr_max"]].head(3)
+\end{python}
+
+Met \code{pd.cut} deel je het percentage in vijf zones in. Het merkwaardige
+getal 1000 als laatste grens zorgt ervoor dat ook een percentage boven
+100 nog in zone 5 valt:
+
+\begin{python}
+hr_zoned = hr_with_age.assign(
+    hr_zone=lambda d: pd.cut(
+        d["pct_hr_max"],
+        bins=[0, 60, 70, 80, 90, 1000],
+        labels=["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"],
+    )
+)
+hr_zoned["hr_zone"].value_counts()
+\end{python}
+
+\subsection{Tijd per zone}
+
+Elke rij is één seconde. Het aantal rijen per atleet en per zone, gedeeld
+door 60, geeft dus het aantal minuten:
+
+\begin{python}
+time_per_zone_minutes = (
+    hr_zoned.groupby(["athlete_id", "hr_zone"], observed=True).size() / 60
+).rename("minutes").reset_index()
+time_per_zone_minutes.head(5)
+\end{python}
+
+Wil je enkel bepaalde zones, filter dan eerst de rijen met
+\code{.isin([...])} en groepeer daarna. Dat is de kern van oefening 4.
+
+\subsection{Voortschrijdend gemiddelde en hersampling}
+
+Een hartslag per seconde springt op en neer. Twee technieken maken de
+reeks rustiger. Beide hebben een tijdreeks nodig die \emph{gesorteerd} is
+op tijd, met de tijd als index (\code{set\_index("timestamp")}):
+
+\begin{python}[noout]
+one_athlete = hr_zoned.loc[hr_zoned["athlete_id"] == "A001"]
+one_athlete = one_athlete.sort_values("timestamp")
+hr_series = one_athlete.set_index("timestamp")["heart_rate_bpm"]
+\end{python}
+
+Een \textbf{voortschrijdend gemiddelde} (\code{rolling}) berekent op elk
+moment het gemiddelde van de voorbije 30 seconden. Je houdt even veel
+rijen, maar de lijn wordt vloeiender:
+
+\begin{python}
+hr_series.rolling("30s").mean().iloc[[0, 1, 29, 30, 31]]
+\end{python}
+
+\textbf{Hersampling} (\code{resample}) groepeert de tijdreeks in vaste
+blokken, hier van één minuut, en vat elk blok samen. Je krijgt veel
+minder rijen: één per minuut.
+
+\begin{python}
+hr_series.resample("1min").mean().head(4)
+\end{python}
+
+\begin{kernidee}[\code{rolling} of \code{resample}?]
+\code{rolling} geeft een waarde per oorspronkelijke rij (een glijdend
+venster); handig om een grafiek vloeiender te maken.
+\code{resample} geeft een waarde per tijdsblok; handig om per minuut of
+per kwartier samen te vatten. Je kunt \code{resample} zien als een
+\code{groupby} op tijd.
+\end{kernidee}
+
+% ---------------------------------------------------------------------------
+\section{De minicase: een trainingsrapport}
+
+In de minicase (per twee) maak je één rij per atleet met de minuten in
+zone 4--5, de maximale snelheid en de afgelegde afstand. Twee ideeën
+helpen je daarbij.
+
+\textbf{Afstand uit snelheid.} De snelheid staat in km/u en er is één
+meting per seconde. In één seconde leg je dus \code{speed\_kmh / 3600}
+kilometer af. De som van die afstanden over de hele training is de totale
+afstand.
+
+\textbf{Series combineren via de index.} Als twee Series dezelfde index
+hebben (bv.\ de \code{athlete\_id}), plaatst pandas de waarden bij een
+toewijzing of berekening automatisch naast de juiste rij, ook al is de
+volgorde anders. Dat heet \emph{uitlijnen op de index}:
+
+\begin{python}
+report = pd.DataFrame({"max_speed": [27.1, 24.5]}, index=["A002", "A001"])
+extra = pd.Series([10.0, 12.5], index=["A001", "A002"])
+report["minutes"] = extra
+report
+\end{python}
+
+A001 krijgt 10.0 en A002 krijgt 12.5, ook al stonden ze in
+\code{extra} in een andere volgorde dan in \code{report}.
+
+% ---------------------------------------------------------------------------
+\section{Samenvatting}
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{8.4cm}Y@{}}
+\toprule
+\textbf{Code} & \textbf{Wat het doet} \\
+\midrule
+\code{df.groupby("a")["b"].mean()} & gemiddelde van \code{b} per waarde van \code{a} \\
+\code{df.groupby("a").size()} & aantal rijen per groep \\
+\code{df.groupby(["a", "b"]).agg(naam=("kol", "mean"))} & meerdere benoemde statistieken per groep \\
+\code{pd.cut(kol, bins=..., labels=...)} & getallen indelen in categorieën \\
+\code{.reset\_index()} & index terug omzetten naar gewone kolommen \\
+\code{links.merge(rechts, on="sleutel", how="inner")} & twee tabellen koppelen op een sleutel \\
+\code{set(a) - set(b)}, \code{kol.isin(lijst)} & verschil van verzamelingen, masker ``zit in'' \\
+\code{df.pivot\_table(index=, columns=, values=)} & van lang naar breed \\
+\code{df.melt(id\_vars=, var\_name=, value\_name=)} & van breed naar lang \\
+\code{pd.to\_timedelta(kol, unit="s")} & aantal seconden naar tijdsduur \\
+\code{s.rolling("30s").mean()} & voortschrijdend gemiddelde over 30 seconden \\
+\code{s.resample("1min").mean()} & gemiddelde per blok van één minuut \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Veelgemaakte fouten}
+
+\begin{itemize}
+  \item Na een merge het aantal rijen niet controleren.
+  \item Dubbels verwijderen \emph{na} de merge in plaats van ervoor.
+  \item \code{.count()} gebruiken om rijen te tellen terwijl er
+        ontbrekende waarden zijn; gebruik \code{.size()}.
+  \item Kolomnamen na een \code{pivot\_table} als tekst schrijven
+        (\code{wide["2"]}) terwijl het getallen zijn (\code{wide[2]}).
+  \item \code{rolling} of \code{resample} gebruiken op data die niet op
+        tijd gesorteerd is, of zonder tijdsindex.
+\end{itemize}
+
+\subsection*{Begrippen}
+
+\begin{description}[leftmargin=3.2cm, labelwidth=3.0cm, font=\normalfont\bfseries]
+  \item[groupby] splitsen in groepen, per groep iets berekenen, en de resultaten combineren.
+  \item[aggregatie] een groep waarden samenvatten tot één waarde (gemiddelde, som, aantal).
+  \item[MultiIndex] index met meerdere niveaus, bv.\ positie en leeftijdscategorie.
+  \item[sleutel] kolom waarmee je twee tabellen koppelt.
+  \item[join] manier van koppelen: inner, left, right of outer.
+  \item[lang / breed] één rij per meting, of één rij per atleet met een kolom per meting.
+  \item[tijdreeks] tabel waarin elke rij een moment in de tijd is.
+\end{description}
+
+\end{document}

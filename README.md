@@ -12,6 +12,10 @@ generate_data.py       script that generates data/ (synthetic, seeded)
 requirements.txt       Python dependencies (marimo, pandas, plotly, numpy)
 labs/                  student notebooks — hand these out
 solutions/             instructor answer keys — same notebooks, fully solved
+checks/                answer checks loaded by the notebooks
+cursus/                course texts (PDF, in Flemish) for labs 3-5
+slides/                slide deck for labs 3-5
+syllabus/              syllabus for labs 3-5 (LaTeX + PDF)
 ```
 
 ## The datasets (`data/`)
@@ -127,6 +131,27 @@ solution (and the deliberately broken cells in Labs 1 and 4 already fixed). Use 
 Every exercise in every solutions file has been verified to actually
 trigger its own "Correct!" callout — not just "runs without crashing."
 
+## `cursus/` — course texts
+
+One PDF per lab (`labo3_...pdf`, `labo4_...pdf`, `labo5_...pdf`) that
+explains the concepts behind the notebook from scratch, for students with
+little Python experience. They explain the demos and use their own
+examples, so they don't give away the exercise answers.
+
+The sources are in `cursus/sources/`. They are LaTeX with `\begin{python}`
+blocks that `cursus/build.py` actually runs against `data/`, so every
+output and chart in the PDFs is real. Rebuild after changing the data or
+a text:
+
+```bash
+pip install pandas plotly kaleido pygments
+python cursus/build.py            # all labs, or e.g. labo4_dataverwerking_II
+```
+
+This needs `tectonic` (or `xelatex` with `latexmk`) and, for the charts,
+a Chrome/Chromium browser for kaleido. Generated files go to
+`cursus/build/`, which is git-ignored.
+
 ## If you change something
 
 - **Edit a lab's markdown/demo content:** mirror the same edit in the
@@ -137,6 +162,8 @@ trigger its own "Correct!" callout — not just "runs without crashing."
 - **Regenerate `data/`:** re-verify both the lab checks and solutions still
   pass — some checks depend on exact counts (e.g. "exactly one duplicate
   athlete", "5 goalkeepers") that assume the current generator output.
+- **Change a demo or the data:** rebuild the course texts in `cursus/`
+  and reread any sentence that quotes a number from the output.
 - Run `marimo check path/to/notebook.py` after any manual edit to a
   notebook file — it catches structural issues (e.g. a cell reading a
   variable no other cell defines) before you open it in the browser.

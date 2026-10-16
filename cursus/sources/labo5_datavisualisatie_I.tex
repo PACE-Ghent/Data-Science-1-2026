@@ -1,0 +1,496 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{cursus}
+\author{dr. Maarten Slembrouck}
+
+\begin{document}
+
+\labotitel{Labo 5 -- Datavisualisatie I}{Vertel het verhaal met plotly}{Cursustekst bij het notebook \code{lab5\_data\_visualization\_I.py}}
+
+\section*{Waarover gaat dit labo?}
+
+In twee labo's maakte je van rommelige exports nette, gecombineerde
+tabellen. Maar een coach leest geen tabel met 111 rijen. Een goede
+grafiek toont in één oogopslag wat in de tabel verborgen zit: wie het
+snelst is, wie vooruitgaat, hoe zwaar een training was.
+
+\textbf{Na dit labo kun je} een grafiektype kiezen dat past bij een
+vraag, de standaardgrafieken maken met \code{plotly.express}, extra
+informatie tonen met kleur, facetten en grootte, en grafieken
+interactief maken in marimo.
+
+Alle grafieken in deze tekst zijn gemaakt met de code die erboven staat,
+op de data van de club. In het notebook zijn ze interactief: je kunt
+inzoomen en met de muis over een punt gaan voor meer informatie.
+
+\begin{python}[hide]
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+pio.templates.default = "plotly_white"
+
+def clean_positions(position_column):
+    position_map = {
+        "forward": "Forward", "fwd": "Forward",
+        "midfielder": "Midfielder", "mid": "Midfielder",
+        "defender": "Defender", "def": "Defender",
+        "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
+    }
+    return position_column.str.strip().str.lower().map(position_map)
+
+def fix_sprint_units(seconds_column):
+    return seconds_column.where(seconds_column < 20, seconds_column / 1000)
+
+REFERENCE_DATE = pd.Timestamp("2026-09-14")
+athletes = pd.read_csv(f"{DATA_DIR}/athletes.csv").assign(
+    position=lambda d: clean_positions(d["position"]),
+    weight_kg=lambda d: d["weight_kg"].str.replace(",", ".").astype(float),
+    age=lambda d: (REFERENCE_DATE - pd.to_datetime(d["birthdate"])).dt.days // 365,
+).drop_duplicates(subset=["name", "birthdate"], keep="first")
+tests = pd.read_csv(f"{DATA_DIR}/tests.csv").assign(
+    sprint_10m_s=lambda d: fix_sprint_units(d["sprint_10m_s"]),
+    sprint_30m_s=lambda d: fix_sprint_units(d["sprint_30m_s"]),
+)
+combined = athletes.merge(tests, on="athlete_id", how="inner")
+hr_session = pd.read_csv(f"{DATA_DIR}/hr_session.csv")
+hr_session["timestamp"] = pd.to_datetime(hr_session["date"]) + pd.to_timedelta(hr_session["time_s"], unit="s")
+hr_with_age = hr_session.merge(athletes[["athlete_id", "age", "name"]], on="athlete_id", how="left")
+hr_with_age["hr_max"] = 220 - hr_with_age["age"]
+hr_with_age["pct_hr_max"] = 100 * hr_with_age["heart_rate_bpm"] / hr_with_age["hr_max"]
+hr_zoned = hr_with_age.assign(hr_zone=lambda d: pd.cut(
+    d["pct_hr_max"], bins=[0, 60, 70, 80, 90, 1000],
+    labels=["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"]))
+\end{python}
+
+% ---------------------------------------------------------------------------
+\section{De data voor dit labo}
+
+Het notebook begint met één cel die de volledige opkuis van labo 3 en 4
+herhaalt. Daarna heb je twee tabellen:
+
+\begin{itemize}
+  \item \code{combined}: één rij per atleet per testmoment, met positie,
+        geslacht, gewicht, sprinttijden, spronghoogte en Yo-Yo-niveau;
+  \item \code{hr\_zoned}: de training per seconde, met hartslag,
+        snelheid, naam en hartslagzone.
+\end{itemize}
+
+\begin{python}
+combined.shape, hr_zoned.shape
+\end{python}
+
+Beide zijn \textbf{lang}: één rij per meting. Dat is precies de vorm die
+\code{plotly.express} verwacht (zie labo 4).
+
+Daarnaast legt het notebook vooraf één kleur per positie vast, in een
+dictionary. Zo is ``Forward'' in elke grafiek dezelfde kleur, en moet de
+lezer de legende maar één keer leren.
+
+\begin{python}[noout]
+POSITION_COLORS = {
+    "Forward": "#2a78d6",
+    "Midfielder": "#eb6834",
+    "Defender": "#1baf7a",
+    "Goalkeeper": "#eda100",
+}
+\end{python}
+
+Een kleur schrijf je als \emph{hexcode}: een hekje gevolgd door zes
+tekens, twee voor rood, twee voor groen en twee voor blauw.
+
+% ---------------------------------------------------------------------------
+\section{Principes: de juiste grafiek voor de juiste vraag}
+
+Elke grafiek beantwoordt een vraag. Begin daarom bij de vraag, niet bij
+het grafiektype dat je toevallig kent.
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{2.8cm}Y L{3.3cm}@{}}
+\toprule
+\textbf{Soort vraag} & \textbf{Voorbeeld} & \textbf{Geschikte grafiek} \\
+\midrule
+Verdeling & Hoe zijn de sprinttijden gespreid? & histogram, boxplot \\
+Vergelijking & Welke positie springt gemiddeld het hoogst? & staafdiagram, boxplot \\
+Verband & Betekent een snellere sprint een hogere sprong? & spreidingsdiagram \\
+Evolutie & Stijgt de hartslag van deze atleet? & lijngrafiek \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Eerlijke assen}
+
+Een grafiek kan even goed misleiden als informeren. De bekendste valkuil
+is een \textbf{afgeknotte as}. Hieronder twee keer dezelfde gemiddelden.
+In de eerste grafiek begint de y-as bij 0:
+
+\begin{python}[fig=eerlijk]
+sprint_means = combined.groupby("position", as_index=False)["sprint_30m_s"].mean()
+fig = px.bar(
+    sprint_means, x="position", y="sprint_30m_s",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="Gemiddelde sprinttijd over 30 m per positie",
+    labels={"sprint_30m_s": "Gemiddelde sprinttijd (s)", "position": "Positie"},
+)
+fig.update_yaxes(rangemode="tozero")
+\end{python}
+
+\code{as\_index=False} zorgt ervoor dat \code{position} een gewone kolom
+blijft (en geen index wordt), zodat je ze als \code{x} kunt gebruiken.
+In de tweede grafiek begint de y-as net onder de kleinste waarde:
+
+\begin{python}[fig=misleidend]
+fig = px.bar(
+    sprint_means, x="position", y="sprint_30m_s",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="MISLEIDEND - gemiddelde sprinttijd over 30 m per positie",
+    labels={"sprint_30m_s": "Gemiddelde sprinttijd (s)", "position": "Positie"},
+)
+fig.update_yaxes(range=[5.1, 5.55])
+\end{python}
+
+Dezelfde kleine verschillen (hooguit 0,3 seconden) lijken nu enorm. Een
+staaf toont een grootte met haar \emph{lengte}; dan moet die lengte bij
+nul beginnen. Om dezelfde reden gebruik je nooit twee verschillende
+y-assen in één grafiek: de lezer kan de twee schalen niet vergelijken.
+
+% ---------------------------------------------------------------------------
+\section{Grafieken maken met \code{plotly.express}}
+
+\code{plotly.express} is een bibliotheek om met weinig code interactieve
+grafieken te maken. Je importeert ze als \code{px}:
+
+\begin{python}[noout]
+import plotly.express as px
+\end{python}
+
+Elke functie volgt hetzelfde patroon:
+
+\begin{python}[noeval]
+fig = px.SOORT(tabel, x="kolom", y="kolom", color="kolom",
+               title="...", labels={"kolom": "Leesbare naam"})
+\end{python}
+
+\begin{itemize}
+  \item de \textbf{tabel} komt eerst; daarna verwijs je naar kolommen met
+        hun naam, als tekst;
+  \item \code{title} is de titel boven de grafiek;
+  \item \code{labels} is een dictionary die kolomnamen vertaalt naar
+        leesbare aslabels, mét eenheid: ``Sprinttijd (s)'' in plaats van
+        \code{sprint\_30m\_s};
+  \item het resultaat is een \textbf{figuur}-object. Zet je de variabele
+        als laatste regel in een cel, dan toont marimo de grafiek.
+\end{itemize}
+
+\subsection{Histogram: hoe is één variabele verdeeld?}
+
+Een histogram verdeelt de waarden in vakjes en toont hoeveel waarden in
+elk vakje vallen. \code{nbins} kiest het (ongeveer) aantal vakjes.
+
+\begin{python}[fig=histogram]
+fig = px.histogram(
+    athletes, x="height_cm", nbins=15,
+    title="Verdeling van de lengte van de atleten",
+    labels={"height_cm": "Lengte (cm)"},
+)
+\end{python}
+
+Een histogram heeft maar één kolom nodig (\code{x}); de y-as is het
+aantal atleten per vakje, dat telt plotly zelf. Speel met \code{nbins}:
+te weinig vakjes verbergen details, te veel maken de grafiek rommelig.
+
+\subsection{Boxplot: verdelingen vergelijken}
+
+Een boxplot vat een verdeling samen in vijf getallen. Zo lees je hem:
+
+\begin{itemize}
+  \item de \textbf{lijn in de doos} is de mediaan: de helft van de
+        waarden ligt eronder, de helft erboven;
+  \item de \textbf{doos} loopt van het eerste tot het derde kwartiel: de
+        middelste helft van de waarden;
+  \item de \textbf{snorharen} (\emph{whiskers}) lopen tot de laagste en
+        hoogste waarde die niet uitzonderlijk ver van de doos liggen;
+  \item \textbf{losse punten} zijn uitschieters.
+\end{itemize}
+
+\begin{python}[fig=boxplot]
+fig = px.box(
+    combined, x="position", y="sprint_30m_s",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="Sprinttijd over 30 m per positie",
+    labels={"sprint_30m_s": "Sprinttijd (s)", "position": "Positie"},
+    hover_data=["name"],
+)
+\end{python}
+
+\code{hover\_data=["name"]} voegt de naam toe aan het informatievenster
+dat verschijnt als je met de muis over een punt gaat. Zo zie je in het
+notebook meteen wie die uitschieter is.
+
+\subsection{Spreidingsdiagram: is er een verband?}
+
+In een spreidingsdiagram is elke rij een punt, met de ene variabele op de
+x-as en de andere op de y-as.
+
+\begin{python}[fig=scatter]
+fig = px.scatter(
+    combined, x="sprint_30m_s", y="cmj_height_cm",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="Sprinttijd tegenover spronghoogte",
+    labels={"sprint_30m_s": "Sprinttijd 30 m (s)", "cmj_height_cm": "Spronghoogte (cm)"},
+    hover_data=["name", "test_moment"],
+)
+\end{python}
+
+De punten vormen een brede wolk zonder duidelijke richting. Als er een
+sterk verband was, zouden ze rond een schuine lijn liggen: dalend als
+snellere sprinters (een lagere tijd) ook hoger springen. Hier is dat niet
+zo: in deze data zegt de sprinttijd weinig over de spronghoogte. Ook
+``geen duidelijk verband'' is een antwoord op de vraag van de coach. En
+zie je wel een verband, onthoud dan dat dat nog geen bewijs is dat het
+ene het andere veroorzaakt.
+
+\subsection{Lijngrafiek: hoe verandert iets?}
+
+Een lijngrafiek verbindt opeenvolgende punten. Daarvoor moet de data
+\textbf{gesorteerd} zijn op de x-as, anders springt de lijn heen en weer.
+Met \code{color="athlete\_id"} krijgt elke atleet een eigen lijn:
+
+\begin{python}[fig=lijn]
+fig = px.line(
+    combined.sort_values("test_moment"), x="test_moment", y="sprint_30m_s",
+    color="athlete_id",
+    title="Sprinttijd over 30 m doorheen het seizoen, per atleet",
+    labels={"sprint_30m_s": "Sprinttijd (s)", "test_moment": "Testmoment"},
+)
+fig.update_layout(showlegend=False)
+\end{python}
+
+Met \code{update\_layout(showlegend=False)} verberg je de legende: met 42
+atleten zou die meer plaats innemen dan de grafiek zelf. Dit werkt zonder
+\code{pivot\_table}, omdat \code{combined} al lang is.
+
+% ---------------------------------------------------------------------------
+\section{Meer dimensies: kleur, facetten en grootte}
+
+Een spreidingsdiagram toont twee variabelen. Met drie extra argumenten
+kun je er meer tonen:
+
+\begin{itemize}
+  \item \code{color="kolom"}: een categorie als kleur;
+  \item \code{facet\_col="kolom"}: één kleine grafiek per waarde, naast
+        elkaar, met dezelfde assen;
+  \item \code{size="kolom"}: een getal als grootte van het punt.
+\end{itemize}
+
+\begin{python}[fig=facet]
+fig = px.scatter(
+    combined, x="sprint_30m_s", y="cmj_height_cm",
+    color="position", color_discrete_map=POSITION_COLORS,
+    facet_col="gender", size="weight_kg",
+    title="Sprint tegenover sprong, per positie en geslacht",
+    labels={"sprint_30m_s": "Sprinttijd 30 m (s)", "cmj_height_cm": "Spronghoogte (cm)"},
+)
+\end{python}
+
+Vijf variabelen in één grafiek: sprinttijd, spronghoogte, positie,
+geslacht en gewicht. Merk het derde, lege paneel \code{gender=nan} op:
+bij een paar rijen ontbreekt het geslacht, en plotly maakt daar een eigen
+paneel voor. Wil je dat niet, laat die rijen dan eerst weg met
+\code{combined.dropna(subset=["gender"])}, en vertaal de paneeltitels
+met \code{labels=\{"gender": "Geslacht"\}}. Facetten zijn vaak duidelijker dan alles in één
+grafiek te proppen, omdat je de panelen naast elkaar kunt vergelijken.
+Maar meer is niet altijd beter: voeg een dimensie alleen toe als ze iets
+bijdraagt aan de vraag.
+
+% ---------------------------------------------------------------------------
+\section{De hartslag als tijdreeks, met zones}
+
+Een lijngrafiek van de hartslag wordt veel leesbaarder als je de
+hartslagzones als gekleurde banden op de achtergrond toont. Daarvoor
+dient \code{add\_hrect}: een horizontale rechthoek tussen twee waarden op
+de y-as.
+
+\begin{python}[fig=hartslag]
+ZONE_COLORS = {"Zone 1": "#cde2fb", "Zone 2": "#86b6ef", "Zone 3": "#3987e5",
+               "Zone 4": "#1c5cab", "Zone 5": "#0d366b"}
+one_athlete_hr = hr_zoned.loc[hr_zoned["athlete_id"] == "A001"].sort_values("timestamp")
+hr_max = one_athlete_hr["hr_max"].iloc[0]
+
+fig = px.line(
+    one_athlete_hr, x="timestamp", y="heart_rate_bpm",
+    title=f"Hartslag tijdens de training - {one_athlete_hr['name'].iloc[0]}",
+    labels={"heart_rate_bpm": "Hartslag (bpm)", "timestamp": "Tijd"},
+)
+zone_edges_pct = [0, 60, 70, 80, 90, 100]
+zone_names = ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"]
+for lo, hi, zone in zip(zone_edges_pct[:-1], zone_edges_pct[1:], zone_names):
+    fig.add_hrect(y0=lo / 100 * hr_max, y1=hi / 100 * hr_max,
+                  fillcolor=ZONE_COLORS[zone], opacity=0.35, line_width=0,
+                  annotation_text=zone, annotation_position="right")
+fig
+\end{python}
+
+De lus verdient wat uitleg:
+
+\begin{itemize}
+  \item \code{zone\_edges\_pct[:-1]} is de lijst zonder het laatste
+        element (0, 60, 70, 80, 90): de ondergrenzen.
+        \code{zone\_edges\_pct[1:]} is de lijst zonder het eerste element
+        (60, 70, 80, 90, 100): de bovengrenzen.
+  \item \code{zip(...)} loopt door drie lijsten tegelijk en geeft telkens
+        één element van elke lijst: eerst \code{(0, 60, "Zone 1")}, dan
+        \code{(60, 70, "Zone 2")}, enzovoort.
+  \item \code{lo / 100 * hr\_max} zet een percentage om naar een hartslag
+        in slagen per minuut.
+\end{itemize}
+
+In het notebook gebruik je \code{\_lo} in plaats van \code{lo}: in marimo
+blijft een naam die met \code{\_} begint binnen de cel, zodat hij niet
+botst met variabelen in andere cellen.
+
+% ---------------------------------------------------------------------------
+\section{Interactiviteit in marimo}
+
+\subsection{UI-elementen en \code{.value}}
+
+marimo heeft \textbf{UI-elementen}: keuzemenu's, schuifbalken,
+tekstvakken. Een UI-element is een gewone Python-variabele. Het
+belangrijkste kenmerk is \code{.value}: de waarde die de gebruiker op
+dit moment gekozen heeft.
+
+\begin{python}[noeval]
+athlete_picker = mo.ui.dropdown(
+    options=sorted(hr_zoned["name"].unique()),
+    value=sorted(hr_zoned["name"].unique())[0],
+    label="Atleet",
+)
+time_window = mo.ui.range_slider(
+    start=0, stop=2400, step=60, value=(0, 2400),
+    label="Tijdvenster (s)", show_value=True,
+)
+mo.hstack([athlete_picker, time_window])
+\end{python}
+
+\begin{itemize}
+  \item \code{options} zijn de keuzes; \code{value} is de beginkeuze.
+        \code{.unique()} geeft elke naam één keer, \code{sorted} zet ze
+        alfabetisch.
+  \item een \code{range\_slider} heeft twee handvatten; zijn
+        \code{.value} is een tuple, bv.\ \code{(0, 2400)}.
+  \item \code{mo.hstack([...])} zet elementen naast elkaar,
+        \code{mo.vstack([...])} onder elkaar.
+\end{itemize}
+
+In een \emph{andere} cel gebruik je de gekozen waarden om de data te
+filteren en de grafiek te maken:
+
+\begin{python}[noeval]
+selected_hr = hr_zoned.loc[
+    (hr_zoned["name"] == athlete_picker.value)
+    & hr_zoned["time_s"].between(*time_window.value)
+].sort_values("timestamp")
+
+reactive_hr_chart = px.line(selected_hr, x="timestamp", y="heart_rate_bpm",
+                            title=f"Hartslag - {athlete_picker.value}")
+reactive_hr_chart
+\end{python}
+
+\code{.between(a, b)} geeft een masker dat \code{True} is voor waarden
+van \code{a} tot en met \code{b}. Het sterretje in
+\code{between(*time\_window.value)} \emph{pakt de tuple uit}:
+\code{between(*(0, 2400))} is hetzelfde als \code{between(0, 2400)}.
+
+\begin{kernidee}[Waarom twee cellen?]
+marimo voert een cel opnieuw uit als een variabele waarvan ze afhangt
+verandert. Als je het keuzemenu verzet, verandert
+\code{athlete\_picker.value}, en voert marimo elke cel die
+\code{athlete\_picker} gebruikt opnieuw uit. De cel die het element
+\emph{maakt} mag de \code{.value} niet zelf lezen: dan zou het element
+bij elke keuze opnieuw gemaakt worden. Daarom: \textbf{maak een
+UI-element in de ene cel, lees zijn waarde in een andere}.
+\end{kernidee}
+
+\subsection{Selecteren in de grafiek (optioneel)}
+
+\code{mo.ui.plotly(figuur)} gaat nog een stap verder: als je in de
+grafiek punten selecteert met de box- of lassotool, zitten die punten in
+\code{.value}. Met \code{pd.DataFrame(selectable\_scatter.value)} krijg
+je ze als tabel.
+
+% ---------------------------------------------------------------------------
+\section{Het minidashboard}
+
+De opdracht van vandaag: een klein dashboard voor de coach, met
+\textbf{drie grafieken} en \textbf{één keuzemenu} waarop minstens één
+grafiek reageert. Het keuzemenu (\code{dashboard\_selector}, een keuze
+uit de posities) staat al klaar in het notebook. Je maakt een lijst
+\code{dashboard\_charts} met drie figuren.
+
+Een paar tips:
+
+\begin{itemize}
+  \item \textbf{Hergebruik.} Het doel is combineren, niet nieuwe
+        grafiektypes leren. Alles uit dit labo mag terugkomen.
+  \item \textbf{Eén vraag per grafiek.} Schrijf eerst voor elke grafiek op
+        welke vraag van de coach ze beantwoordt, en kies dan het type
+        (tabel in sectie 2).
+  \item \textbf{Filter met de selectie.} Filter de data met
+        \code{dashboard\_selector.value} voor je de grafiek maakt, zoals
+        bij de hartslaggrafiek hierboven.
+  \item \textbf{Afwerking.} Elke grafiek heeft een titel en leesbare
+        aslabels met eenheden, en gebruikt \code{POSITION\_COLORS} waar
+        posities voorkomen.
+  \item \textbf{Schikken.} Met \code{mo.vstack} en \code{mo.hstack} zet je
+        het keuzemenu en de grafieken netjes onder en naast elkaar.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Samenvatting}
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{7.6cm}Y@{}}
+\toprule
+\textbf{Code} & \textbf{Wat het doet} \\
+\midrule
+\code{px.histogram(df, x=, nbins=)} & verdeling van één variabele \\
+\code{px.box(df, x=, y=)} & verdelingen vergelijken per groep \\
+\code{px.scatter(df, x=, y=)} & verband tussen twee variabelen \\
+\code{px.line(df.sort\_values(x), x=, y=)} & evolutie; eerst sorteren \\
+\code{px.bar(df, x=, y=)} & waarden vergelijken; as vanaf 0 \\
+\code{title=}, \code{labels=\{...\}}, \code{hover\_data=[...]} & titel, leesbare aslabels, extra info bij hover \\
+\code{color=}, \code{color\_discrete\_map=} & categorie als kleur, met vaste kleuren \\
+\code{facet\_col=}, \code{size=} & panelen per waarde, getal als puntgrootte \\
+\code{fig.update\_yaxes(rangemode="tozero")} & y-as laten beginnen bij 0 \\
+\code{fig.add\_hrect(y0=, y1=, ...)} & horizontale band, bv.\ een hartslagzone \\
+\code{mo.ui.dropdown}, \code{mo.ui.range\_slider} & keuzemenu, schuifbalk met twee handvatten \\
+\code{element.value} & de huidige keuze van de gebruiker \\
+\code{mo.hstack}, \code{mo.vstack} & elementen naast of onder elkaar zetten \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Veelgemaakte fouten}
+
+\begin{itemize}
+  \item Een staafdiagram met een y-as die niet bij 0 begint.
+  \item Geen titel of geen eenheden op de assen.
+  \item Een lijngrafiek op data die niet gesorteerd is op de x-as.
+  \item Een UI-element maken en zijn \code{.value} in dezelfde cel lezen.
+  \item Elke grafiek eigen kleuren laten kiezen, zodat ``Forward'' in de
+        ene grafiek blauw is en in de andere oranje.
+\end{itemize}
+
+\subsection*{Begrippen}
+
+\begin{description}[leftmargin=3.2cm, labelwidth=3.0cm, font=\normalfont\bfseries]
+  \item[figuur] het object dat een \code{px}-functie teruggeeft; marimo toont het als grafiek.
+  \item[mediaan] middelste waarde: de helft ligt eronder, de helft erboven.
+  \item[kwartiel] grens van de laagste of hoogste 25\,\% van de waarden.
+  \item[uitschieter] waarde die ver van de andere ligt.
+  \item[facet] klein paneel met dezelfde assen, één per waarde van een kolom.
+  \item[UI-element] keuzemenu, schuifbalk of ander element waarmee de gebruiker iets kiest.
+\end{description}
+
+\end{document}
