@@ -1,0 +1,294 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[dutch]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{needspace}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------------------
+% Kleuren (zelfde palet als de slides)
+\definecolor{pitch}{HTML}{0F3D2E}
+\definecolor{accent}{HTML}{EB6834}
+\definecolor{muted}{HTML}{5B6B63}
+\definecolor{tint}{HTML}{EEF3EF}
+
+% Vul alles wat met \tbd gemarkeerd is in voor je dit uitdeelt.
+\newcommand{\tbd}[1]{\colorbox{accent!20}{\textcolor{accent!80!black}{\textsf{\small IN TE VULLEN: #1}}}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\titleformat{\section}{\Large\bfseries\color{pitch}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\large\bfseries\color{pitch}}{\thesubsection}{0.8em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.5em}
+\setlist{itemsep=0.25em, topsep=0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\color{muted}Data Science 1 -- Syllabus, labo's 3--5}
+\rhead{\small\color{muted}\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Een planningstabel: tijd | blok | wat je oefent
+\newenvironment{schedule}
+  {\par\noindent\rowcolors{2}{tint}{white}\tabularx{\textwidth}{@{}L{2.3cm}L{4.3cm}Y@{}}\toprule
+   \textbf{Tijd} & \textbf{Blok} & \textbf{Wat je oefent}\\\midrule}
+  {\bottomrule\endtabularx\par}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+\begin{center}
+  {\color{muted}\textsf{DATA SCIENCE 1 \textperiodcentered{} 2026--2027}}\\[0.6em]
+  {\Huge\bfseries\color{pitch} Van rommelige export tot coachdashboard}\\[0.6em]
+  {\large Syllabus voor labo 3, labo 4 en labo 5}
+\end{center}
+
+\vspace{1em}
+\noindent
+\begin{tabularx}{\textwidth}{@{}p{3.6cm}X@{}}
+\toprule
+Lesgever        & dr. Maarten Slembrouck \\
+Sessies         & Labo 3 \emph{Dataverwerking I}\\
+                & Labo 4 \emph{Dataverwerking II} \\
+                & Labo 5 \emph{Datavisualisatie I} \\
+Lesmateriaal    & \url{https://github.com/PACE-Ghent/Data-Science-1-2026} \\
+\bottomrule
+\end{tabularx}
+
+% ---------------------------------------------------------------------------
+\section{Overzicht}
+
+Tijdens deze drie sessies ben jij de nieuwe data-analist van een
+(fictieve) jeugdclub voor voetbal en atletiek. De hoofdtrainer bezorgt je
+drie exportbestanden uit de systemen van de club. Die zijn bewust
+rommelig, zoals echte exports: inconsistente labels, sprinttijden in
+milliseconden, ontbrekende waarden, een atleet die twee keer voorkomt en
+een kolom met een komma als decimaalteken.
+
+Elke sessie bouwt verder op de vorige:
+
+\begin{description}[leftmargin=1.6cm, style=nextline]
+  \item[Labo 3] \textbf{Van bestand tot nette tabel.} Inladen, verkennen,
+    filteren, kolommen toevoegen en opkuisen tot je de data kunt
+    vertrouwen.
+  \item[Labo 4] \textbf{Combineren, samenvatten, herschikken.} Groepen
+    samenvatten, tabellen koppelen, wisselen tussen een brede en een lange
+    vorm, en werken met een hartslagreeks per seconde.
+  \item[Labo 5] \textbf{Vertel het verhaal met plotly.} De juiste grafiek
+    kiezen voor een vraag, eerlijke grafieken maken met
+    \code{plotly.express} en ze combineren tot een klein interactief
+    dashboard.
+\end{description}
+
+% ---------------------------------------------------------------------------
+\section{Leerdoelen}
+
+Na deze drie sessies kun je:
+
+\begin{enumerate}[label=\textbf{LD\arabic*}, leftmargin=1.4cm]
+  \item een CSV-bestand inladen met \code{pandas} en de structuur, de
+        datatypes en de ontbrekende waarden beschrijven;
+  \item rijen en kolommen selecteren en filteren met logische
+        voorwaarden, en het resultaat sorteren;
+  \item nieuwe kolommen afleiden (leeftijd, snelheid, BMI) en tekst
+        omzetten naar getallen en datums;
+  \item een dataset opkuisen en elke keuze verantwoorden: inconsistente
+        tekstlabels, verkeerde eenheden, ontbrekende waarden en dubbels;
+  \item data per groep samenvatten met \code{groupby} en \code{agg}, en
+        tabellen koppelen met \code{merge} zonder dubbel te tellen;
+  \item data herschikken tussen een lange en een brede vorm met
+        \code{melt} en \code{pivot\_table};
+  \item eenvoudige kenmerken van een tijdreeks berekenen: hartslagzones,
+        voortschrijdende gemiddelden en hersampling;
+  \item een grafiektype kiezen dat bij de vraag past, en misleidende
+        grafieken herkennen, zoals een afgeknotte as;
+  \item met \code{plotly.express} histogrammen, boxplots,
+        spreidingsdiagrammen en lijngrafieken maken, met kleur, facetten
+        en grootte voor extra dimensies;
+  \item grafieken interactief maken met UI-elementen van marimo en ze
+        combineren tot een dashboard.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Voorkennis}
+
+Labo 1 en 2 (\emph{Introductie Python I en II}): variabelen en datatypes,
+operatoren, \code{if}/\code{elif}/\code{else}, functies,
+stringmethodes, lijsten, dictionaries, lussen en een CSV-bestand inlezen
+met de module \code{csv}. Labo 2 eindigt met een samenvatting van
+\code{athletes.csv} in gewone Python; in labo 3 zie je hoe \code{pandas}
+hetzelfde doet in enkele regels.
+
+% ---------------------------------------------------------------------------
+\section{Software en lesmateriaal}
+
+Elk labo is een \textbf{marimo-notebook} in de map \code{labs/} van de
+cursusrepository. Je kunt het op twee manieren openen:
+
+\begin{itemize}
+    \item \textbf{Online:} surf naar \url{https://marimo.app}, kies
+        \emph{New $\rightarrow$ Open from URL\dots} en plak de raw-URL van
+        het notebook op GitHub. De data wordt dan van GitHub gelezen, dus
+        je hoeft niets te installeren.
+    \item \textbf{Lokaal:} installeer de pakketten uit
+        \code{requirements.txt} en open het notebook met marimo. De data
+        wordt dan uit de map \code{data/} gelezen.
+
+\end{itemize}
+
+Drie dingen die je moet weten over marimo:
+
+\begin{itemize}
+  \item Notebooks zijn \textbf{reactief}: als je een cel aanpast, worden
+        alle cellen die ervan afhangen opnieuw uitgevoerd, in de volgorde
+        van hun afhankelijkheden.
+  \item \textbf{Twee cellen kunnen niet dezelfde variabele definiëren.}
+        Geef elke stap een eigen, duidelijke naam (\code{tests\_raw},
+        \code{tests\_clean}, \dots) of zet een reeks stappen samen in één
+        cel.
+  \item Elke oefening bevat een placeholder \code{...}. Een verborgen cel
+        eronder controleert je antwoord: die kleurt \textbf{groen} als het
+        juist is, en geeft anders een algemene hint over wat nog niet
+        klopt, zonder het antwoord te verklappen.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{De dataset}
+
+\noindent
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{3.1cm}L{3.2cm}Y@{}}
+\toprule
+\textbf{Bestand} & \textbf{Omvang} & \textbf{Inhoud en gekende problemen} \\
+\midrule
+\code{athletes.csv}   & 43 rijen, 7 kolommen   & ID, naam, geboortedatum, geslacht, positie, lengte, gewicht. 13 schrijfwijzen voor 4 posities, gewicht als tekst met een decimale komma (\code{"57,5"}), één atleet twee keer ingevoerd met twee ID's, enkele ontbrekende waarden. \\
+\code{tests.csv}      & 114 rijen, 8 kolommen  & Sprint over 10\,m en 30\,m, spronghoogte (countermovement jump) en Yo-Yo-niveau, op 3 testmomenten. Sommige sprinttijden staan in milliseconden; enkele ontbrekende waarden. \\
+\code{hr\_session.csv} & 12\,000 rijen, 5 kolommen & Hartslag en snelheid per seconde van 5 atleten tijdens één training van 40 minuten. \\
+\bottomrule
+\end{tabularx}
+\rowcolors{1}{}{}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Planning per sessie}
+
+\needspace{16\baselineskip}
+\subsection{Labo 3 -- Dataverwerking I: van bestand tot nette tabel}
+
+\textbf{Doel:} een dataset inladen en verkennen, rijen en kolommen
+selecteren en filteren, nieuwe kolommen toevoegen en de data opkuisen.
+
+\begin{schedule}
+13:00--13:20 & Opwarmer: waarom niet gewoon Excel? & De ruwe tekst van een CSV-bestand bekijken en zien wat een tabelbibliotheek toevoegt. \\
+13:20--14:00 & Inladen en verkennen & \code{read\_csv}, \code{.head()}, \code{.shape}, \code{.dtypes}, \code{.info()}, \code{.describe()}, \code{mo.ui.table}. \\
+14:00--14:50 & Selecteren en filteren & Kolommen selecteren, \code{.loc} met logische voorwaarden, voorwaarden combineren, \code{sort\_values}. \\
+14:50--15:05 & Pauze & \\
+15:05--15:50 & Nieuwe kolommen & Tekst naar getal, leeftijd uit een geboortedatum, snelheid uit een sprinttijd, BMI. \\
+15:50--17:00 & Opkuisen & Ontbrekende waarden (\code{dropna} of \code{fillna}), tekstlabels, eenheden, dubbels, één volledige opkuis-pipeline. \\
+17:00--17:30 & Uitdaging & De 5 snelste atleten per positie. Exit ticket. \\
+\end{schedule}
+
+\textbf{Oefeningen:} (1) \code{tests.csv} inladen; (2) aanvallers jonger
+dan 16; (3) verdachte sprinttijden; (4) BMI; (5) leeftijd in jaren;
+(6) de posities opkuisen; (7) de eenheden van de sprinttijden
+corrigeren; (8) de dubbele atleet verwijderen; \textbf{uitdaging:} de
+5 snelsten per positie.
+
+\needspace{16\baselineskip}
+\subsection{Labo 4 -- Dataverwerking II: combineren, samenvatten, herschikken}
+
+\textbf{Doel:} data aggregeren met \code{groupby}, tabellen koppelen met
+\code{merge}, herschikken met \code{melt} en \code{pivot}, en eenvoudige
+kenmerken van een tijdreeks berekenen.
+
+\begin{schedule}
+13:00--13:15 & Herhaling: een kapotte cel herstellen & Een kleine opkuis-pipeline met twee fouten repareren. \\
+13:15--14:10 & \code{groupby} + \code{agg} & Statistieken per groep, leeftijdscategorieën met \code{pd.cut}, meerdere benoemde aggregaties tegelijk. \\
+14:10--14:55 & \code{merge} & Inner en left joins; waarom een dubbele atleet twee keer meetelt, en waarom je dubbels verwijdert vóór het koppelen. \\
+14:55--15:10 & Pauze & \\
+15:10--15:50 & \code{melt} en \code{pivot} & Lange en brede vorm; vooruitgang tussen twee testmomenten. \\
+15:50--16:50 & Tijdreeksen & Hartslagzones als \% van $HR_{max}$ (220 $-$ leeftijd), tijd per zone, \code{rolling}, \code{resample}. \\
+16:50--17:30 & Minicase per twee & Een trainingsrapport: één rij per atleet. \\
+\end{schedule}
+
+\textbf{Oefeningen:} (0) herhaling: de kapotte cel herstellen;
+(1) groeperen per geslacht en leeftijdscategorie; (2) wat heeft het
+verwijderen van de dubbels gekost?; (3) vooruitgang in spronghoogte;
+(4) minuten in zone 4--5 per atleet; \textbf{minicase:}
+trainingsrapport met de minuten in zone 4--5, de maximale snelheid en de
+afgelegde afstand per atleet.
+
+\needspace{16\baselineskip}
+\subsection{Labo 5 -- Datavisualisatie I: vertel het verhaal met plotly}
+
+\textbf{Doel:} een grafiektype kiezen voor een gegeven vraag, de
+standaardgrafieken van \code{plotly.express} maken, extra dimensies
+toevoegen met kleur, facetten en grootte, en eenvoudige interactiviteit
+inbouwen.
+
+\begin{schedule}
+13:00--13:30 & Principes & De juiste grafiek voor de vraag (verdeling, vergelijking, verband, evolutie); kritiek op een misleidende grafiek. \\
+13:30--14:30 & Basis van \code{plotly.express} & Histogram, boxplot, spreidingsdiagram en lijngrafiek, met titels, aslabels en hover-informatie. \\
+14:30--15:15 & Meer dimensies & \code{color}, \code{facet\_col} en \code{size}; één vaste kleur per positie. \\
+15:15--15:30 & Pauze & \\
+15:30--16:15 & Hartslag als tijdreeks & Zonebanden met \code{add\_hrect}, en waarom we geen tweede y-as gebruiken. \\
+16:15--16:45 & Interactiviteit & \code{mo.ui.dropdown}, \code{mo.ui.range\_slider}, optioneel selecties met \code{mo.ui.plotly}. \\
+16:45--17:30 & Minidashboard & 3 grafieken en 1 keuzemenu waarop minstens één grafiek reageert. \\
+\end{schedule}
+
+\textbf{Oefeningen:} (1) een histogram van het gewicht; (2) Yo-Yo-niveau
+per positie, met facetten per geslacht; (3) snelheid doorheen de tijd
+voor één atleet; \textbf{opdracht:} het minidashboard.
+
+% ---------------------------------------------------------------------------
+\section{Werkwijze}
+
+\begin{itemize}
+  \item Elk blok start met een korte demo in het notebook, gevolgd door
+        oefeningen die je in het notebook zelf oplost.
+  \item Gebruik de automatische controles als feedback, niet als doel:
+        als een controle groen kleurt, zorg dan dat je kunt uitleggen
+        \emph{waarom} je code werkt.
+  \item De minicase van labo 4 maak je per twee.
+  \item Labo 3 eindigt met een exit ticket: één techniek die je opnieuw
+        zult gebruiken en één ding dat nog niet duidelijk is. Breng de
+        onduidelijke punten mee naar de volgende sessie.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Evaluatie}
+
+\begin{itemize}
+  \item \textbf{Minidashboard (labo 5):} drie grafieken en één interactief
+        keuzemenu, gemaakt met de data van de club. Het kan dienen als je
+        inzending voor deze module en bereidt de casepresentaties en het
+        Project Lab van volgend semester voor.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Voorbereiding per sessie}
+
+\begin{itemize}
+  \item Controleer vóór de sessie dat je het notebook kunt openen,
+        lokaal of op marimo.app.
+  \item Vóór labo 4: zorg dat je elke stap van de opkuis-pipeline op het
+        einde van labo 3 kunt uitleggen, want labo 4 vertrekt daarvan.
+  \item Vóór labo 5: herhaal \code{groupby}, \code{merge} en de lange
+        vorm uit labo 4. Grafieken met plotly express vertrekken van data
+        in de lange vorm.
+\end{itemize}
+
+\end{document}

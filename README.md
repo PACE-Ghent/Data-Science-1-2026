@@ -12,6 +12,10 @@ generate_data.py       script that generates data/ (synthetic, seeded)
 requirements.txt       Python dependencies (marimo, pandas, plotly, numpy)
 labs/                  student notebooks — hand these out
 solutions/             instructor answer keys — same notebooks, fully solved
+checks/                answer checks loaded by the notebooks
+cursus/                course texts (PDF, in Flemish) for labs 3-5
+slides/                slide deck for labs 3-5
+syllabus/              syllabus for labs 3-5 (LaTeX + PDF)
 ```
 
 ## The datasets (`data/`)
@@ -49,29 +53,23 @@ values baked in (row counts, position counts, etc.) that assume the current
 seed. Changing the generator without re-checking the labs' assertions will
 break the auto-checks.
 
-## Running the notebooks
+## Running notebooks online
 
-Install once:
+You can open and edit the notebooks in marimo's online playground without
+installing Python or marimo:
 
-```bash
-pip install -r requirements.txt
-```
+1. Go to [marimo.app](https://marimo.app/).
+2. Choose **New → Open from URL...**.
+3. Paste the raw GitHub URL for the notebook you want to use. For example:
+   `https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/labs/lab3_data_processing_I.py`
 
-Open a notebook for editing (either a student lab or an instructor
-solution):
-
-```bash
-marimo edit labs/lab3_data_processing_I.py
-```
-
-This opens an interactive, reactive notebook in the browser. Cells re-run
-automatically when their dependencies change.
-
-To run a notebook read-only, as students would see a shared app:
-
-```bash
-marimo run labs/lab3_data_processing_I.py
-```
+The online playground has no local `data/` folder, so the notebooks detect
+when they run in the browser and automatically read the CSV files from this
+repository's `main` branch on GitHub (see the `DATA_DIR` cell). No changes
+are needed, but the repository must be public and the `data/` files must be
+pushed to `main`. The answer checks are fetched the same way from `checks/`
+(see below), so those files must be pushed to `main` as well. Use marimo's **Save to molab** or **Create permalink**
+options if you want to keep or share your online work.
 
 ## `labs/` — student notebooks
 
@@ -89,6 +87,12 @@ The cell right below it checks the answer automatically and shows a
 callout — green ("Correct!") or amber ("Not yet correct", with a hint)
 — every time the notebook re-runs. Students replace `...` with their own
 code; nothing else in the notebook needs to change.
+
+The checks themselves are not in the notebooks: each lab loads them from
+`checks/labN_checks.py` (one function per exercise), so that a student
+cannot read the answer off the cell below the exercise. The hints are
+deliberately general - they say what is wrong, not what the answer is.
+The lab and its solutions notebook share the same checks file.
 
 | File | Session | Covers |
 |---|---|---|
@@ -127,6 +131,27 @@ solution (and the deliberately broken cells in Labs 1 and 4 already fixed). Use 
 Every exercise in every solutions file has been verified to actually
 trigger its own "Correct!" callout — not just "runs without crashing."
 
+## `cursus/` — course texts
+
+One PDF per lab (`labo3_...pdf`, `labo4_...pdf`, `labo5_...pdf`) that
+explains the concepts behind the notebook from scratch, for students with
+little Python experience. They explain the demos and use their own
+examples, so they don't give away the exercise answers.
+
+The sources are in `cursus/sources/`. They are LaTeX with `\begin{python}`
+blocks that `cursus/build.py` actually runs against `data/`, so every
+output and chart in the PDFs is real. Rebuild after changing the data or
+a text:
+
+```bash
+pip install pandas plotly kaleido pygments
+python cursus/build.py            # all labs, or e.g. labo4_dataverwerking_II
+```
+
+This needs `tectonic` (or `xelatex` with `latexmk`) and, for the charts,
+a Chrome/Chromium browser for kaleido. Generated files go to
+`cursus/build/`, which is git-ignored.
+
 ## If you change something
 
 - **Edit a lab's markdown/demo content:** mirror the same edit in the
@@ -137,6 +162,32 @@ trigger its own "Correct!" callout — not just "runs without crashing."
 - **Regenerate `data/`:** re-verify both the lab checks and solutions still
   pass — some checks depend on exact counts (e.g. "exactly one duplicate
   athlete", "5 goalkeepers") that assume the current generator output.
+- **Change a demo or the data:** rebuild the course texts in `cursus/`
+  and reread any sentence that quotes a number from the output.
 - Run `marimo check path/to/notebook.py` after any manual edit to a
   notebook file — it catches structural issues (e.g. a cell reading a
   variable no other cell defines) before you open it in the browser.
+
+## Running notebooks locally
+
+To work with the notebooks from a local checkout, install the dependencies
+once:
+
+```bash
+pip install -r requirements.txt
+```
+
+Open a notebook for editing (either a student lab or an instructor
+solution):
+
+```bash
+marimo edit labs/lab3_data_processing_I.py
+```
+
+This opens an interactive, reactive notebook in your browser. Cells re-run
+automatically when their dependencies change. To run a notebook read-only,
+as students would see a shared app:
+
+```bash
+marimo run labs/lab3_data_processing_I.py
+```

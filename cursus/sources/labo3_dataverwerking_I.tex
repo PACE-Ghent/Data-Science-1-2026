@@ -1,0 +1,609 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{cursus}
+\author{dr. Maarten Slembrouck}
+
+\begin{document}
+
+\labotitel{Labo 3 -- Dataverwerking I}{Van bestand tot nette tabel}{Cursustekst bij het notebook \code{lab3\_data\_processing\_I.py}}
+
+\begin{python}[hide]
+import pandas as pd
+\end{python}
+
+\section*{Waarover gaat dit labo?}
+
+In de vorige twee labo's leerde je de basis van Python: variabelen,
+functies, lijsten, dictionaries en lussen. Op het einde van labo 2 las
+je \code{athletes.csv} in met de module \code{csv} en telde je met een
+\code{for}-lus hoeveel atleten er per positie zijn. Dat werkte, maar het
+kostte veel regels code. Vanaf dit labo gebruik je \textbf{pandas}, een
+bibliotheek die precies voor dit soort werk gemaakt is.
+
+Het verhaal blijft hetzelfde: je bent de nieuwe data-analist van een
+jeugdclub voor voetbal en atletiek. De hoofdtrainer geeft je drie
+exportbestanden. Die zijn bewust rommelig, zoals echte exports:
+
+\begin{itemize}
+  \item \code{athletes.csv}: één rij per atleet (ID, naam, geboortedatum,
+        geslacht, positie, lengte, gewicht);
+  \item \code{tests.csv}: resultaten van fysieke testen (sprint over
+        10\,m en 30\,m, spronghoogte, Yo-Yo-niveau) op drie testmomenten;
+  \item \code{hr\_session.csv}: hartslag en snelheid per seconde tijdens
+        één training (die gebruik je pas in labo 4).
+\end{itemize}
+
+\textbf{Na dit labo kun je} een dataset inladen en verkennen, rijen en
+kolommen selecteren en filteren, nieuwe kolommen berekenen en de data
+opkuisen tot je ze kunt vertrouwen.
+
+\textbf{Hoe gebruik je deze tekst?} Lees ze naast het notebook. Elk
+codevoorbeeld hieronder is echt uitgevoerd op de data van de club; het
+kader \emph{uitvoer} toont wat Python teruggaf. Typ de voorbeelden zelf
+over in een lege cel: je leert meer van code die je zelf typt dan van
+code die je leest. De oefeningen zelf staan in het notebook; deze tekst
+legt uit wat je nodig hebt om ze op te lossen.
+
+% ---------------------------------------------------------------------------
+\section{Een paar Python-begrippen die je vandaag nodig hebt}
+
+Pandas is gewone Python. Vier dingen uit de vorige labo's komen
+voortdurend terug:
+
+\begin{itemize}
+  \item \textbf{Een functie aanroepen} doe je met haakjes:
+        \code{round(5.3456, 2)}. De waarden tussen de haakjes heten
+        \emph{argumenten}.
+  \item \textbf{Argumenten met een naam.} Sommige argumenten geef je
+        door met hun naam: \code{round(number=5.3456, ndigits=2)}. In
+        pandas zie je dat heel vaak, bv.\ \code{ascending=False}.
+  \item \textbf{Een methode} is een functie die bij een object hoort. Je
+        roept ze aan met een punt: \code{"Forward".lower()} geeft
+        \code{"forward"}. Een tabel in pandas heeft tientallen methodes.
+  \item \textbf{Lijsten en dictionaries}: \code{["name", "position"]} is
+        een lijst, \code{\{"fwd": "Forward"\}} is een dictionary die een
+        sleutel aan een waarde koppelt.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Wat is pandas?}
+
+Pandas is een \textbf{bibliotheek}: een verzameling code die iemand
+anders geschreven heeft en die je in je eigen programma kunt gebruiken.
+Je laadt ze met \code{import}. Iedereen gebruikt de afkorting \code{pd}:
+
+\begin{python}[noout]
+import pandas as pd
+\end{python}
+
+Pandas draait rond twee soorten objecten:
+
+\begin{itemize}
+  \item een \textbf{DataFrame} is een tabel met rijen en kolommen, zoals
+        een werkblad in Excel;
+  \item een \textbf{Series} is één kolom van zo'n tabel.
+\end{itemize}
+
+Elke rij heeft een label, de \textbf{index}. Standaard is dat gewoon een
+nummer, beginnend bij 0. Je kunt zelf een kleine DataFrame maken uit een
+dictionary: elke sleutel wordt een kolomnaam, elke lijst de waarden van
+die kolom.
+
+\begin{python}
+mini = pd.DataFrame({
+    "name": ["Yana", "Stan", "Emma"],
+    "position": ["Defender", "Midfielder", "Forward"],
+    "height_cm": [167.1, 158.1, 171.0],
+})
+mini
+\end{python}
+
+De kolom links (0, 1, 2) is de index; die is geen echte kolom met data.
+Eén kolom opvragen geeft een Series:
+
+\begin{python}
+mini["height_cm"]
+\end{python}
+
+\begin{kernidee}
+Een DataFrame is een tabel, een Series is één kolom. Bijna alles wat je
+vandaag doet, is: een DataFrame nemen, er iets mee doen, en een nieuwe
+DataFrame of Series terugkrijgen.
+\end{kernidee}
+
+Het grote voordeel tegenover lijsten: een berekening op een Series werkt
+meteen op \emph{elke} rij, zonder \code{for}-lus.
+
+\begin{python}
+mini["height_cm"] / 100
+\end{python}
+
+% ---------------------------------------------------------------------------
+\section{Een CSV-bestand inladen}
+
+Een CSV-bestand (\emph{comma-separated values}) is gewone tekst: één
+regel per rij, met komma's tussen de waarden. De eerste regel bevat de
+kolomnamen. Zo ziet het begin van \code{tests.csv} eruit als tekst:
+
+\begin{python}[outonly]
+from pathlib import Path
+print("\n".join(Path(DATA_DIR, "tests.csv").read_text().splitlines()[:4]))
+\end{python}
+
+Voor Python is dat gewoon tekst: het weet niet dat \code{5.34} een getal
+is, of dat \code{date} een datum bevat. \code{pd.read\_csv} leest het
+bestand en maakt er een DataFrame van, met een gepast datatype per
+kolom:
+
+\begin{python}
+athletes_raw = pd.read_csv(f"{DATA_DIR}/athletes.csv")
+athletes_raw.head()
+\end{python}
+
+\code{DATA\_DIR} is een variabele die bovenaan het notebook gemaakt
+wordt: de map met de data. Lokaal is dat de map \code{data/}, online een
+adres op GitHub. Met \code{f"\{DATA\_DIR\}/athletes.csv"} (een
+\emph{f-string}) plak je de bestandsnaam erachter.
+
+\begin{opgelet}[Opgelet: namen in marimo]
+In marimo mogen twee cellen niet dezelfde variabele maken. Geef daarom
+elke stap een eigen naam: \code{athletes\_raw} voor de ruwe data,
+\code{athletes\_clean} voor de opgekuiste versie. Dat maakt je code
+bovendien leesbaarder.
+\end{opgelet}
+
+% ---------------------------------------------------------------------------
+\section{Een eerste indruk van de data}
+
+Voor je iets met een dataset doet, bekijk je ze. Vijf hulpmiddelen
+geven snel een overzicht.
+
+\textbf{\code{.head()}} toont de eerste vijf rijen (of \code{.head(10)}
+voor tien). Dat zag je hierboven al.
+
+\textbf{\code{.shape}} geeft het aantal rijen en kolommen. Let op: er
+staan geen haakjes achter, want \code{shape} is een eigenschap en geen
+methode.
+
+\begin{python}
+athletes_raw.shape
+\end{python}
+
+Het resultaat is een \emph{tuple}: een vaste reeks waarden tussen ronde
+haakjes. \code{athletes\_raw.shape[0]} is het aantal rijen (43),
+\code{athletes\_raw.shape[1]} het aantal kolommen (7).
+
+\textbf{\code{.dtypes}} toont welk datatype pandas per kolom gekozen
+heeft:
+
+\begin{python}
+athletes_raw.dtypes
+\end{python}
+
+\code{int64} is een geheel getal, \code{float64} een kommagetal en
+\code{str} tekst. Valt je iets op? \code{weight\_kg} is tekst, terwijl
+gewicht een getal zou moeten zijn. Dat is het eerste probleem dat je
+vandaag oplost. Ook \code{birthdate} is tekst; pandas herkent een datum
+niet vanzelf.
+
+\textbf{\code{.info()}} combineert dat met het aantal ingevulde
+(\emph{non-null}) waarden per kolom. \textbf{\code{.describe()}} geeft
+statistieken voor de getallenkolommen: aantal, gemiddelde (\code{mean}),
+standaardafwijking (\code{std}), minimum, kwartielen en maximum.
+
+\begin{python}
+athletes_raw.describe()
+\end{python}
+
+\code{count} is 41 voor \code{height\_cm}, terwijl er 43 atleten zijn:
+bij twee atleten ontbreekt de lengte. Zo'n tabel is een snelle manier om
+ontbrekende waarden en onmogelijke waarden op te sporen.
+
+\textbf{\code{.value\_counts()}} telt hoe vaak elke waarde in een kolom
+voorkomt. Wat je in labo 2 met een lus en een dictionary deed, is nu één
+regel:
+
+\begin{python}
+athletes_raw["position"].value_counts()
+\end{python}
+
+De club heeft maar vier posities, maar er staan 13 verschillende
+schrijfwijzen in de kolom. Dat is het tweede probleem van vandaag.
+
+% ---------------------------------------------------------------------------
+\section{Kolommen selecteren}
+
+Eén kolom selecteer je met vierkante haakjes en de kolomnaam. Je krijgt
+een Series terug. Meerdere kolommen selecteer je met een \emph{lijst} van
+kolomnamen tussen de haakjes; je krijgt dan een DataFrame terug.
+
+\begin{python}
+athletes_raw[["name", "position"]].head(3)
+\end{python}
+
+\begin{opgelet}[Opgelet: dubbele haakjes]
+De buitenste haakjes betekenen ``selecteer'', de binnenste maken een
+lijst. \code{athletes\_raw["name", "position"]} (met enkele haakjes)
+geeft een \code{KeyError}: pandas zoekt dan één kolom met de vreemde naam
+\code{("name", "position")}.
+\end{opgelet}
+
+% ---------------------------------------------------------------------------
+\section{Rijen filteren}
+
+Filteren gebeurt in twee stappen. Eerst schrijf je een
+\textbf{voorwaarde}. Een vergelijking op een Series geeft een nieuwe
+Series met \code{True} of \code{False} voor elke rij:
+
+\begin{python}
+is_tall = athletes_raw["height_cm"] > 175
+is_tall.head()
+\end{python}
+
+Zo'n Series van \code{True}/\code{False} heet een \textbf{masker}. Daarna
+geef je dat masker aan \code{.loc[...]}. Je houdt alleen de rijen waar
+het masker \code{True} is:
+
+\begin{python}
+athletes_raw.loc[is_tall, ["name", "position", "height_cm"]]
+\end{python}
+
+\code{.loc[rijen, kolommen]} selecteert dus rijen \emph{en} kolommen in
+één keer. Laat je het tweede deel weg, dan krijg je alle kolommen.
+
+\subsection{Filteren op tekst}
+
+Met \code{==} vergelijk je tekst. De vergelijking is exact: hoofdletters
+en spaties tellen mee.
+
+\begin{python}
+only_forwards_raw = athletes_raw.loc[athletes_raw["position"] == "Forward"]
+only_forwards_raw.shape
+\end{python}
+
+Maar 2 rijen, terwijl \code{value\_counts()} ook \code{"forward"},
+\code{"forward "} en \code{"FWD"} toonde. Filteren op tekst werkt pas
+goed als de labels opgekuist zijn (sectie~\ref{sec:opkuisen}).
+
+\subsection{Filteren op datum}
+
+\code{birthdate} is tekst. Met \code{pd.to\_datetime} zet je het om naar
+echte datums, die je kunt vergelijken. Wie na 1 september 2010 geboren
+is, is jonger dan 16 in het seizoen 2026:
+
+\begin{python}
+younger_than_16 = pd.to_datetime(athletes_raw["birthdate"]) > "2010-09-01"
+younger_than_16.sum()
+\end{python}
+
+\code{.sum()} op een masker telt het aantal \code{True}-waarden, want
+Python rekent \code{True} als 1 en \code{False} als 0. Er zijn dus 28
+atleten jonger dan 16.
+
+\subsection{Voorwaarden combineren}
+
+Twee voorwaarden combineer je met \code{\&} (en), \code{|} (of) en
+\code{\textasciitilde} (niet). Zet elke voorwaarde tussen haakjes:
+
+\begin{python}
+tall_girls = athletes_raw.loc[
+    (athletes_raw["gender"] == "F") & (athletes_raw["height_cm"] > 170)
+]
+tall_girls[["name", "gender", "height_cm"]]
+\end{python}
+
+\begin{opgelet}[Opgelet: \code{and} werkt hier niet]
+In gewone Python schrijf je \code{and} en \code{or}. Op een Series werkt
+dat niet: je krijgt een \code{ValueError} (\emph{The truth value of a
+Series is ambiguous}). Gebruik \code{\&} en \code{|}, en vergeet de
+haakjes rond elke voorwaarde niet. Zonder haakjes rekent Python eerst
+\code{\&} uit, en dan klopt de voorwaarde niet meer.
+\end{opgelet}
+
+\subsection{Sorteren}
+
+\code{.sort\_values("kolom")} sorteert de rijen van klein naar groot. Met
+\code{ascending=False} keer je de volgorde om. De index sorteert mee: zo
+zie je nog uit welke rij elke waarde kwam.
+
+\begin{python}
+tests_raw = pd.read_csv(f"{DATA_DIR}/tests.csv")
+slowest_10m = tests_raw.sort_values("sprint_10m_s", ascending=False)
+slowest_10m[["athlete_id", "sprint_10m_s"]].head()
+\end{python}
+
+Een sprint van 2360 seconden over 10\,m? Die waarden staan in
+\emph{milliseconden} in plaats van seconden (2,36\,s werd 2360). Dat is
+het derde probleem: dezelfde fout zit ook in \code{sprint\_30m\_s}.
+
+\begin{probeer}
+Hoeveel atleten zijn langer dan 180\,cm? Gebruik een masker en
+\code{.sum()}. Sorteer daarna \code{athletes\_raw} van lang naar kort en
+bekijk de eerste vijf rijen.
+\end{probeer}
+
+% ---------------------------------------------------------------------------
+\section{Nieuwe kolommen berekenen}
+
+Een nieuwe kolom maken is een toewijzing: \code{df["nieuwe\_kolom"] =
+...}. Rechts van het gelijkheidsteken staat meestal een berekening op
+andere kolommen. Die berekening gebeurt voor alle rijen tegelijk.
+
+\begin{python}
+speed = tests_raw[["athlete_id", "sprint_30m_s"]].copy()
+speed["speed_kmh"] = 30 / speed["sprint_30m_s"] * 3.6
+speed.head(3)
+\end{python}
+
+30 meter gedeeld door de tijd geeft meter per seconde; maal 3,6 geeft
+kilometer per uur. Merk op dat \code{30 / speed["sprint\_30m\_s"]} een
+getal deelt door een hele kolom: pandas doet de deling voor elke rij.
+
+\begin{opgelet}[Waarom \code{.copy()}?]
+\code{speed = tests\_raw[...]} maakt soms geen nieuwe tabel, maar een
+\emph{venster} op de oude. Als je daar een kolom aan toevoegt, weet je
+niet zeker of de oorspronkelijke tabel mee verandert. Met
+\code{.copy()} maak je een echte, aparte kopie. In het notebook begin je
+daarom oefeningen met \code{athletes\_raw.copy()}: zo blijft de ruwe
+data onaangeroerd.
+\end{opgelet}
+
+\subsection{Tekst omzetten naar een getal}
+
+\code{weight\_kg} bevat tekst zoals \code{"57,5"}, met een komma als
+decimaalteken. Dat gebeurt vaak bij exports uit Europese software.
+Python verwacht een punt. Je lost dat op in twee stappen:
+
+\begin{python}
+weight_kg_numeric = athletes_raw["weight_kg"].str.replace(",", ".").astype(float)
+weight_kg_numeric.head(3)
+\end{python}
+
+\begin{itemize}
+  \item \code{.str} geeft toegang tot tekstmethodes voor \emph{elke} rij;
+        \code{.str.replace(",", ".")} vervangt de komma door een punt.
+  \item \code{.astype(float)} zet de tekst om naar een kommagetal. Probeer
+        je dat zonder eerst de komma te vervangen, dan krijg je een
+        \code{ValueError}: \code{"57,5"} is voor Python geen getal.
+\end{itemize}
+
+Je kunt methodes zo achter elkaar zetten (\emph{chaining}): elke methode
+werkt op het resultaat van de vorige.
+
+\subsection{Rekenen met datums}
+
+Voor de leeftijd trek je de geboortedatum af van een vaste
+referentiedatum. Een vaste datum (en niet ``vandaag'') zorgt ervoor dat
+je resultaten morgen nog dezelfde zijn.
+
+\begin{python}
+REFERENCE_DATE = pd.Timestamp("2026-09-14")
+birthdates = pd.to_datetime(athletes_raw["birthdate"])
+(REFERENCE_DATE - birthdates).head(3)
+\end{python}
+
+Het verschil tussen twee datums is een \emph{tijdsduur} (een
+\code{Timedelta}). Met \code{.dt.days} haal je het aantal dagen eruit, en
+met \code{// 365} deel je door 365 en hou je alleen het gehele deel:
+
+\begin{python}
+age_years = (REFERENCE_DATE - birthdates).dt.days // 365
+age_years.head(3)
+\end{python}
+
+\code{//} is de \emph{gehele deling}: \code{5954 // 365} is 16, niet
+16,31. Zo krijg je een leeftijd in hele jaren, zoals je die gewoon bent.
+
+% ---------------------------------------------------------------------------
+\section{De data opkuisen}\label{sec:opkuisen}
+
+Opkuisen betekent: de problemen die je bij het verkennen vond één voor
+één oplossen, en voor elke keuze kunnen uitleggen waarom.
+
+\subsection{Ontbrekende waarden}
+
+Een lege cel in een CSV-bestand wordt in pandas \code{NaN} (\emph{not a
+number}). Met \code{.isna()} krijg je een masker dat \code{True} is waar
+een waarde ontbreekt; \code{.isna().sum()} telt ze per kolom:
+
+\begin{python}
+tests_raw.isna().sum()
+\end{python}
+
+Je hebt twee keuzes:
+
+\begin{itemize}
+  \item \code{.dropna()} gooit de rijen met een ontbrekende waarde weg.
+        Redelijk als het om weinig rijen gaat en je de waarde niet goed
+        kunt schatten (bv.\ een ontbrekend geslacht).
+  \item \code{.fillna(waarde)} vult de lege plaatsen in, bv.\ met het
+        gemiddelde van de kolom. Redelijk als je een goede schatting hebt
+        en de rij nodig hebt voor je analyse.
+\end{itemize}
+
+\begin{kernidee}
+Er is geen regel die altijd klopt. Beslis per kolom en schrijf op
+\emph{waarom}. ``Alles met 0 opvullen'' is bijna altijd fout: een
+ontbrekende spronghoogte is niet hetzelfde als een sprong van 0\,cm.
+\end{kernidee}
+
+\subsection{Tekstlabels opkuisen}
+
+De posities staan op 13 manieren in de data. Twee tekstmethodes lossen
+het grootste deel op: \code{.str.strip()} haalt spaties aan het begin en
+einde weg, \code{.str.lower()} zet alles in kleine letters.
+
+\begin{python}
+position_normalized = athletes_raw["position"].str.strip().str.lower()
+position_normalized.value_counts()
+\end{python}
+
+Van 13 naar 8 varianten. Wat overblijft zijn afkortingen. Die vertaal je
+met een dictionary en \code{.map(...)}: elke waarde wordt opgezocht als
+sleutel en vervangen door de bijhorende waarde.
+
+\begin{python}
+POSITION_MAP = {
+    "forward": "Forward", "fwd": "Forward",
+    "midfielder": "Midfielder", "mid": "Midfielder",
+    "defender": "Defender", "def": "Defender",
+    "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
+}
+position_clean = position_normalized.map(POSITION_MAP)
+position_clean.value_counts()
+\end{python}
+
+\begin{opgelet}
+Een waarde die niet in de dictionary staat, wordt door \code{.map}
+vervangen door \code{NaN}. Controleer daarom altijd met
+\code{.value\_counts()} of \code{.isna().sum()} dat er niets verloren
+ging.
+\end{opgelet}
+
+Om de opgekuiste kolom in de tabel te zetten, overschrijf je de oude
+kolom met een toewijzing, op een kopie van de ruwe tabel.
+
+\subsection{Getallen in de verkeerde eenheid}
+
+Geen mens loopt 10 of 30 meter in minder dan 1 seconde, en geen enkele
+sprint duurt 20 seconden. Een waarde boven 20 staat dus in milliseconden
+en moet gedeeld worden door 1000. Dat doe je met
+\code{.where(voorwaarde, anders)}: waar de voorwaarde \code{True} is,
+blijft de waarde staan; waar ze \code{False} is, komt de waarde van
+\code{anders} in de plaats.
+
+\begin{python}
+def fix_sprint_units(seconds_column):
+    return seconds_column.where(seconds_column < 20, seconds_column / 1000)
+
+sprint_10m_fixed = fix_sprint_units(tests_raw["sprint_10m_s"])
+sprint_10m_fixed.describe()
+\end{python}
+
+Het maximum is nu 2,47 seconden: realistisch. Omdat je dezelfde stap op
+twee kolommen nodig hebt, staat ze in een \textbf{functie}. Zo schrijf je
+de regel één keer en gebruik je ze zo vaak als nodig.
+
+\subsection{Dubbels}
+
+\code{.duplicated(subset=[...])} geeft \code{True} voor elke rij die
+dezelfde waarden heeft in de opgegeven kolommen als een rij
+\emph{erboven}. \code{.drop\_duplicates(subset=[...], keep="first")}
+gooit die rijen weg en houdt het eerste exemplaar. Een klein voorbeeld:
+
+\begin{python}
+sessions = pd.DataFrame({
+    "name": ["Yana", "Stan", "Yana"],
+    "day": ["ma", "ma", "ma"],
+    "minutes": [60, 45, 60],
+})
+sessions.duplicated(subset=["name", "day"])
+\end{python}
+
+In \code{athletes.csv} staat één atleet twee keer, met dezelfde naam en
+geboortedatum maar twee verschillende ID's. Een fout bij het invoeren.
+Daarom zoek je dubbels op \emph{naam en geboortedatum}, niet op ID.
+
+\subsection{Alles samen: één pipeline}
+
+Op het einde van het labo zet het notebook alle stappen achter elkaar in
+één blok code. Zo'n reeks stappen heet een \textbf{pipeline}. Twee nieuwe
+dingen kom je daar tegen:
+
+\begin{itemize}
+  \item \code{.assign(kolom=...)} maakt (of overschrijft) een kolom en
+        geeft een nieuwe DataFrame terug. Je kunt er dus een volgende
+        methode achter zetten, wat met \code{df["kolom"] = ...} niet kan.
+  \item \code{lambda d: ...} is een korte functie zonder naam. In
+        \code{.assign(bmi=lambda d: d["weight\_kg"] / ...)} staat \code{d}
+        voor de tabel \emph{zoals ze op dat moment in de pipeline is}.
+        Zo kun je een kolom gebruiken die een stap eerder gemaakt is.
+\end{itemize}
+
+\begin{python}[noout]
+athletes_clean = (
+    athletes_raw.assign(
+        position=position_clean,
+        weight_kg=weight_kg_numeric,
+        age=age_years,
+    )
+    .assign(bmi=lambda d: d["weight_kg"] / (d["height_cm"] / 100) ** 2)
+    .drop_duplicates(subset=["name", "birthdate"], keep="first")
+    .reset_index(drop=True)
+)
+\end{python}
+\begin{python}
+athletes_clean[["name", "position", "weight_kg", "age", "bmi"]].head(3)
+\end{python}
+
+De haakjes rond de hele pipeline laten toe om elke stap op een nieuwe
+regel te zetten. \code{.reset\_index(drop=True)} nummert de rijen opnieuw
+van 0 tot het einde, want na het verwijderen van een dubbel ontbreekt er
+een nummer.
+
+% ---------------------------------------------------------------------------
+\section{Vooruitblik: de uitdaging}
+
+De uitdaging op het einde van het notebook vraagt de 5 snelste atleten
+per positie. Daarvoor moet je twee tabellen samenvoegen
+(\code{athletes\_clean} heeft de positie, \code{tests\_clean} de
+sprinttijden) en per groep rangschikken. De hints in het notebook tonen
+de drie functies die je daarvoor nodig hebt: \code{groupby},
+\code{merge} en \code{.head(5)} per groep. Die worden in labo~4 grondig
+uitgelegd; probeer de uitdaging nu al met de hints, en kijk volgende
+week of je ze beter begrijpt.
+
+% ---------------------------------------------------------------------------
+\section{Samenvatting}
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{7.6cm}Y@{}}
+\toprule
+\textbf{Code} & \textbf{Wat het doet} \\
+\midrule
+\code{pd.read\_csv(pad)} & CSV-bestand inlezen als DataFrame \\
+\code{df.head()}, \code{df.shape}, \code{df.dtypes} & eerste rijen, (rijen, kolommen), datatypes \\
+\code{df.info()}, \code{df.describe()} & overzicht, statistieken van getallenkolommen \\
+\code{df["kol"].value\_counts()} & hoe vaak elke waarde voorkomt \\
+\code{df["kol"]}, \code{df[["a", "b"]]} & één kolom (Series), meerdere kolommen (DataFrame) \\
+\code{df.loc[masker, kolommen]} & rijen filteren en kolommen kiezen \\
+\code{(voorw1) \& (voorw2)}, \code{|}, \code{\textasciitilde} & voorwaarden combineren: en, of, niet \\
+\code{df.sort\_values("kol", ascending=False)} & sorteren, van groot naar klein \\
+\code{df["nieuw"] = ...}, \code{df.assign(...)} & nieuwe kolom maken \\
+\code{.str.replace()}, \code{.str.strip()}, \code{.str.lower()} & tekstbewerkingen op elke rij \\
+\code{.astype(float)} & datatype omzetten \\
+\code{pd.to\_datetime()}, \code{.dt.days} & tekst naar datum, aantal dagen uit een tijdsduur \\
+\code{.isna().sum()}, \code{.dropna()}, \code{.fillna()} & ontbrekende waarden tellen, weggooien, opvullen \\
+\code{.map(dictionary)} & waarden vertalen met een dictionary \\
+\code{.where(voorwaarde, anders)} & waarden vervangen waar de voorwaarde \code{False} is \\
+\code{.duplicated()}, \code{.drop\_duplicates()} & dubbels vinden, verwijderen \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Veelgemaakte fouten}
+
+\begin{itemize}
+  \item \code{KeyError}: een kolomnaam bestaat niet. Controleer de
+        spelling met \code{df.columns}.
+  \item \code{and}/\code{or} in plaats van \code{\&}/\code{|}, of geen
+        haakjes rond elke voorwaarde.
+  \item Een kolom wijzigen zonder \code{.copy()} van de tabel te maken.
+  \item Vergeten dat \code{==} op tekst exact vergelijkt (spaties,
+        hoofdletters).
+  \item In marimo dezelfde variabelenaam in twee cellen gebruiken.
+\end{itemize}
+
+\subsection*{Begrippen}
+
+\begin{description}[leftmargin=2.6cm, labelwidth=2.4cm, font=\normalfont\bfseries]
+  \item[DataFrame] tabel met rijen en kolommen.
+  \item[Series] één kolom van een DataFrame.
+  \item[index] de labels van de rijen (standaard 0, 1, 2, \dots).
+  \item[datatype] soort waarde in een kolom: \code{int64}, \code{float64}, \code{str}, datum.
+  \item[masker] Series met \code{True}/\code{False}, gebruikt om rijen te filteren.
+  \item[NaN] ontbrekende waarde.
+  \item[pipeline] reeks bewerkingen die na elkaar op de data worden uitgevoerd.
+\end{description}
+
+\end{document}

@@ -18,7 +18,7 @@ def _():
     return (pd,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Data Processing II - Combine, Summarize, Reshape
@@ -39,32 +39,39 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    # Local development default. For molab / WASM, replace with a raw GitHub URL,
-    # e.g. "https://raw.githubusercontent.com/<org>/<repo>/main/data".
-    DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+    import sys
+
+    # In the browser (marimo.app / WASM) there is no local data/ folder,
+    # so read the CSV files straight from GitHub instead.
+    if sys.platform == "emscripten":
+        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    else:
+        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab4_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Recap - repair a broken cleaning cell (13:00-13:15)
@@ -95,18 +102,13 @@ def _(pd):
     return (mini_clean,)
 
 
-@app.cell
-def _(check_exercise, mini_clean):
-    def _check():
-        assert len(mini_clean) == 5
-        assert set(mini_clean["position"]) == {"FORWARD", "MIDFIELDER"}
-        assert mini_clean["weight_kg"].dtype.kind == "f"
-
-    check_exercise(_check, "The mini cleaning pipeline runs correctly now.")
+@app.cell(hide_code=True)
+def _(checks, mini_clean):
+    checks.mini_clean(mini_clean)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Loading last week's cleaned data
@@ -158,7 +160,7 @@ def _(DATA_DIR, fix_sprint_units, pd):
     return (tests,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. groupby + agg (13:15-14:10)
@@ -177,7 +179,7 @@ def _(athletes):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     `pd.cut` turns a numeric column into categories based on bin edges - perfect for age categories such as U13 / U15 / U17.
@@ -205,7 +207,7 @@ def _(athletes_with_age_group):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - group by gender and age group
@@ -213,7 +215,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Using `athletes_with_age_group`, group by `gender` and `age_group`, then use `.agg(...)` to compute the mean `height_cm` and mean `weight_kg` per group. Store the result in `gender_age_summary` (use `observed=True` in `groupby` to skip empty combinations).
@@ -228,27 +230,13 @@ def _():
     return (gender_age_summary,)
 
 
-@app.cell
-def _(athletes_with_age_group, check_exercise, gender_age_summary):
-    def _check():
-        assert gender_age_summary is not ..., "Replace `...` with your grouped, aggregated dataframe."
-        expected = athletes_with_age_group.groupby(
-            ["gender", "age_group"], observed=True
-        ).agg(
-            mean_height_cm=("height_cm", "mean"), mean_weight_kg=("weight_kg", "mean")
-        )
-        assert set(gender_age_summary.columns) >= {"mean_height_cm", "mean_weight_kg"}, (
-            "Expected columns named `mean_height_cm` and `mean_weight_kg`."
-        )
-        assert len(gender_age_summary) == len(expected), (
-            f"Expected {len(expected)} groups, got {len(gender_age_summary)}."
-        )
-
-    check_exercise(_check, "Your group summary has the right shape and columns.")
+@app.cell(hide_code=True)
+def _(athletes_with_age_group, checks, gender_age_summary):
+    checks.gender_age_summary(athletes_with_age_group, gender_age_summary)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. merge (14:10-14:55)
@@ -269,7 +257,7 @@ def _(athletes, tests):
     return (merged_inner,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Both joins have the same length here because every athlete has at least one test result - with real-world data that is rarely guaranteed, which is exactly why the two behave differently in general. Now look for the duplicate athlete.
@@ -285,7 +273,7 @@ def _(merged_inner):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Same person, two different `athlete_id`s - the join itself works perfectly (it doesn't know these are the same person), but any summary statistic computed after the merge will silently count this athlete twice unless we deduplicate **by identity** (name + birthdate), not by ID.
@@ -293,7 +281,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The fix is to deduplicate **before** merging, not after: drop duplicate `(name, birthdate)` rows from `athletes` first, so every remaining athlete keeps all of their own test moments once merged. Deduplicating *after* merging would incorrectly throw away an athlete's other test moments too, since those rows also share the same name + birthdate.
@@ -310,7 +298,7 @@ def _(athletes, tests):
     return (combined,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - what did deduplication cost us?
@@ -322,7 +310,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Compute `rows_lost_to_dedup`: the number of rows in `merged_inner` (the un-deduplicated merge) whose `athlete_id` does **not** appear in `combined`.
@@ -338,27 +326,13 @@ def _():
     return (rows_lost_to_dedup,)
 
 
-@app.cell
-def _(check_exercise, combined, merged_inner, rows_lost_to_dedup):
-    def _check():
-        assert rows_lost_to_dedup is not ..., "Replace `...` with your row count."
-        dropped_ids = set(merged_inner["athlete_id"]) - set(combined["athlete_id"])
-        expected = merged_inner["athlete_id"].isin(dropped_ids).sum()
-        assert rows_lost_to_dedup == expected, (
-            f"Expected {expected} rows lost, got {rows_lost_to_dedup}."
-        )
-
-    check_exercise(
-        _check,
-        "That's how many test records would have silently vanished from "
-        "view if you had not deliberately checked.",
-    )
-
-    check_exercise(_check, "`combined` is merged and free of duplicate athletes.")
+@app.cell(hide_code=True)
+def _(checks, combined, merged_inner, rows_lost_to_dedup):
+    checks.rows_lost_to_dedup(combined, merged_inner, rows_lost_to_dedup)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Wide ↔ long: `melt` and `pivot` (15:10-15:50)
@@ -379,7 +353,7 @@ def _(combined):
     return (sprint_wide,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     In wide format, computing progress between two test moments is a single subtraction. A negative number means the athlete got *faster* (a lower time).
@@ -394,7 +368,7 @@ def _(sprint_wide):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     `melt` is the inverse of `pivot`: it turns wide columns back into long `(id, variable, value)` rows - the format plotly express prefers, as we'll see next session.
@@ -411,7 +385,7 @@ def _(sprint_wide):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - progress in jump height
@@ -419,7 +393,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Pivot `combined` to `cmj_wide` (index `athlete_id`, columns `test_moment`, values `cmj_height_cm`), then compute `cmj_progress_1_to_2` as the *difference* between test moment 2 and test moment 1 (moment 2 minus moment 1, so a **positive** number means the athlete jumped higher).
@@ -435,25 +409,13 @@ def _():
     return cmj_progress_1_to_2, cmj_wide
 
 
-@app.cell
-def _(check_exercise, cmj_progress_1_to_2, cmj_wide, combined):
-    def _check():
-        assert cmj_wide is not ..., "Replace `...` with a pivot_table call."
-        expected_wide = combined.pivot_table(
-            index="athlete_id", columns="test_moment", values="cmj_height_cm"
-        )
-        assert set(cmj_wide.columns) >= {1, 2}, "cmj_wide needs at least columns 1 and 2."
-        assert cmj_progress_1_to_2 is not ..., "Replace `...` with cmj_wide[2] - cmj_wide[1]."
-        expected_progress = expected_wide[2] - expected_wide[1]
-        assert (cmj_progress_1_to_2.dropna().round(3) == expected_progress.dropna().round(3)).all(), (
-            "cmj_progress_1_to_2 should equal test moment 2 minus test moment 1."
-        )
-
-    check_exercise(_check, "Your wide table and progress column are both correct.")
+@app.cell(hide_code=True)
+def _(checks, cmj_progress_1_to_2, cmj_wide, combined):
+    checks.cmj_progress(cmj_progress_1_to_2, cmj_wide, combined)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Time series with `hr_session.csv` (15:50-16:50)
@@ -474,7 +436,7 @@ def _(DATA_DIR, pd):
     return (hr_session,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Heart-rate *zones* are usually expressed as a percentage of maximum heart rate. We estimate `hr_max` per athlete with the common rule-of-thumb `220 - age`, then use `pd.cut` to bucket `% hr_max` into 5 zones.
@@ -506,7 +468,7 @@ def _(hr_with_age, pd):
     return (hr_zoned,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Time per zone, per athlete, in minutes (each row is 1 second, so dividing a row count by 60 gives minutes):
@@ -523,7 +485,7 @@ def _(hr_zoned):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     A **rolling average** smooths out second-to-second noise; `resample` regroups a time-indexed series into fixed intervals (here, 1-minute bins) - both need the data sorted by time first.
@@ -554,7 +516,7 @@ def _(one_athlete):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 4 - time in zone 4-5 per athlete
@@ -562,7 +524,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Using `hr_zoned`, compute `zone_4_5_minutes`: a Series indexed by `athlete_id` with the total minutes each athlete spent in `"Zone 4"` or `"Zone 5"` combined.
@@ -577,29 +539,13 @@ def _():
     return (zone_4_5_minutes,)
 
 
-@app.cell
-def _(check_exercise, hr_zoned, zone_4_5_minutes):
-    def _check():
-        assert zone_4_5_minutes is not ..., "Replace `...` with your grouped computation."
-        expected = (
-            hr_zoned.loc[hr_zoned["hr_zone"].isin(["Zone 4", "Zone 5"])]
-            .groupby("athlete_id")
-            .size()
-            / 60
-        )
-        assert set(zone_4_5_minutes.index) == set(expected.index), (
-            "The set of athletes does not match."
-        )
-        aligned = zone_4_5_minutes.reindex(expected.index)
-        assert (aligned.round(2) == expected.round(2)).all(), (
-            "The minute counts don't match a Zone 4/5 filter + count / 60."
-        )
-
-    check_exercise(_check, "Time in zone 4-5 is computed correctly for every athlete.")
+@app.cell(hide_code=True)
+def _(checks, hr_zoned, zone_4_5_minutes):
+    checks.zone_4_5_minutes(hr_zoned, zone_4_5_minutes)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 7. Mini-case, in pairs: training report (16:50-17:30)
@@ -613,7 +559,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `training_report`: one row per `athlete_id`, with columns `zone_4_5_minutes`, `max_speed_kmh` and `distance_km`. A `.agg` with a dictionary of named aggregations is one clean way to do this in a single `groupby` call - but any correct approach is fine.
@@ -637,25 +583,13 @@ def _():
     return (training_report,)
 
 
-@app.cell
-def _(check_exercise, hr_zoned, training_report):
-    def _check():
-        assert training_report is not ..., "Replace `...` with your one-row-per-athlete summary."
-        for col in ["zone_4_5_minutes", "max_speed_kmh", "distance_km"]:
-            assert col in training_report.columns, f"Missing column `{col}`."
-        assert set(training_report.index) == set(hr_zoned["athlete_id"].unique()) or set(
-            training_report.get("athlete_id", [])
-        ) == set(hr_zoned["athlete_id"].unique()), (
-            "The report should have exactly one row per athlete in hr_zoned."
-        )
-        assert (training_report["distance_km"] > 0).all(), "Distance should be positive for every athlete."
-        assert (training_report["max_speed_kmh"] <= 30).all(), "Max speed looks unrealistically high."
-
-    check_exercise(_check, "Nice - that's a coach-ready training report.")
+@app.cell(hide_code=True)
+def _(checks, hr_zoned, training_report):
+    checks.training_report(hr_zoned, training_report)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     See you next week for Datavisualisatie I, where `combined` and `hr_zoned` become the basis for a set of plotly charts and a small interactive dashboard.

@@ -11,7 +11,7 @@ def _():
     return (mo,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Introduction to Python II - Functions, Strings, Collections and Loops
@@ -34,7 +34,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Quick marimo reminder: each variable can be defined by **only one
@@ -44,34 +44,41 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    import sys as _sys
+    import types as _types
+
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab2_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
+
+
 @app.cell
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys
 
-    return (check_exercise,)
-
-
-@app.cell
-def _(mo):
-    # Local development default. For molab / WASM, replace with a raw GitHub URL,
-    # e.g. "https://raw.githubusercontent.com/<org>/<repo>/main/data".
-    DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+    # In the browser (marimo.app / WASM) there is no local data/ folder,
+    # so read the CSV files straight from GitHub instead.
+    if sys.platform == "emscripten":
+        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    else:
+        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Warm-up: recap of last week (13:00-13:15)
@@ -84,7 +91,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - flying 20 m
@@ -92,7 +99,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Compute the time between 10 m and 30 m, rounded to 2 decimals, in
@@ -112,24 +119,13 @@ def _():
     return flying_20m_kmh, flying_20m_s
 
 
-@app.cell
-def _(check_exercise, flying_20m_kmh, flying_20m_s):
-    def _check():
-        assert flying_20m_s is not ... and flying_20m_kmh is not ..., "Replace both `...`."
-        assert flying_20m_s == 3.29, f"Expected 3.29 s, got {flying_20m_s}."
-        assert flying_20m_kmh == 21.9, (
-            f"Expected 21.9 km/h, got {flying_20m_kmh}. (20 m / time gives m/s; multiply by 3.6 for km/h.)"
-        )
-
-    check_exercise(
-        _check,
-        "Now imagine doing this for 43 athletes, 3 test moments each... "
-        "That's what functions and loops are for.",
-    )
+@app.cell(hide_code=True)
+def _(checks, flying_20m_kmh, flying_20m_s):
+    checks.flying_20m(flying_20m_kmh, flying_20m_s)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Writing your own functions (13:15-14:00)
@@ -173,7 +169,7 @@ def _():
     return (speed_kmh,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### `return` is not the same as `print`
@@ -195,7 +191,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Default values
@@ -218,7 +214,7 @@ def _(speed_kmh):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - a BMI function
@@ -226,7 +222,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Write a function `bmi(weight_kg, height_cm)` that **returns** the BMI
@@ -246,19 +242,13 @@ def _():
     return (bmi,)
 
 
-@app.cell
-def _(bmi, check_exercise):
-    def _check():
-        assert bmi(65.5, 167.1) is not ..., "Replace `return ...` with the BMI computation."
-        assert bmi(65.5, 167.1) is not None, "Your function returns None - did you `print` instead of `return`?"
-        assert bmi(65.5, 167.1) == 23.5, f"bmi(65.5, 167.1) should be 23.5, got {bmi(65.5, 167.1)}."
-        assert bmi(66.2, 176.3) == 21.3, f"bmi(66.2, 176.3) should be 21.3, got {bmi(66.2, 176.3)}."
-
-    check_exercise(_check, "One function, reusable for every athlete in the club.")
+@app.cell(hide_code=True)
+def _(bmi, checks):
+    checks.bmi(bmi)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - heart rate zones as a function
@@ -266,7 +256,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Turn last week's heart rate zone logic into a function
@@ -296,24 +286,13 @@ def _():
     return (hr_zone,)
 
 
-@app.cell
-def _(check_exercise, hr_zone):
-    def _check():
-        assert hr_zone(150) is not ..., "Replace `return ...` with your zone logic."
-        cases = [
-            ((100,), 1), ((130,), 2), ((150,), 3), ((170,), 4), ((190,), 5),
-            ((119,), 1), ((120,), 2), ((180,), 5),
-            ((150, 180), 4), ((150, 250), 2),
-        ]
-        for args, expected in cases:
-            call = f"hr_zone({', '.join(str(a) for a in args)})"
-            assert hr_zone(*args) == expected, f"`{call}` should be {expected}, got {hr_zone(*args)!r}."
-
-    check_exercise(_check, "Your function handles every zone, and the default `hr_max` works.")
+@app.cell(hide_code=True)
+def _(checks, hr_zone):
+    checks.hr_zone(hr_zone)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. String methods (14:00-14:40)
@@ -360,7 +339,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Formatting numbers in f-strings
@@ -382,7 +361,7 @@ def _(speed_kmh):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 4 - parse a weight
@@ -390,7 +369,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The club's export stores weights as text with a **comma** as decimal
@@ -410,20 +389,13 @@ def _():
     return (parse_weight,)
 
 
-@app.cell
-def _(check_exercise, parse_weight):
-    def _check():
-        assert parse_weight("65,5") is not ..., "Replace `return ...`."
-        for text, expected in [("65,5", 65.5), (" 59,6", 59.6), ("70", 70.0), ("61.1 ", 61.1)]:
-            result = parse_weight(text)
-            assert isinstance(result, float), f"parse_weight({text!r}) should return a float, got {type(result).__name__}."
-            assert result == expected, f"parse_weight({text!r}) should be {expected}, got {result!r}."
-
-    check_exercise(_check, "Commas, dots and stray spaces are all handled.")
+@app.cell(hide_code=True)
+def _(checks, parse_weight):
+    checks.parse_weight(parse_weight)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 5 - clean a position label
@@ -431,7 +403,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The `position` column of the club's export is a mess: `"Forward"`,
@@ -457,27 +429,13 @@ def _():
     return (clean_position,)
 
 
-@app.cell
-def _(check_exercise, clean_position):
-    def _check():
-        assert clean_position("Forward") is not ..., "Replace `return ...`."
-        cases = {
-            "Forward": "Forward", "forward ": "Forward", "FWD": "Forward",
-            "midfielder": "Midfielder", "MID": "Midfielder",
-            "defender ": "Defender", "DEF": "Defender",
-            "goalkeeper": "Goalkeeper", "GK": "Goalkeeper",
-            "coach": "Unknown",
-        }
-        for raw, expected in cases.items():
-            assert clean_position(raw) == expected, (
-                f"clean_position({raw!r}) should be {expected!r}, got {clean_position(raw)!r}."
-            )
-
-    check_exercise(_check, "Every messy label maps to a clean one.")
+@app.cell(hide_code=True)
+def _(checks, clean_position):
+    checks.clean_position(clean_position)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 6 - birth year from a date
@@ -485,7 +443,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Birthdates are stored as text in the format `"YYYY-MM-DD"`. Write
@@ -506,20 +464,13 @@ def _():
     return (birth_year_from_date,)
 
 
-@app.cell
-def _(birth_year_from_date, check_exercise):
-    def _check():
-        assert birth_year_from_date("2010-05-27") is not ..., "Replace `return ...`."
-        assert birth_year_from_date("2010-05-27") == 2010, (
-            f"Expected 2010, got {birth_year_from_date('2010-05-27')!r}. Did you convert to int?"
-        )
-        assert birth_year_from_date("2014-02-07") == 2014, "Wrong result for '2014-02-07'."
-
-    check_exercise(_check, "Years extracted and converted.")
+@app.cell(hide_code=True)
+def _(birth_year_from_date, checks):
+    checks.birth_year_from_date(birth_year_from_date)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. Scope: where is a variable visible? (14:40-15:00)
@@ -586,7 +537,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Good practice: a function should get everything it needs through its
@@ -601,7 +552,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 7 - remove a hidden global
@@ -609,7 +560,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The function `age_in_season` below depends on the global
@@ -632,21 +583,13 @@ def _():
     return (age_in_season,)
 
 
-@app.cell
-def _(age_in_season, check_exercise):
-    def _check():
-        assert age_in_season(2010) == 16, f"age_in_season(2010) should be 16, got {age_in_season(2010)!r}."
-        try:
-            age_2030 = age_in_season(2010, season_year=2030)
-        except TypeError:
-            raise AssertionError("`age_in_season` has no `season_year` parameter yet.")
-        assert age_2030 == 20, f"age_in_season(2010, season_year=2030) should be 20, got {age_2030!r}."
-
-    check_exercise(_check, "The function no longer depends on a hidden global.")
+@app.cell(hide_code=True)
+def _(age_in_season, checks):
+    checks.age_in_season(age_in_season)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## ☕ Break (15:00-15:10)
@@ -654,7 +597,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Collections (15:10-16:00)
@@ -699,7 +642,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Tuples
@@ -725,7 +668,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Dictionaries
@@ -762,7 +705,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Sets
@@ -784,7 +727,7 @@ def _():
     return (raw_positions,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 8 - a season of sprints
@@ -792,7 +735,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Using the list `emma_sprints_s` below, compute:
@@ -816,22 +759,13 @@ def _():
     return emma_average_s, emma_best_s, emma_last_two, emma_n_tests
 
 
-@app.cell
-def _(check_exercise, emma_average_s, emma_best_s, emma_last_two, emma_n_tests):
-    def _check():
-        for label, value in [("emma_n_tests", emma_n_tests), ("emma_best_s", emma_best_s),
-                             ("emma_average_s", emma_average_s), ("emma_last_two", emma_last_two)]:
-            assert value is not ..., f"Replace `...` for `{label}`."
-        assert emma_n_tests == 5, f"Expected 5 tests, got {emma_n_tests}."
-        assert emma_best_s == 5.39, f"Expected 5.39, got {emma_best_s}."
-        assert emma_average_s == 5.51, f"Expected an average of 5.51, got {emma_average_s}."
-        assert emma_last_two == [5.51, 5.39], f"Expected [5.51, 5.39], got {emma_last_two}."
-
-    check_exercise(_check, "Emma is getting faster - her last test was her best.")
+@app.cell(hide_code=True)
+def _(checks, emma_average_s, emma_best_s, emma_last_two, emma_n_tests):
+    checks.emma_tests(emma_average_s, emma_best_s, emma_last_two, emma_n_tests)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 9 - a lookup table for positions
@@ -839,7 +773,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     The long `if` / `elif` chain in `clean_position` works, but a
@@ -870,24 +804,13 @@ def _():
     return (clean_position_v2,)
 
 
-@app.cell
-def _(check_exercise, clean_position_v2):
-    def _check():
-        assert clean_position_v2("FWD") is not ..., "Replace `return ...` in clean_position_v2."
-        cases = {
-            "forward ": "Forward", "MID": "Midfielder", "defender ": "Defender",
-            "DEF": "Defender", "Goalkeeper": "Goalkeeper", "GK": "Goalkeeper", "coach": "Unknown",
-        }
-        for raw, expected in cases.items():
-            assert clean_position_v2(raw) == expected, (
-                f"clean_position_v2({raw!r}) should be {expected!r}, got {clean_position_v2(raw)!r}."
-            )
-
-    check_exercise(_check, "Same result as Exercise 5, in far fewer lines.")
+@app.cell(hide_code=True)
+def _(checks, clean_position_v2):
+    checks.clean_position_v2(clean_position_v2)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Loops (16:00-16:50)
@@ -971,7 +894,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     **Bonus - list comprehensions.** The "transform into a new list"
@@ -991,7 +914,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 10 - loop over the test day
@@ -999,7 +922,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     `test_day_s` holds the 30 m times of everyone tested today. With a
@@ -1022,20 +945,13 @@ def _():
     return n_under_5_5, test_day_kmh, test_day_s
 
 
-@app.cell
-def _(check_exercise, n_under_5_5, test_day_kmh, test_day_s):
-    def _check():
-        assert n_under_5_5 is not ... and test_day_kmh is not ..., "Replace both `...`."
-        assert n_under_5_5 == 4, f"Expected 4 times under 5.5 s, got {n_under_5_5}."
-        expected = [round(30 / t * 3.6, 1) for t in test_day_s]
-        assert isinstance(test_day_kmh, list), "`test_day_kmh` should be a list."
-        assert test_day_kmh == expected, f"Expected {expected}, got {test_day_kmh}."
-
-    check_exercise(_check, "Half of today's group ran under 5.5 s.")
+@app.cell(hide_code=True)
+def _(checks, n_under_5_5, test_day_kmh, test_day_s):
+    checks.test_day(n_under_5_5, test_day_kmh, test_day_s)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 11 - count athletes per position
@@ -1043,7 +959,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Loop over `raw_positions` (defined in the section on sets), clean each
@@ -1061,18 +977,13 @@ def _(clean_position_v2, raw_positions):
     return (position_counts,)
 
 
-@app.cell
-def _(check_exercise, position_counts):
-    def _check():
-        assert position_counts is not ..., "Replace `...` with a counting loop."
-        expected = {"Defender": 3, "Midfielder": 4, "Goalkeeper": 2, "Forward": 5}
-        assert position_counts == expected, f"Expected {expected}, got {position_counts}."
-
-    check_exercise(_check, "14 messy labels, 4 clean positions.")
+@app.cell(hide_code=True)
+def _(checks, position_counts):
+    checks.position_counts(position_counts)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 12 - how many weeks to reach the target?
@@ -1080,7 +991,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     An athlete is at Yo-Yo level **15.5** and the target is level **18**.
@@ -1103,18 +1014,13 @@ def _():
     return level_reached, weeks_to_target
 
 
-@app.cell
-def _(check_exercise, level_reached, weeks_to_target):
-    def _check():
-        assert weeks_to_target is not ... and level_reached is not ..., "Replace both `...`."
-        assert weeks_to_target == 7, f"Expected 7 weeks, got {weeks_to_target}."
-        assert level_reached == 18.3, f"Expected level 18.3, got {level_reached}."
-
-    check_exercise(_check, "Target reached after 7 weeks.")
+@app.cell(hide_code=True)
+def _(checks, level_reached, weeks_to_target):
+    checks.weeks_to_target(level_reached, weeks_to_target)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 7. Challenge (16:50-17:20) - the club's real athlete file
@@ -1134,8 +1040,14 @@ def _(mo):
 def _(DATA_DIR):
     import csv
     from pathlib import Path
+    from urllib.request import urlopen
 
-    athlete_lines = Path(DATA_DIR, "athletes.csv").read_text().splitlines()
+    # Path only understands local files; in the browser DATA_DIR is a URL.
+    if DATA_DIR.startswith("http"):
+        athletes_text = urlopen(f"{DATA_DIR}/athletes.csv").read().decode("utf-8")
+    else:
+        athletes_text = Path(DATA_DIR, "athletes.csv").read_text()
+    athlete_lines = athletes_text.splitlines()
     athlete_rows = list(csv.DictReader(athlete_lines))
 
     print(len(athlete_rows), "athletes")
@@ -1144,7 +1056,7 @@ def _(DATA_DIR):
     return (athlete_rows,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Build two dictionaries, keyed on the **clean** position (use
@@ -1173,38 +1085,13 @@ def _(athlete_rows, clean_position_v2):
     return average_height_by_position, squad_counts
 
 
-@app.cell
-def _(athlete_rows, average_height_by_position, check_exercise, squad_counts):
-    def _check():
-        assert squad_counts is not ..., "Replace `...` for `squad_counts`."
-        assert average_height_by_position is not ..., "Replace `...` for `average_height_by_position`."
-        position_map = {
-            "forward": "Forward", "fwd": "Forward", "midfielder": "Midfielder", "mid": "Midfielder",
-            "defender": "Defender", "def": "Defender", "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
-        }
-        expected_counts, heights = {}, {}
-        for row in athlete_rows:
-            position = position_map[row["position"].strip().lower()]
-            expected_counts[position] = expected_counts.get(position, 0) + 1
-            if row["height_cm"]:
-                heights.setdefault(position, []).append(float(row["height_cm"]))
-        expected_heights = {p: round(sum(h) / len(h), 1) for p, h in heights.items()}
-
-        assert squad_counts == expected_counts, f"Expected {expected_counts}, got {squad_counts}."
-        assert average_height_by_position == expected_heights, (
-            f"Expected {expected_heights}, got {average_height_by_position}. "
-            "Did you skip the empty heights and round to 1 decimal?"
-        )
-
-    check_exercise(
-        _check,
-        "You just cleaned and summarised a real export with nothing but core Python. "
-        "Next week, pandas will do all of this in a handful of lines.",
-    )
+@app.cell(hide_code=True)
+def _(athlete_rows, average_height_by_position, checks, squad_counts):
+    checks.squad_summary(athlete_rows, average_height_by_position, squad_counts)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ## Exit ticket

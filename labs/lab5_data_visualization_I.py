@@ -19,7 +19,7 @@ def _():
     return pd, px
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Data Visualization I - Tell the Story with Plotly
@@ -39,32 +39,39 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    # Local development default. For molab / WASM, replace with a raw GitHub URL,
-    # e.g. "https://raw.githubusercontent.com/<org>/<repo>/main/data".
-    DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+    import sys
+
+    # In the browser (marimo.app / WASM) there is no local data/ folder,
+    # so read the CSV files straight from GitHub instead.
+    if sys.platform == "emscripten":
+        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    else:
+        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
     return (DATA_DIR,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Run `check_fn`; show a green callout on success, else an explanation."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "The result is not correct yet."
-            return mo.callout(mo.md(f"**Not yet correct.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Error while checking your answer:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Correct!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # The answer checks live in a separate file (checks/ in the course
+    # repository), so that this notebook does not give the answers away.
+    _CHECKS_FILE = "lab5_checks.py"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(
+            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+        ).read().decode("utf-8")
+    else:
+        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Setup: reload the cleaned data
@@ -123,7 +130,7 @@ def _(DATA_DIR, pd):
     return athletes, combined, hr_zoned
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Chart colors
@@ -154,7 +161,7 @@ def _():
     return POSITION_COLORS, ZONE_COLORS
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 1. Principles: the right chart for the right question (13:00-13:30)
@@ -189,7 +196,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The bars start at zero, so their *heights* honestly represent the differences between positions.
@@ -216,7 +223,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     The y-axis no longer starts at zero: the same small real differences now look enormous. This is one of the most common ways sports graphics mislead - a truncated or non-zero baseline.
@@ -247,7 +254,7 @@ def _(chart_critique, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 2. Basic plotly express charts (13:30-14:30)
@@ -306,7 +313,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     A line chart needs something to walk along the x-axis - here, `test_moment`. Because `combined` is already long (one row per athlete per test moment), we can plot every athlete's progress directly, no pivoting required.
@@ -329,7 +336,7 @@ def _(combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 1 - a histogram of your own
@@ -337,7 +344,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `weight_histogram`: a `px.histogram` of `athletes["weight_kg"]`, with a `title` and an `x` label set through `labels=`.
@@ -352,19 +359,13 @@ def _():
     return (weight_histogram,)
 
 
-@app.cell
-def _(check_exercise, weight_histogram):
-    def _check():
-        assert weight_histogram is not ..., "Replace `...` with a px.histogram figure."
-        assert weight_histogram.data[0].type == "histogram", "The chart should be a histogram."
-        assert weight_histogram.layout.title.text, "Add a `title=` to the chart."
-        assert weight_histogram.layout.xaxis.title.text, "Add an x-axis label via `labels=`."
-
-    check_exercise(_check, "A properly labeled histogram.")
+@app.cell(hide_code=True)
+def _(checks, weight_histogram):
+    checks.weight_histogram(weight_histogram)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 3. More dimensions: color, facet, size (14:30-15:15)
@@ -395,7 +396,7 @@ def _(POSITION_COLORS, combined, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 2 - add a facet
@@ -403,7 +404,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `yoyo_by_age`: a `px.box` of `yoyo_level` (y) by `position` (x, colored using `POSITION_COLORS`), **faceted** by `gender` using `facet_col`.
@@ -418,21 +419,13 @@ def _():
     return (yoyo_by_age,)
 
 
-@app.cell
-def _(check_exercise, yoyo_by_age):
-    def _check():
-        assert yoyo_by_age is not ..., "Replace `...` with a px.box figure."
-        assert yoyo_by_age.data[0].type == "box", "The chart should be a box plot."
-        facet_annotations = [a.text for a in yoyo_by_age.layout.annotations]
-        assert any("F" in t or "M" in t for t in facet_annotations), (
-            "No facet columns found - did you pass facet_col='gender'?"
-        )
-
-    check_exercise(_check, "Faceting by gender works.")
+@app.cell(hide_code=True)
+def _(checks, yoyo_by_age):
+    checks.yoyo_by_age(yoyo_by_age)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4. Heart-rate time series with zone bands (15:30-16:15)
@@ -488,7 +481,7 @@ def _(hr_zoned, px):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Exercise 3 - speed over time
@@ -496,7 +489,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `speed_line`: a `px.line` of `speed_kmh` over `timestamp` for `one_athlete_hr` (defined above), with a title and axis labels.
@@ -511,18 +504,13 @@ def _():
     return (speed_line,)
 
 
-@app.cell
-def _(check_exercise, speed_line):
-    def _check():
-        assert speed_line is not ..., "Replace `...` with a px.line figure."
-        assert "lines" in speed_line.data[0].mode, "The chart should be a line chart."
-        assert speed_line.layout.title.text, "Add a `title=` to the chart."
-
-    check_exercise(_check, "A proper speed-over-time line chart.")
+@app.cell(hide_code=True)
+def _(checks, speed_line):
+    checks.speed_line(speed_line)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 5. Interactivity in marimo (16:15-16:45)
@@ -566,7 +554,7 @@ def _(athlete_picker, hr_zoned, px, time_window):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Move the dropdown or the slider - the chart above redraws on its own. **Optional**: `mo.ui.plotly` goes one step further and makes *selections on the chart itself* reactive - lasso a few points in the scatter below, then look at the table underneath it.
@@ -597,7 +585,7 @@ def _(pd, selectable_scatter):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 6. Mini-dashboard assignment (16:45-17:30)
@@ -611,7 +599,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     `dashboard_selector` below is provided for you - remember that reading a UI element's `.value` has to happen in a **different** cell from the one that creates it, which is exactly why it's split out here.
@@ -628,7 +616,7 @@ def _(combined, mo):
     return (dashboard_selector,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Build `dashboard_charts`: a list of exactly 3 plotly figures, where at least one uses `dashboard_selector.value`.
@@ -644,20 +632,13 @@ def _():
     return (dashboard_charts,)
 
 
-@app.cell
-def _(check_exercise, dashboard_charts, dashboard_selector):
-    def _check():
-        assert hasattr(dashboard_selector, "value"), "dashboard_selector should be an mo.ui element."
-        assert dashboard_charts is not ..., "Replace `...` with a list of 3 figures."
-        assert len(dashboard_charts) == 3, f"Expected exactly 3 charts, got {len(dashboard_charts)}."
-        for fig in dashboard_charts:
-            assert hasattr(fig, "data"), "Every item in dashboard_charts should be a plotly figure."
-
-    check_exercise(_check, "That's a coach-ready mini-dashboard.")
+@app.cell(hide_code=True)
+def _(checks, dashboard_charts, dashboard_selector):
+    checks.dashboard(dashboard_charts, dashboard_selector)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     Congratulations - you've gone from a messy CSV export to an interactive dashboard in three sessions. See you at the case presentations.
