@@ -113,21 +113,24 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
-    # Use the checks/ folder next to this notebook when there is one;
-    # otherwise fetch only this lab's checks file from GitHub.
+    # The checks file lives in the checks/ folder one level up, as in the
+    # course folder. If it is missing there (e.g. when you downloaded
+    # only this notebook), it is downloaded into it once. In the browser
+    # (marimo.app) it is read straight from GitHub.
     _CHECKS_FILE = "lab3_checks.py"
-    _local_checks = (
-        None if _sys.platform == "emscripten"
-        else mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE
-    )
-    if _local_checks is not None and _local_checks.is_file():
-        _checks_source = _local_checks.read_text()
-    else:
+    _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+    if _sys.platform == "emscripten":
         from urllib.request import urlopen as _urlopen
 
-        _checks_source = _urlopen(
-            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
-        ).read().decode("utf-8")
+        _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
+    else:
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        if not _checks_path.is_file():
+            _checks_path.parent.mkdir(exist_ok=True)
+            _urlretrieve(_CHECKS_URL, _checks_path)
+        _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
@@ -138,12 +141,13 @@ def _(mo):
     mo.md(r"""
     ## Where does the data come from?
 
-    When you run this notebook from the course folder, it reads the CSV
-    files from the `data/` folder next to it. Otherwise - online
-    (marimo.app, molab or a WASM link), or when you downloaded only this
-    notebook - it reads the same files from the course's GitHub
-    repository instead. `pandas.read_csv` accepts both local paths and
-    URLs, so nothing else in this notebook needs to change.
+    When you run this notebook locally, it reads the CSV files from the
+    `data/` folder one level up, as in the course folder. Files that are
+    missing there - for example when you downloaded only this notebook -
+    are downloaded into that folder the first time. Online (marimo.app, molab or a WASM link) there
+    is no local filesystem, so it reads the same files straight from the
+    course's GitHub repository. `pandas.read_csv` accepts both local paths
+    and URLs, so nothing else in this notebook needs to change.
     """)
     return
 
@@ -152,14 +156,23 @@ def _(mo):
 def _(mo):
     import sys
 
-    # Use the data/ folder next to this notebook when there is one.
-    # Otherwise (in the browser, or when the notebook was downloaded on
-    # its own) read the CSV files this lab needs straight from GitHub.
-    _local_data = None if sys.platform == "emscripten" else mo.notebook_dir() / ".." / "data"
-    if _local_data is not None and _local_data.is_dir():
-        DATA_DIR = str(_local_data)
+    # The CSV files live in the data/ folder one level up, as in the
+    # course folder. Files that are missing there (e.g. when you
+    # downloaded only this notebook) are downloaded into it once.
+    # In the browser (marimo.app) they are read straight from GitHub.
+    _DATA_URL = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    _DATA_FILES = ["athletes.csv", "tests.csv", "hr_session.csv"]
+    if sys.platform == "emscripten":
+        DATA_DIR = _DATA_URL
     else:
-        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _data_dir = (mo.notebook_dir() / ".." / "data").resolve()
+        _data_dir.mkdir(exist_ok=True)
+        for _name in _DATA_FILES:
+            if not (_data_dir / _name).exists():
+                _urlretrieve(f"{_DATA_URL}/{_name}", _data_dir / _name)
+        DATA_DIR = str(_data_dir)
     return (DATA_DIR,)
 
 
