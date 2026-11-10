@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.2"
 app = marimo.App(width="medium")
 
 
@@ -113,15 +113,21 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
+    # Use the checks/ folder next to this notebook when there is one;
+    # otherwise fetch only this lab's checks file from GitHub.
     _CHECKS_FILE = "lab3_checks.py"
-    if _sys.platform == "emscripten":
+    _local_checks = (
+        None if _sys.platform == "emscripten"
+        else mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE
+    )
+    if _local_checks is not None and _local_checks.is_file():
+        _checks_source = _local_checks.read_text()
+    else:
         from urllib.request import urlopen as _urlopen
 
         _checks_source = _urlopen(
             f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
         ).read().decode("utf-8")
-    else:
-        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
@@ -132,12 +138,12 @@ def _(mo):
     mo.md(r"""
     ## Where does the data come from?
 
-    When you run this notebook locally, it reads the CSV files from the
-    `data/` folder next to this project. When you run it online
-    (marimo.app, molab or a WASM link) there is no local filesystem, so
-    the notebook automatically reads the same files from the course's
-    GitHub repository instead. `pandas.read_csv` accepts both local paths
-    and URLs, so nothing else in this notebook needs to change.
+    When you run this notebook from the course folder, it reads the CSV
+    files from the `data/` folder next to it. Otherwise - online
+    (marimo.app, molab or a WASM link), or when you downloaded only this
+    notebook - it reads the same files from the course's GitHub
+    repository instead. `pandas.read_csv` accepts both local paths and
+    URLs, so nothing else in this notebook needs to change.
     """)
     return
 
@@ -146,12 +152,14 @@ def _(mo):
 def _(mo):
     import sys
 
-    # In the browser (marimo.app / WASM) there is no local data/ folder,
-    # so read the CSV files straight from GitHub instead.
-    if sys.platform == "emscripten":
-        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    # Use the data/ folder next to this notebook when there is one.
+    # Otherwise (in the browser, or when the notebook was downloaded on
+    # its own) read the CSV files this lab needs straight from GitHub.
+    _local_data = None if sys.platform == "emscripten" else mo.notebook_dir() / ".." / "data"
+    if _local_data is not None and _local_data.is_dir():
+        DATA_DIR = str(_local_data)
     else:
-        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
     return (DATA_DIR,)
 
 
@@ -271,7 +279,7 @@ def _(mo):
 def _(DATA_DIR, pd):
     # TODO: read data/tests.csv into `tests_raw` and store its shape
     tests_raw = pd.read_csv(f"{DATA_DIR}/tests.csv")
-    tests_raw_shape = ...
+    tests_raw_shape = tests_raw.shape
     return tests_raw, tests_raw_shape
 
 
@@ -367,9 +375,15 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(athletes_raw, younger_than_16):
     # TODO: select rows where position == "Forward" AND younger_than_16 is True
-    forwards_u16_raw = ...
+    print(athletes_raw["position"].unique())
+
+    athletes_forwards = athletes_raw["position"] == "Forward"
+
+    younger_than_16_and_forward = younger_than_16 & athletes_forwards
+
+    forwards_u16_raw = athletes_raw.loc[younger_than_16_and_forward]
     return (forwards_u16_raw,)
 
 

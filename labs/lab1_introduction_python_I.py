@@ -91,15 +91,21 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
+    # Use the checks/ folder next to this notebook when there is one;
+    # otherwise fetch only this lab's checks file from GitHub.
     _CHECKS_FILE = "lab1_checks.py"
-    if _sys.platform == "emscripten":
+    _local_checks = (
+        None if _sys.platform == "emscripten"
+        else mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE
+    )
+    if _local_checks is not None and _local_checks.is_file():
+        _checks_source = _local_checks.read_text()
+    else:
         from urllib.request import urlopen as _urlopen
 
         _checks_source = _urlopen(
             f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
         ).read().decode("utf-8")
-    else:
-        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
