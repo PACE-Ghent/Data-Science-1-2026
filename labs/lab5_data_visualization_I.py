@@ -638,13 +638,5 @@ def _(checks, dashboard_charts, dashboard_selector):
     return
 
 
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    Congratulations - you've gone from a messy CSV export to an interactive dashboard in three sessions. See you at the case presentations.
-    """)
-    return
-
-
 if __name__ == "__main__":
     app.run()

@@ -1095,6 +1095,11 @@ def _(athlete_rows, average_height_by_position, checks, squad_counts):
 def _(mo):
     mo.md("""
     ## Exit ticket
+
+    This one is for yourself: what you type stays in your own notebook and
+    is not sent to anyone. Write it down anyway - putting it into words
+    helps - and bring the points that are still unclear to the next
+    session, where we start with them.
     """)
     return
 

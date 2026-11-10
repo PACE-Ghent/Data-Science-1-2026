@@ -891,6 +891,11 @@ def _(athletes_clean, checks, fastest_per_position, tests_clean):
 def _(mo):
     mo.md("""
     ## Exit ticket
+
+    This one is for yourself: what you type stays in your own notebook and
+    is not sent to anyone. Write it down anyway - putting it into words
+    helps - and bring the points that are still unclear to the next
+    session, where we start with them.
     """)
     return
 
