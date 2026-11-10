@@ -3,9 +3,35 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{syllabus}
 
+% Taal: \usepackage{syllabus} voor Nederlands, \usepackage[english]{syllabus} voor Engels.
+\newif\ifsyllabusenglish
+\DeclareOption{english}{\syllabusenglishtrue}
+\DeclareOption{dutch}{\syllabusenglishfalse}
+\ProcessOptions\relax
+
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
-\RequirePackage[dutch]{babel}
+\ifsyllabusenglish
+  \RequirePackage[english]{babel}
+  \newcommand{\lbltbd}{TO FILL IN}
+  \newcommand{\lbltime}{Time}
+  \newcommand{\lblblock}{Block}
+  \newcommand{\lblpractise}{What you practise}
+  \newcommand{\lblsyllabusfor}{Syllabus for}
+  \newcommand{\lbllecturer}{Lecturer}
+  \newcommand{\lblsession}{Session}
+  \newcommand{\lblmaterials}{Materials}
+\else
+  \RequirePackage[dutch]{babel}
+  \newcommand{\lbltbd}{IN TE VULLEN}
+  \newcommand{\lbltime}{Tijd}
+  \newcommand{\lblblock}{Blok}
+  \newcommand{\lblpractise}{Wat je oefent}
+  \newcommand{\lblsyllabusfor}{Syllabus voor}
+  \newcommand{\lbllecturer}{Lesgever}
+  \newcommand{\lblsession}{Sessie}
+  \newcommand{\lblmaterials}{Lesmateriaal}
+\fi
 \RequirePackage{lmodern}
 \RequirePackage[a4paper,margin=2.2cm]{geometry}
 \RequirePackage[dvipsnames,table]{xcolor}
@@ -20,7 +46,7 @@
 \definecolor{tint}{HTML}{EEF3EF}
 
 % Vul alles wat met \tbd gemarkeerd is in voor je dit uitdeelt.
-\newcommand{\tbd}[1]{\colorbox{accent!20}{\textcolor{accent!80!black}{\textsf{\small IN TE VULLEN: #1}}}}
+\newcommand{\tbd}[1]{\colorbox{accent!20}{\textcolor{accent!80!black}{\textsf{\small \lbltbd: #1}}}}
 \newcommand{\code}[1]{\texttt{#1}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
@@ -41,7 +67,7 @@
 % Een planningstabel: tijd | blok | wat je oefent
 \newenvironment{schedule}
   {\par\noindent\rowcolors{2}{tint}{white}\tabularx{\textwidth}{@{}L{2.3cm}L{4.3cm}Y@{}}\toprule
-   \textbf{Tijd} & \textbf{Blok} & \textbf{Wat je oefent}\\\midrule}
+   \textbf{\lbltime} & \textbf{\lblblock} & \textbf{\lblpractise}\\\midrule}
   {\bottomrule\endtabularx\par}
 
 % Titelblok: \syllabustitel{Labo 4 -- Dataverwerking II}{Combineren, samenvatten, herschikken}
@@ -49,14 +75,14 @@
   \begin{center}
     {\color{muted}\textsf{DATA SCIENCE 1 \textperiodcentered{} 2026--2027}}\\[0.6em]
     {\huge\bfseries\color{pitch} #2}\\[0.6em]
-    {\large Syllabus voor #1}
+    {\large \lblsyllabusfor{} #1}
   \end{center}
   \vspace{1em}
   \noindent
   \begin{tabularx}{\textwidth}{@{}p{3.6cm}X@{}}
   \toprule
-  Lesgever     & dr. Maarten Slembrouck \\
-  Sessie       & #1 \\
-  Lesmateriaal & \url{https://github.com/PACE-Ghent/Data-Science-1-2026} \\
+  \lbllecturer & dr. Maarten Slembrouck \\
+  \lblsession  & #1 \\
+  \lblmaterials & \url{https://github.com/PACE-Ghent/Data-Science-1-2026} \\
   \bottomrule
   \end{tabularx}}

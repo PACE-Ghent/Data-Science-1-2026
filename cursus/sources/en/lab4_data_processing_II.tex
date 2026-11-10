@@ -1,0 +1,544 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[english]{cursus}
+\author{dr. Maarten Slembrouck}
+
+\begin{document}
+
+\labtitle{Lab 4 -- Data Processing II}{Combine, summarize, reshape}{Course text for the notebook \code{lab4\_data\_processing\_II.py}}
+
+\section*{What is this lab about?}
+
+Last week you turned messy exports into tidy tables: one row per
+athlete, one row per test. But a coach's questions are rarely about one
+row. ``How tall are our defenders on average?'' is about a \emph{group}
+of rows. ``How fast do our goalkeepers sprint?'' needs information from
+\emph{two} tables. ``Has everyone improved since the first test?'' asks
+for the table to be \emph{arranged} differently. And the heart-rate data
+of a training session is a \emph{time series}, with one measurement per
+second.
+
+\textbf{After this lab you can} summarize data per group with
+\code{groupby}, combine tables with \code{merge}, reshape data with
+\code{melt} and \code{pivot\_table}, and compute basic features of a
+time series (heart-rate zones, rolling average, resampling).
+
+Just like last week, every example was actually run on the club's data.
+Read this text next to the notebook and type the examples yourself.
+
+% ---------------------------------------------------------------------------
+\section{Starting point: last week's cleaned data}
+
+The notebook starts with the cleaning from lab 3, in compact form. Two
+helper functions do the work: \code{clean\_positions} turns the 13
+spellings into 4 positions, \code{fix\_sprint\_units} converts
+milliseconds into seconds.
+
+\begin{python}[noout]
+import pandas as pd
+
+def clean_positions(position_column):
+    position_map = {
+        "forward": "Forward", "fwd": "Forward",
+        "midfielder": "Midfielder", "mid": "Midfielder",
+        "defender": "Defender", "def": "Defender",
+        "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
+    }
+    return position_column.str.strip().str.lower().map(position_map)
+
+def fix_sprint_units(seconds_column):
+    return seconds_column.where(seconds_column < 20, seconds_column / 1000)
+
+REFERENCE_DATE = pd.Timestamp("2026-09-14")
+
+athletes = pd.read_csv(f"{DATA_DIR}/athletes.csv").assign(
+    position=lambda d: clean_positions(d["position"]),
+    weight_kg=lambda d: d["weight_kg"].str.replace(",", ".").astype(float),
+    age=lambda d: (REFERENCE_DATE - pd.to_datetime(d["birthdate"])).dt.days // 365,
+)
+tests = pd.read_csv(f"{DATA_DIR}/tests.csv").assign(
+    sprint_10m_s=lambda d: fix_sprint_units(d["sprint_10m_s"]),
+    sprint_30m_s=lambda d: fix_sprint_units(d["sprint_30m_s"]),
+)
+\end{python}
+
+Read this code calmly: you saw everything in it last week. Note that the
+duplicated athlete is \emph{deliberately} not removed yet. That becomes
+important in section~\ref{sec:merge}.
+
+\subsection*{Recap: reading error messages}
+
+The notebook starts with a broken cell that you have to repair. An error
+message looks scary, but the most important information is always on
+the \textbf{last line}: the kind of error and a short explanation. Two
+errors you will certainly meet today:
+
+\begin{python}[error]
+athletes["positio"]
+\end{python}
+
+A \code{KeyError} means: this key (here: column name) does not exist.
+Almost always a typo.
+
+\begin{python}[error]
+pd.Series(["57,5", "60,3"]).astype(float)
+\end{python}
+
+A \code{ValueError} from \code{astype(float)} means: I can't turn this
+text into a number. Here the comma is in the way.
+
+% ---------------------------------------------------------------------------
+\section{Summarizing groups with \code{groupby}}
+
+\subsection{Split, apply, combine}
+
+Suppose the coach wants the average age per position. In your head you
+do three things:
+
+\begin{enumerate}
+  \item \textbf{split}: divide the athletes into four groups, one per
+        position;
+  \item \textbf{apply}: compute the mean for each group;
+  \item \textbf{combine}: put the four means in one table.
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[font=\small\sffamily, box/.style={rounded corners=2pt, minimum width=2.3cm, minimum height=0.6cm, text=white}]
+  \node[draw=none, fill=tint, rounded corners=3pt, minimum width=2.3cm, minimum height=3.2cm, text=pitch, align=center] (all) at (0,0) {all\\athletes};
+  \foreach \p/\c/\y in {Forward/forward/1.2, Midfielder/midfielder/0.4, Defender/defender/-0.4, Goalkeeper/goalkeeper/-1.2} {
+    \node[box, fill=\c] (\p) at (3.6,\y) {\p};
+    \draw[-{Stealth}, muted] (all.east) -- (\p.west);
+    \node[text=muted, font=\small\itshape] (m\p) at (6.1,\y) {mean};
+    \draw[-{Stealth}, muted] (\p.east) -- (m\p.west);
+    \draw[-{Stealth}, muted] (m\p.east) -- (8.2,0);
+  }
+  \node[draw=none, fill=pitch, rounded corners=3pt, minimum width=2.1cm, minimum height=2.0cm, text=white, align=center] at (9.3,0) {one row\\per position};
+  \node[text=pitch, font=\small\bfseries\sffamily] at (1.8,2.1) {split};
+  \node[text=pitch, font=\small\bfseries\sffamily] at (5.0,2.1) {apply};
+  \node[text=pitch, font=\small\bfseries\sffamily] at (8.4,2.1) {combine};
+\end{tikzpicture}
+\end{center}
+
+In pandas that is one line. \code{groupby("position")} splits,
+\code{["age"]} picks the column, \code{.mean()} applies the mean and
+combines:
+
+\begin{python}
+mean_age_per_position = athletes.groupby("position")["age"].mean().round(1)
+mean_age_per_position
+\end{python}
+
+The result is a Series with the positions as its \emph{index}. Instead
+of \code{.mean()} you can also use \code{.median()}, \code{.min()},
+\code{.max()}, \code{.sum()} or \code{.count()}.
+
+\begin{watchout}[\code{size()} or \code{count()}?]
+\code{.size()} counts the rows per group. \code{.count()} counts the
+\emph{filled-in} values in a column and skips \code{NaN}. To know how
+many athletes there are per position, use \code{.size()}.
+\end{watchout}
+
+\begin{python}
+athletes.groupby("position").size()
+\end{python}
+
+\subsection{Numbers into categories: \code{pd.cut}}
+
+Youth teams are divided into age groups: U13, U15, U17, U19.
+\code{pd.cut} divides a numeric column into bins. You give the edges
+(\code{bins}) and the names of the bins (\code{labels}):
+
+\begin{python}
+athletes_with_age_group = athletes.assign(
+    age_group=lambda d: pd.cut(
+        d["age"], bins=[10, 12, 14, 16, 18], labels=["U13", "U15", "U17", "U19"]
+    )
+)
+athletes_with_age_group[["name", "age", "age_group"]].head()
+\end{python}
+
+Five edges make four bins: from 10 to 12, from 12 to 14, and so on. A
+bin includes its \emph{right} edge but not its left edge: an athlete of
+12 falls in U13 (10 up to and including 12), an athlete of 13 in U15. So
+there is always one label fewer than there are edges.
+
+\subsection{Grouping on several columns and \code{agg}}
+
+You can group on two columns at once by passing a list. With
+\code{.agg(...)} you compute several statistics in one go and give each
+new column a name yourself:
+
+\begin{python}
+athletes_with_age_group.groupby(["position", "age_group"], observed=True).agg(
+    n_athletes=("athlete_id", "size"),
+    mean_height_cm=("height_cm", "mean"),
+)
+\end{python}
+
+Read \code{mean\_height\_cm=("height\_cm", "mean")} as: ``make a column
+\code{mean\_height\_cm} by applying the function \code{mean} to the
+column \code{height\_cm}''. A few extra things:
+
+\begin{itemize}
+  \item The index now has two levels (position and age group): a
+        \emph{MultiIndex}. \code{.reset\_index()} turns them back into
+        ordinary columns.
+  \item \code{age\_group} is a \emph{categorical} column (made by
+        \code{pd.cut}). \code{observed=True} makes sure combinations
+        without athletes (e.g.\ goalkeepers in U13) don't show up as an
+        empty row.
+\end{itemize}
+
+\begin{tryit}
+Compute the maximum height per position. Then group by gender and count
+with \code{.size()} how many boys and girls there are.
+\end{tryit}
+
+% ---------------------------------------------------------------------------
+\section{Combining tables with \code{merge}}\label{sec:merge}
+
+\subsection{A key in two tables}
+
+\code{athletes} knows the position of every athlete, \code{tests} knows
+the sprint times. To look at sprint time per position, you have to
+combine the two. That works because both tables have an
+\code{athlete\_id} column: the \textbf{key}.
+
+A small example makes clear what happens:
+
+\begin{python}
+people = pd.DataFrame({"athlete_id": ["A1", "A2", "A3"],
+                       "name": ["Yana", "Stan", "Emma"]})
+results = pd.DataFrame({"athlete_id": ["A1", "A1", "A2", "A9"],
+                        "sprint_s": [5.3, 5.2, 5.9, 6.1]})
+people.merge(results, on="athlete_id", how="inner")
+\end{python}
+
+For every row in \code{people}, pandas looks for the rows in
+\code{results} with the same \code{athlete\_id}. Yana has two results,
+so she appears twice. Emma (A3) has no result and A9 has no name: with
+\code{how="inner"} both disappear.
+
+\begin{python}
+people.merge(results, on="athlete_id", how="left")
+\end{python}
+
+With \code{how="left"}, \emph{every} row of the left table is kept. Emma
+is there, with \code{NaN} as her sprint time.
+
+\begin{keyidea}[The kinds of joins]
+\textbf{inner}: only keys that are in both tables.
+\textbf{left}: all rows of the left table, filled in where possible.
+\textbf{right}: the same, from the right table.
+\textbf{outer}: everything from both tables.
+Check the number of rows after every merge: it tells you whether
+something disappeared or doubled.
+\end{keyidea}
+
+With the real data:
+
+\begin{python}
+merged_inner = athletes.merge(tests, on="athlete_id", how="inner")
+merged_left = athletes.merge(tests, on="athlete_id", how="left")
+(len(athletes), len(tests), len(merged_inner), len(merged_left))
+\end{python}
+
+Here both have the same length, because every athlete has at least one
+test result. With real data that is rarely guaranteed.
+
+\subsection{The duplicated athlete}
+
+One athlete appears twice in \code{athletes}, with two different IDs. You
+find those rows with \code{duplicated}; with \code{keep=False}
+\emph{all} copies are marked, not only the second one:
+
+\begin{python}
+same_person = athletes.duplicated(subset=["name", "birthdate"], keep=False)
+athletes.loc[same_person, ["athlete_id", "name", "birthdate"]]
+\end{python}
+
+The merge does exactly what it was asked, but does not know these are
+the same person. After the merge, that athlete's tests appear under two
+IDs:
+
+\begin{python}
+dupe_name = athletes.loc[same_person, "name"].iloc[0]
+merged_inner.loc[merged_inner["name"] == dupe_name,
+                 ["athlete_id", "name", "test_moment", "sprint_30m_s"]]
+\end{python}
+
+Every statistic you compute after this merge counts this athlete twice.
+The solution: remove the duplicates \emph{before} the merge, by name and
+birthdate. After the merge that no longer works, because then the
+different test moments of one athlete also share the same name and
+birthdate: you would throw away real test results.
+
+\begin{python}
+athletes_unique = athletes.drop_duplicates(subset=["name", "birthdate"], keep="first")
+combined = athletes_unique.merge(tests, on="athlete_id", how="inner")
+combined.shape
+\end{python}
+
+\subsection{Sets and \code{isin}}
+
+To find out which rows disappeared when removing the duplicate, you need
+two tools.
+
+A \textbf{set} is a collection without duplicates and without order. The
+difference of two sets (\code{a - b}) gives the elements that are in
+\code{a} but not in \code{b}:
+
+\begin{python}
+set(["A1", "A2", "A3"]) - set(["A2"])
+\end{python}
+
+\code{.isin(...)} gives a mask that is \code{True} for every row whose
+value is in the given list or set:
+
+\begin{python}
+results["athlete_id"].isin({"A1", "A9"})
+\end{python}
+
+With these two building blocks (and \code{.sum()} on a mask) you can
+solve exercise 2 in the notebook.
+
+% ---------------------------------------------------------------------------
+\section{Long and wide: \code{pivot\_table} and \code{melt}}
+
+\subsection{Two shapes for the same data}
+
+\code{combined} is \textbf{long}: one row per athlete \emph{per test
+moment}. An athlete with three tests appears three times. The same
+information can also be \textbf{wide}: one row per athlete, with a
+column per test moment.
+
+\begin{python}
+sprint_wide = combined.pivot_table(
+    index="athlete_id", columns="test_moment", values="sprint_30m_s"
+)
+sprint_wide.head()
+\end{python}
+
+Read the three arguments like this:
+\begin{itemize}
+  \item \code{index}: what becomes a row (one per athlete);
+  \item \code{columns}: which values become columns (test moments 1, 2
+        and 3);
+  \item \code{values}: which value goes in the cells (the sprint time).
+\end{itemize}
+
+If a combination is missing, you get \code{NaN}. If there are several
+rows for the same combination, \code{pivot\_table} takes the mean by
+default.
+
+\subsection{Why wide is handy}
+
+In the wide shape, progress between two test moments is a single
+subtraction. Note: the column names here are \emph{numbers}, not text.
+So you write \code{sprint\_wide[2]}, not \code{sprint\_wide["2"]}.
+
+\begin{python}
+sprint_progress_1_to_2 = sprint_wide[2] - sprint_wide[1]
+sprint_progress_1_to_2.describe()
+\end{python}
+
+A negative number means progress here: a lower sprint time is faster.
+For jump height it is the other way round: higher is better.
+
+\subsection{Back to long: \code{melt}}
+
+\code{melt} does the opposite of \code{pivot\_table}: columns become rows
+again. Plotly express (lab 5) prefers long data. First,
+\code{.reset\_index()} turns the index back into an ordinary column:
+
+\begin{python}
+sprint_long_again = sprint_wide.reset_index().melt(
+    id_vars="athlete_id", var_name="test_moment", value_name="sprint_30m_s"
+)
+sprint_long_again.head()
+\end{python}
+
+\code{id\_vars} are the columns that stay, \code{var\_name} is the name
+of the new column holding the former column names, \code{value\_name}
+the name of the column holding the values.
+
+% ---------------------------------------------------------------------------
+\section{Time series: heart rate during a training session}
+
+\code{hr\_session.csv} contains the heart rate and speed of five athletes
+per second during one training session. A table in which every row is a
+moment in time is called a \textbf{time series}.
+
+\subsection{Making a timestamp}
+
+The file has a date and the number of seconds since the start
+(\code{time\_s}). Together they make a timestamp.
+\code{pd.to\_timedelta(..., unit="s")} turns a number of seconds into a
+duration, which you can add to a date:
+
+\begin{python}
+hr_session = pd.read_csv(f"{DATA_DIR}/hr_session.csv")
+hr_session["timestamp"] = pd.to_datetime(hr_session["date"]) + pd.to_timedelta(
+    hr_session["time_s"], unit="s"
+)
+hr_session.head(3)
+\end{python}
+
+\subsection{Heart-rate zones}
+
+Coaches express intensity as a percentage of the \emph{maximum} heart
+rate. A common rule of thumb estimates it as 220 minus the age. The age
+is in \code{athletes}, so first a merge:
+
+\begin{python}
+ages = athletes[["athlete_id", "age"]]
+hr_with_age = hr_session.merge(ages, on="athlete_id", how="left")
+hr_with_age["hr_max"] = 220 - hr_with_age["age"]
+hr_with_age["pct_hr_max"] = (
+    100 * hr_with_age["heart_rate_bpm"] / hr_with_age["hr_max"]
+)
+hr_with_age[["athlete_id", "heart_rate_bpm", "hr_max", "pct_hr_max"]].head(3)
+\end{python}
+
+\code{pd.cut} divides the percentage into five zones. The odd number
+1000 as the last edge makes sure a percentage above 100 still falls in
+zone 5:
+
+\begin{python}
+hr_zoned = hr_with_age.assign(
+    hr_zone=lambda d: pd.cut(
+        d["pct_hr_max"],
+        bins=[0, 60, 70, 80, 90, 1000],
+        labels=["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"],
+    )
+)
+hr_zoned["hr_zone"].value_counts()
+\end{python}
+
+\subsection{Time per zone}
+
+Every row is one second. So the number of rows per athlete and per zone,
+divided by 60, gives the number of minutes:
+
+\begin{python}
+time_per_zone_minutes = (
+    hr_zoned.groupby(["athlete_id", "hr_zone"], observed=True).size() / 60
+).rename("minutes").reset_index()
+time_per_zone_minutes.head(5)
+\end{python}
+
+If you only want certain zones, first filter the rows with
+\code{.isin([...])} and then group. That is the core of exercise 4.
+
+\subsection{Rolling average and resampling}
+
+A heart rate per second jumps up and down. Two techniques make the
+series calmer. Both need a time series \emph{sorted} by time, with the
+time as the index (\code{set\_index("timestamp")}):
+
+\begin{python}[noout]
+one_athlete = hr_zoned.loc[hr_zoned["athlete_id"] == "A001"]
+one_athlete = one_athlete.sort_values("timestamp")
+hr_series = one_athlete.set_index("timestamp")["heart_rate_bpm"]
+\end{python}
+
+A \textbf{rolling average} (\code{rolling}) computes, at every moment,
+the mean of the past 30 seconds. You keep as many rows, but the line
+gets smoother:
+
+\begin{python}
+hr_series.rolling("30s").mean().iloc[[0, 1, 29, 30, 31]]
+\end{python}
+
+\textbf{Resampling} (\code{resample}) groups the time series into fixed
+blocks, here of one minute, and summarizes each block. You get far fewer
+rows: one per minute.
+
+\begin{python}
+hr_series.resample("1min").mean().head(4)
+\end{python}
+
+\begin{keyidea}[\code{rolling} or \code{resample}?]
+\code{rolling} gives one value per original row (a sliding window);
+useful to make a chart smoother. \code{resample} gives one value per
+time block; useful to summarize per minute or per quarter of an hour.
+You can think of \code{resample} as a \code{groupby} on time.
+\end{keyidea}
+
+% ---------------------------------------------------------------------------
+\section{The mini-case: a training report}
+
+In the mini-case (in pairs) you build one row per athlete with the
+minutes in zone 4--5, the maximum speed and the distance covered. Two
+ideas help you.
+
+\textbf{Distance from speed.} Speed is in km/h and there is one
+measurement per second. So in one second you cover
+\code{speed\_kmh / 3600} kilometres. The sum of those distances over the
+whole session is the total distance.
+
+\textbf{Combining Series via the index.} When two Series have the same
+index (e.g.\ the \code{athlete\_id}), pandas puts the values next to the
+right row in an assignment or calculation, even if the order is
+different. This is called \emph{aligning on the index}:
+
+\begin{python}
+report = pd.DataFrame({"max_speed": [27.1, 24.5]}, index=["A002", "A001"])
+extra = pd.Series([10.0, 12.5], index=["A001", "A002"])
+report["minutes"] = extra
+report
+\end{python}
+
+A001 gets 10.0 and A002 gets 12.5, even though they were in a different
+order in \code{extra} than in \code{report}.
+
+% ---------------------------------------------------------------------------
+\section{Summary}
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{8.4cm}Y@{}}
+\toprule
+\textbf{Code} & \textbf{What it does} \\
+\midrule
+\code{df.groupby("a")["b"].mean()} & mean of \code{b} per value of \code{a} \\
+\code{df.groupby("a").size()} & number of rows per group \\
+\code{df.groupby(["a", "b"]).agg(name=("col", "mean"))} & several named statistics per group \\
+\code{pd.cut(col, bins=..., labels=...)} & divide numbers into categories \\
+\code{.reset\_index()} & turn the index back into ordinary columns \\
+\code{left.merge(right, on="key", how="inner")} & combine two tables on a key \\
+\code{set(a) - set(b)}, \code{col.isin(list)} & difference of sets, ``is in'' mask \\
+\code{df.pivot\_table(index=, columns=, values=)} & from long to wide \\
+\code{df.melt(id\_vars=, var\_name=, value\_name=)} & from wide to long \\
+\code{pd.to\_timedelta(col, unit="s")} & number of seconds to a duration \\
+\code{s.rolling("30s").mean()} & rolling average over 30 seconds \\
+\code{s.resample("1min").mean()} & mean per block of one minute \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Common mistakes}
+
+\begin{itemize}
+  \item Not checking the number of rows after a merge.
+  \item Removing duplicates \emph{after} the merge instead of before.
+  \item Using \code{.count()} to count rows when there are missing
+        values; use \code{.size()}.
+  \item Writing column names as text after a \code{pivot\_table}
+        (\code{wide["2"]}) when they are numbers (\code{wide[2]}).
+  \item Using \code{rolling} or \code{resample} on data that is not
+        sorted by time, or without a time index.
+\end{itemize}
+
+\subsection*{Glossary}
+
+\begin{description}[leftmargin=3.2cm, labelwidth=3.0cm, font=\normalfont\bfseries]
+  \item[groupby] split into groups, compute something per group, and combine the results.
+  \item[aggregation] summarizing a group of values into one value (mean, sum, count).
+  \item[MultiIndex] index with several levels, e.g.\ position and age group.
+  \item[key] column used to combine two tables.
+  \item[join] way of combining: inner, left, right or outer.
+  \item[long / wide] one row per measurement, or one row per athlete with a column per measurement.
+  \item[time series] table in which every row is a moment in time.
+\end{description}
+
+\end{document}

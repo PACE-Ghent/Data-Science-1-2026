@@ -1,0 +1,605 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[english]{cursus}
+\author{dr. Maarten Slembrouck}
+
+\begin{document}
+
+\labtitle{Lab 3 -- Data Processing I}{From file to tidy table}{Course text for the notebook \code{lab3\_data\_processing\_I.py}}
+
+\begin{python}[hide]
+import pandas as pd
+\end{python}
+
+\section*{What is this lab about?}
+
+In the previous two labs you learned the basics of Python: variables,
+functions, lists, dictionaries and loops. At the end of lab 2 you read
+\code{athletes.csv} with the \code{csv} module and used a \code{for}
+loop to count the athletes per position. That worked, but it took a lot
+of code. From this lab on you use \textbf{pandas}, a library built for
+exactly this kind of work.
+
+The story stays the same: you are the new data analyst of a youth
+football and athletics club. The head coach gives you three export
+files. They are messy on purpose, the way real exports are:
+
+\begin{itemize}
+  \item \code{athletes.csv}: one row per athlete (ID, name, birthdate,
+        gender, position, height, weight);
+  \item \code{tests.csv}: results of physical tests (10\,m and 30\,m
+        sprint, jump height, Yo-Yo level) at three test moments;
+  \item \code{hr\_session.csv}: heart rate and speed per second during
+        one training session (you only use it in lab 4).
+\end{itemize}
+
+\textbf{After this lab you can} load and explore a dataset, select and
+filter rows and columns, compute new columns, and clean the data until
+you can trust it.
+
+\textbf{How to use this text.} Read it next to the notebook. Every code
+example below was actually run on the club's data; the \emph{output}
+box shows what Python returned. Type the examples into an empty cell
+yourself: you learn more from code you type than from code you read.
+The exercises are in the notebook; this text explains what you need to
+solve them.
+
+% ---------------------------------------------------------------------------
+\section{A few Python concepts you need today}
+
+pandas is ordinary Python. Four things from the previous labs keep
+coming back:
+
+\begin{itemize}
+  \item \textbf{Calling a function} uses parentheses:
+        \code{round(5.3456, 2)}. The values between the parentheses are
+        called \emph{arguments}.
+  \item \textbf{Named arguments.} Some arguments are passed with their
+        name: \code{round(number=5.3456, ndigits=2)}. You see this a lot
+        in pandas, e.g.\ \code{ascending=False}.
+  \item \textbf{A method} is a function that belongs to an object. You
+        call it with a dot: \code{"Forward".lower()} gives
+        \code{"forward"}. A pandas table has dozens of methods.
+  \item \textbf{Lists and dictionaries}: \code{["name", "position"]} is
+        a list, \code{\{"fwd": "Forward"\}} is a dictionary that links a
+        key to a value.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{What is pandas?}
+
+pandas is a \textbf{library}: a collection of code that someone else
+wrote and that you can use in your own program. You load it with
+\code{import}. Everyone uses the short name \code{pd}:
+
+\begin{python}[noout]
+import pandas as pd
+\end{python}
+
+pandas revolves around two kinds of objects:
+
+\begin{itemize}
+  \item a \textbf{DataFrame} is a table with rows and columns, like a
+        worksheet in Excel;
+  \item a \textbf{Series} is one column of such a table.
+\end{itemize}
+
+Every row has a label, the \textbf{index}. By default that is simply a
+number, starting at 0. You can make a small DataFrame yourself from a
+dictionary: every key becomes a column name, every list the values of
+that column.
+
+\begin{python}
+mini = pd.DataFrame({
+    "name": ["Yana", "Stan", "Emma"],
+    "position": ["Defender", "Midfielder", "Forward"],
+    "height_cm": [167.1, 158.1, 171.0],
+})
+mini
+\end{python}
+
+The column on the left (0, 1, 2) is the index; it is not a real column
+of data. Asking for one column gives a Series:
+
+\begin{python}
+mini["height_cm"]
+\end{python}
+
+\begin{keyidea}
+A DataFrame is a table, a Series is one column. Almost everything you
+do today is: take a DataFrame, do something with it, and get a new
+DataFrame or Series back.
+\end{keyidea}
+
+The big advantage over lists: a calculation on a Series works on
+\emph{every} row at once, without a \code{for} loop.
+
+\begin{python}
+mini["height_cm"] / 100
+\end{python}
+
+% ---------------------------------------------------------------------------
+\section{Loading a CSV file}
+
+A CSV file (\emph{comma-separated values}) is plain text: one line per
+row, with commas between the values. The first line contains the column
+names. This is what the start of \code{tests.csv} looks like as text:
+
+\begin{python}[outonly]
+from pathlib import Path
+print("\n".join(Path(DATA_DIR, "tests.csv").read_text().splitlines()[:4]))
+\end{python}
+
+To Python this is just text: it does not know that \code{5.34} is a
+number, or that \code{date} contains a date. \code{pd.read\_csv} reads
+the file and turns it into a DataFrame, with a suitable data type per
+column:
+
+\begin{python}
+athletes_raw = pd.read_csv(f"{DATA_DIR}/athletes.csv")
+athletes_raw.head()
+\end{python}
+
+\code{DATA\_DIR} is a variable created at the top of the notebook: the
+folder with the data. Locally that is the \code{data/} folder, online
+an address on GitHub. With \code{f"\{DATA\_DIR\}/athletes.csv"} (an
+\emph{f-string}) you add the file name to it.
+
+\begin{watchout}[Watch out: names in marimo]
+In marimo, two cells cannot create the same variable. So give every
+step its own name: \code{athletes\_raw} for the raw data,
+\code{athletes\_clean} for the cleaned version. That also makes your
+code easier to read.
+\end{watchout}
+
+% ---------------------------------------------------------------------------
+\section{A first impression of the data}
+
+Before you do anything with a dataset, you look at it. Five tools give
+you a quick overview.
+
+\textbf{\code{.head()}} shows the first five rows (or \code{.head(10)}
+for ten). You saw that above.
+
+\textbf{\code{.shape}} gives the number of rows and columns. Note:
+there are no parentheses after it, because \code{shape} is a property,
+not a method.
+
+\begin{python}
+athletes_raw.shape
+\end{python}
+
+The result is a \emph{tuple}: a fixed sequence of values between
+parentheses. \code{athletes\_raw.shape[0]} is the number of rows (43),
+\code{athletes\_raw.shape[1]} the number of columns (7).
+
+\textbf{\code{.dtypes}} shows which data type pandas chose for each
+column:
+
+\begin{python}
+athletes_raw.dtypes
+\end{python}
+
+\code{int64} is a whole number, \code{float64} a decimal number and
+\code{str} text. Notice anything? \code{weight\_kg} is text, while a
+weight should be a number. That is the first problem you solve today.
+\code{birthdate} is text too; pandas does not recognise a date by
+itself.
+
+\textbf{\code{.info()}} combines that with the number of filled-in
+(\emph{non-null}) values per column. \textbf{\code{.describe()}} gives
+statistics for the numeric columns: count, mean, standard deviation
+(\code{std}), minimum, quartiles and maximum.
+
+\begin{python}
+athletes_raw.describe()
+\end{python}
+
+\code{count} is 41 for \code{height\_cm}, while there are 43 athletes:
+two athletes have no height. A table like this is a quick way to spot
+missing and impossible values.
+
+\textbf{\code{.value\_counts()}} counts how often each value occurs in
+a column. What you did in lab 2 with a loop and a dictionary is now a
+single line:
+
+\begin{python}
+athletes_raw["position"].value_counts()
+\end{python}
+
+The club has only four positions, but the column contains 13 different
+spellings. That is the second problem of today.
+
+% ---------------------------------------------------------------------------
+\section{Selecting columns}
+
+You select one column with square brackets and the column name, and get
+a Series back. You select several columns with a \emph{list} of column
+names between the brackets, and get a DataFrame back.
+
+\begin{python}
+athletes_raw[["name", "position"]].head(3)
+\end{python}
+
+\begin{watchout}[Watch out: double brackets]
+The outer brackets mean ``select'', the inner ones make a list.
+\code{athletes\_raw["name", "position"]} (with single brackets) gives a
+\code{KeyError}: pandas then looks for one column with the strange name
+\code{("name", "position")}.
+\end{watchout}
+
+% ---------------------------------------------------------------------------
+\section{Filtering rows}
+
+Filtering takes two steps. First you write a \textbf{condition}. A
+comparison on a Series gives a new Series with \code{True} or
+\code{False} for every row:
+
+\begin{python}
+is_tall = athletes_raw["height_cm"] > 175
+is_tall.head()
+\end{python}
+
+Such a Series of \code{True}/\code{False} is called a \textbf{mask}.
+Then you pass the mask to \code{.loc[...]}. You keep only the rows where
+the mask is \code{True}:
+
+\begin{python}
+athletes_raw.loc[is_tall, ["name", "position", "height_cm"]]
+\end{python}
+
+So \code{.loc[rows, columns]} selects rows \emph{and} columns in one go.
+Leave out the second part and you get all columns.
+
+\subsection{Filtering on text}
+
+You compare text with \code{==}. The comparison is exact: upper case and
+spaces count.
+
+\begin{python}
+only_forwards_raw = athletes_raw.loc[athletes_raw["position"] == "Forward"]
+only_forwards_raw.shape
+\end{python}
+
+Only 2 rows, while \code{value\_counts()} also showed \code{"forward"},
+\code{"forward "} and \code{"FWD"}. Filtering on text only works well
+once the labels are cleaned (section~\ref{sec:cleaning}).
+
+\subsection{Filtering on a date}
+
+\code{birthdate} is text. \code{pd.to\_datetime} turns it into real
+dates, which you can compare. Anyone born after 1 September 2010 is
+younger than 16 in the 2026 season:
+
+\begin{python}
+younger_than_16 = pd.to_datetime(athletes_raw["birthdate"]) > "2010-09-01"
+younger_than_16.sum()
+\end{python}
+
+\code{.sum()} on a mask counts the \code{True} values, because Python
+counts \code{True} as 1 and \code{False} as 0. So 28 athletes are
+younger than 16.
+
+\subsection{Combining conditions}
+
+You combine two conditions with \code{\&} (and), \code{|} (or) and
+\code{\textasciitilde} (not). Put every condition between parentheses:
+
+\begin{python}
+tall_girls = athletes_raw.loc[
+    (athletes_raw["gender"] == "F") & (athletes_raw["height_cm"] > 170)
+]
+tall_girls[["name", "gender", "height_cm"]]
+\end{python}
+
+\begin{watchout}[Watch out: \code{and} does not work here]
+In plain Python you write \code{and} and \code{or}. On a Series that
+does not work: you get a \code{ValueError} (\emph{The truth value of a
+Series is ambiguous}). Use \code{\&} and \code{|}, and don't forget the
+parentheses around each condition. Without them Python evaluates
+\code{\&} first, and the condition is no longer what you meant.
+\end{watchout}
+
+\subsection{Sorting}
+
+\code{.sort\_values("column")} sorts the rows from small to large. With
+\code{ascending=False} you reverse the order. The index moves along, so
+you can still see which row each value came from.
+
+\begin{python}
+tests_raw = pd.read_csv(f"{DATA_DIR}/tests.csv")
+slowest_10m = tests_raw.sort_values("sprint_10m_s", ascending=False)
+slowest_10m[["athlete_id", "sprint_10m_s"]].head()
+\end{python}
+
+A 10\,m sprint of 2360 seconds? Those values are stored in
+\emph{milliseconds} instead of seconds (2.36\,s became 2360). That is
+the third problem: the same mistake is in \code{sprint\_30m\_s}.
+
+\begin{tryit}
+How many athletes are taller than 180\,cm? Use a mask and
+\code{.sum()}. Then sort \code{athletes\_raw} from tall to short and
+look at the first five rows.
+\end{tryit}
+
+% ---------------------------------------------------------------------------
+\section{Computing new columns}
+
+Making a new column is an assignment: \code{df["new\_column"] = ...}.
+The right-hand side is usually a calculation on other columns, done for
+all rows at once.
+
+\begin{python}
+speed = tests_raw[["athlete_id", "sprint_30m_s"]].copy()
+speed["speed_kmh"] = 30 / speed["sprint_30m_s"] * 3.6
+speed.head(3)
+\end{python}
+
+30 metres divided by the time gives metres per second; times 3.6 gives
+kilometres per hour. Note that \code{30 / speed["sprint\_30m\_s"]}
+divides a number by a whole column: pandas does the division for every
+row.
+
+\begin{watchout}[Why \code{.copy()}?]
+\code{speed = tests\_raw[...]} sometimes does not make a new table but a
+\emph{view} on the old one. If you then add a column, you can't be sure
+whether the original table changes too. \code{.copy()} makes a real,
+separate copy. That is why the notebook exercises start with
+\code{athletes\_raw.copy()}: the raw data stays untouched.
+\end{watchout}
+
+\subsection{Turning text into a number}
+
+\code{weight\_kg} contains text like \code{"57,5"}, with a comma as the
+decimal separator. That often happens in exports from European
+software. Python expects a dot. You fix it in two steps:
+
+\begin{python}
+weight_kg_numeric = athletes_raw["weight_kg"].str.replace(",", ".").astype(float)
+weight_kg_numeric.head(3)
+\end{python}
+
+\begin{itemize}
+  \item \code{.str} gives access to text methods for \emph{every} row;
+        \code{.str.replace(",", ".")} replaces the comma with a dot.
+  \item \code{.astype(float)} turns the text into a decimal number. Try
+        it without replacing the comma first and you get a
+        \code{ValueError}: \code{"57,5"} is not a number to Python.
+\end{itemize}
+
+You can put methods one after the other like this (\emph{chaining}):
+each method works on the result of the previous one.
+
+\subsection{Calculating with dates}
+
+For the age, you subtract the birthdate from a fixed reference date. A
+fixed date (and not ``today'') makes sure your results are still the
+same tomorrow.
+
+\begin{python}
+REFERENCE_DATE = pd.Timestamp("2026-09-14")
+birthdates = pd.to_datetime(athletes_raw["birthdate"])
+(REFERENCE_DATE - birthdates).head(3)
+\end{python}
+
+The difference between two dates is a \emph{duration} (a
+\code{Timedelta}). \code{.dt.days} takes out the number of days, and
+\code{// 365} divides by 365 and keeps only the whole part:
+
+\begin{python}
+age_years = (REFERENCE_DATE - birthdates).dt.days // 365
+age_years.head(3)
+\end{python}
+
+\code{//} is \emph{integer division}: \code{5954 // 365} is 16, not
+16.31. That gives an age in whole years, as you are used to.
+
+% ---------------------------------------------------------------------------
+\section{Cleaning the data}\label{sec:cleaning}
+
+Cleaning means: solving the problems you found while exploring, one by
+one, and being able to explain every choice.
+
+\subsection{Missing values}
+
+An empty cell in a CSV file becomes \code{NaN} (\emph{not a number}) in
+pandas. \code{.isna()} gives a mask that is \code{True} where a value is
+missing; \code{.isna().sum()} counts them per column:
+
+\begin{python}
+tests_raw.isna().sum()
+\end{python}
+
+You have two choices:
+
+\begin{itemize}
+  \item \code{.dropna()} throws away the rows with a missing value.
+        Reasonable when few rows are affected and you can't estimate the
+        value well (e.g.\ a missing gender).
+  \item \code{.fillna(value)} fills in the gaps, e.g.\ with the mean of
+        the column. Reasonable when you have a good estimate and need the
+        row for your analysis.
+\end{itemize}
+
+\begin{keyidea}
+There is no rule that is always right. Decide per column and write down
+\emph{why}. ``Fill everything with 0'' is almost always wrong: a missing
+jump height is not the same as a jump of 0\,cm.
+\end{keyidea}
+
+\subsection{Cleaning text labels}
+
+The positions appear in 13 ways in the data. Two text methods solve most
+of it: \code{.str.strip()} removes spaces at the start and end,
+\code{.str.lower()} makes everything lower case.
+
+\begin{python}
+position_normalized = athletes_raw["position"].str.strip().str.lower()
+position_normalized.value_counts()
+\end{python}
+
+From 13 to 8 variants. What remains are abbreviations. You translate
+them with a dictionary and \code{.map(...)}: every value is looked up as
+a key and replaced by the matching value.
+
+\begin{python}
+POSITION_MAP = {
+    "forward": "Forward", "fwd": "Forward",
+    "midfielder": "Midfielder", "mid": "Midfielder",
+    "defender": "Defender", "def": "Defender",
+    "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
+}
+position_clean = position_normalized.map(POSITION_MAP)
+position_clean.value_counts()
+\end{python}
+
+\begin{watchout}
+A value that is not in the dictionary is replaced by \code{NaN} by
+\code{.map}. So always check with \code{.value\_counts()} or
+\code{.isna().sum()} that nothing got lost.
+\end{watchout}
+
+To put the cleaned column in the table, you overwrite the old column
+with an assignment, on a copy of the raw table.
+
+\subsection{Numbers in the wrong unit}
+
+No human runs 10 or 30 metres in under 1 second, and no sprint takes 20
+seconds. So a value above 20 is in milliseconds and must be divided by
+1000. You do that with \code{.where(condition, other)}: where the
+condition is \code{True}, the value stays; where it is \code{False}, the
+value of \code{other} takes its place.
+
+\begin{python}
+def fix_sprint_units(seconds_column):
+    return seconds_column.where(seconds_column < 20, seconds_column / 1000)
+
+sprint_10m_fixed = fix_sprint_units(tests_raw["sprint_10m_s"])
+sprint_10m_fixed.describe()
+\end{python}
+
+The maximum is now 2.47 seconds: realistic. Because you need the same
+step on two columns, it lives in a \textbf{function}. That way you write
+the rule once and use it as often as you need.
+
+\subsection{Duplicates}
+
+\code{.duplicated(subset=[...])} gives \code{True} for every row that has
+the same values in the given columns as a row \emph{above} it.
+\code{.drop\_duplicates(subset=[...], keep="first")} throws those rows
+away and keeps the first one. A small example:
+
+\begin{python}
+sessions = pd.DataFrame({
+    "name": ["Yana", "Stan", "Yana"],
+    "day": ["mon", "mon", "mon"],
+    "minutes": [60, 45, 60],
+})
+sessions.duplicated(subset=["name", "day"])
+\end{python}
+
+In \code{athletes.csv} one athlete appears twice, with the same name and
+birthdate but two different IDs: a data entry mistake. That is why you
+look for duplicates by \emph{name and birthdate}, not by ID.
+
+\subsection{All together: one pipeline}
+
+At the end of the lab, the notebook puts all steps one after the other
+in a single block of code. Such a sequence of steps is called a
+\textbf{pipeline}. You meet two new things there:
+
+\begin{itemize}
+  \item \code{.assign(column=...)} creates (or overwrites) a column and
+        returns a new DataFrame. So you can put another method after it,
+        which you can't do with \code{df["column"] = ...}.
+  \item \code{lambda d: ...} is a short function without a name. In
+        \code{.assign(bmi=lambda d: d["weight\_kg"] / ...)}, \code{d}
+        stands for the table \emph{as it is at that point in the
+        pipeline}. That lets you use a column made one step earlier.
+\end{itemize}
+
+\begin{python}[noout]
+athletes_clean = (
+    athletes_raw.assign(
+        position=position_clean,
+        weight_kg=weight_kg_numeric,
+        age=age_years,
+    )
+    .assign(bmi=lambda d: d["weight_kg"] / (d["height_cm"] / 100) ** 2)
+    .drop_duplicates(subset=["name", "birthdate"], keep="first")
+    .reset_index(drop=True)
+)
+\end{python}
+\begin{python}
+athletes_clean[["name", "position", "weight_kg", "age", "bmi"]].head(3)
+\end{python}
+
+The parentheses around the whole pipeline let you put every step on its
+own line. After removing a duplicate, one row number is missing; the last
+step, \code{.reset\_index(drop=True)}, numbers the rows again from 0.
+
+% ---------------------------------------------------------------------------
+\section{Looking ahead: the challenge}
+
+The challenge at the end of the notebook asks for the 5 fastest athletes
+per position. For that you need to combine two tables
+(\code{athletes\_clean} has the position, \code{tests\_clean} the sprint
+times) and rank per group. The hints in the notebook show the three
+functions you need: \code{groupby}, \code{merge} and \code{.head(5)} per
+group. Lab~4 explains them in depth; try the challenge with the hints
+now, and see next week whether you understand it better.
+
+% ---------------------------------------------------------------------------
+\section{Summary}
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{7.6cm}Y@{}}
+\toprule
+\textbf{Code} & \textbf{What it does} \\
+\midrule
+\code{pd.read\_csv(path)} & read a CSV file as a DataFrame \\
+\code{df.head()}, \code{df.shape}, \code{df.dtypes} & first rows, (rows, columns), data types \\
+\code{df.info()}, \code{df.describe()} & overview, statistics of numeric columns \\
+\code{df["col"].value\_counts()} & how often each value occurs \\
+\code{df["col"]}, \code{df[["a", "b"]]} & one column (Series), several columns (DataFrame) \\
+\code{df.loc[mask, columns]} & filter rows and choose columns \\
+\code{(cond1) \& (cond2)}, \code{|}, \code{\textasciitilde} & combine conditions: and, or, not \\
+\code{df.sort\_values("col", ascending=False)} & sort, from large to small \\
+\code{df["new"] = ...}, \code{df.assign(...)} & create a new column \\
+\code{.str.replace()}, \code{.str.strip()}, \code{.str.lower()} & text operations on every row \\
+\code{.astype(float)} & convert the data type \\
+\code{pd.to\_datetime()}, \code{.dt.days} & text to date, number of days in a duration \\
+\code{.isna().sum()}, \code{.dropna()}, \code{.fillna()} & count, drop, fill missing values \\
+\code{.map(dictionary)} & translate values with a dictionary \\
+\code{.where(condition, other)} & replace values where the condition is \code{False} \\
+\code{.duplicated()}, \code{.drop\_duplicates()} & find, remove duplicates \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Common mistakes}
+
+\begin{itemize}
+  \item \code{KeyError}: a column name does not exist. Check the
+        spelling with \code{df.columns}.
+  \item \code{and}/\code{or} instead of \code{\&}/\code{|}, or no
+        parentheses around each condition.
+  \item Changing a column without making a \code{.copy()} of the table.
+  \item Forgetting that \code{==} compares text exactly (spaces, upper
+        case).
+  \item Using the same variable name in two cells in marimo.
+\end{itemize}
+
+\subsection*{Glossary}
+
+\begin{description}[leftmargin=2.6cm, labelwidth=2.4cm, font=\normalfont\bfseries]
+  \item[DataFrame] table with rows and columns.
+  \item[Series] one column of a DataFrame.
+  \item[index] the labels of the rows (by default 0, 1, 2, \dots).
+  \item[data type] kind of value in a column: \code{int64}, \code{float64}, \code{str}, date.
+  \item[mask] Series of \code{True}/\code{False}, used to filter rows.
+  \item[NaN] missing value.
+  \item[pipeline] sequence of operations applied to the data one after the other.
+\end{description}
+
+\end{document}

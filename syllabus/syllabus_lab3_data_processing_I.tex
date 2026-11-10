@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{lab 3}
+\usepackage[english]{syllabus}
+
+\begin{document}
+
+\syllabustitel{lab 3 -- \emph{Data Processing I}}{From file to tidy table}
+
+% ---------------------------------------------------------------------------
+\input{common/en/overview}
+
+% ---------------------------------------------------------------------------
+\section{Learning outcomes}
+
+After lab 3 you can:
+
+\begin{enumerate}[label=\textbf{LO\arabic*}, leftmargin=1.4cm]
+  \item load a CSV file with \code{pandas} and describe its structure,
+        data types and missing values;
+  \item select and filter rows and columns with boolean conditions, and
+        sort the result;
+  \item derive new columns (age, speed, BMI) and convert text to numbers
+        and dates;
+  \item clean a dataset and justify each choice: inconsistent text
+        labels, wrong units, missing values and duplicates.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Prerequisites}
+
+Labs 1 and 2 (\emph{Introduction to Python I and II}): variables and data
+types, operators, \code{if}/\code{elif}/\code{else}, functions, string
+methods, lists, dictionaries, loops, and reading a CSV file with the
+\code{csv} module. Lab 2 ends by summarizing \code{athletes.csv} with
+plain Python; in lab 3 you see how \code{pandas} does the same in a few
+lines.
+
+% ---------------------------------------------------------------------------
+\input{common/en/software}
+
+% ---------------------------------------------------------------------------
+\input{common/en/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Schedule}
+
+\textbf{Goal:} load and explore a dataset, select and filter rows and
+columns, add new columns and clean the data.
+
+\begin{schedule}
+13:00--13:20 & Warm-up: why not just Excel? & Look at the raw text of a CSV file and see what a table library adds. \\
+13:20--14:00 & Loading and exploring & \code{read\_csv}, \code{.head()}, \code{.shape}, \code{.dtypes}, \code{.info()}, \code{.describe()}, \code{mo.ui.table}. \\
+14:00--14:50 & Selecting and filtering & Selecting columns, \code{.loc} with boolean conditions, combining conditions, \code{sort\_values}. \\
+14:50--15:05 & Break & \\
+15:05--15:50 & New columns & Text to number, age from a birthdate, speed from a sprint time, BMI. \\
+15:50--17:00 & Cleaning & Missing values (\code{dropna} or \code{fillna}), text labels, units, duplicates, one complete cleaning pipeline. \\
+17:00--17:30 & Challenge & The 5 fastest athletes per position. Exit ticket. \\
+\end{schedule}
+
+\textbf{Exercises:} (1) load \code{tests.csv}; (2) forwards younger than
+16; (3) suspicious sprint times; (4) BMI; (5) age in years; (6) clean the
+positions; (7) fix the sprint units; (8) remove the duplicate athlete;
+\textbf{challenge:} the 5 fastest per position.
+
+% ---------------------------------------------------------------------------
+\section{Working method}
+
+\begin{itemize}
+  \item Each block starts with a short demo in the notebook, followed by
+        exercises you solve in the notebook itself.
+  \item Use the automatic checks as feedback, not as the goal: when a
+        check turns green, make sure you can explain \emph{why} your code
+        works.
+  \item The lab ends with an exit ticket: one technique you will reuse
+        and one thing that is still unclear. Bring the unclear points to
+        lab 4.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Preparation}
+
+\begin{itemize}
+  \item Check before the session that you can open the notebook, locally
+        or on marimo.app.
+  \item Review lists, dictionaries and functions from lab 2: pandas uses
+        them all the time.
+  \item Read the course text for lab 3 next to the notebook.
+\end{itemize}
+
+\end{document}

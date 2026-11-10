@@ -13,11 +13,12 @@ requirements.txt       Python dependencies (marimo, pandas, plotly, numpy)
 labs/                  student notebooks — hand these out
 solutions/             instructor answer keys — same notebooks, fully solved
 checks/                answer checks loaded by the notebooks
-cursus/                course texts (PDF, in Flemish) for labs 3-5
+cursus/nl/, cursus/en/ course texts (PDF) for labs 3-5, in Flemish and English
 slides/nl/, slides/en/ one slide deck per lab (3-5) plus a deck on installing
                        marimo locally (Windows and macOS), in Flemish and English
-syllabus/              one syllabus per lab (3-5), LaTeX + PDF; the parts
-                       shared by all labs are in syllabus/common/
+syllabus/              one syllabus per lab (3-5), in Flemish (syllabus_labo*)
+                       and English (syllabus_lab*), LaTeX + PDF; the parts
+                       shared by all labs are in syllabus/common/nl/ and en/
 ```
 
 ## The datasets (`data/`)
@@ -135,22 +136,24 @@ trigger its own "Correct!" callout — not just "runs without crashing."
 
 ## `cursus/` — course texts
 
-One PDF per lab (`labo3_...pdf`, `labo4_...pdf`, `labo5_...pdf`) that
-explains the concepts behind the notebook from scratch, for students with
+One PDF per lab, in Flemish (`cursus/nl/labo3_...pdf`, ...) and English
+(`cursus/en/lab3_...pdf`, ...), that explains the concepts behind the notebook from scratch, for students with
 little Python experience. They explain the demos and use their own
 examples, so they don't give away the exercise answers.
 
-The sources are in `cursus/sources/`. They are LaTeX with `\begin{python}`
+The sources are in `cursus/sources/nl/` and `cursus/sources/en/`. They are LaTeX with `\begin{python}`
 blocks that `cursus/build.py` actually runs against `data/`, so every
 output and chart in the PDFs is real. Rebuild after changing the data or
 a text:
 
 ```bash
 pip install pandas plotly kaleido pygments
-python cursus/build.py            # all labs, or e.g. labo4_dataverwerking_II
+python cursus/build.py                              # everything, both languages
+python cursus/build.py en                           # only the English texts
+python cursus/build.py nl/labo4_dataverwerking_II   # one text
 ```
 
-This needs `tectonic` (or `xelatex` with `latexmk`) and, for the charts,
+This needs `tectonic` or `pdflatex` and, for the charts,
 a Chrome/Chromium browser for kaleido. Generated files go to
 `cursus/build/`, which is git-ignored.
 
@@ -165,7 +168,10 @@ a Chrome/Chromium browser for kaleido. Generated files go to
   pass — some checks depend on exact counts (e.g. "exactly one duplicate
   athlete", "5 goalkeepers") that assume the current generator output.
 - **Change a demo or the data:** rebuild the course texts in `cursus/`
-  and reread any sentence that quotes a number from the output.
+  and reread any sentence that quotes a number from the output, in both
+  languages.
+- **Edit a course text or syllabus:** make the same change in the other
+  language.
 - Run `marimo check path/to/notebook.py` after any manual edit to a
   notebook file — it catches structural issues (e.g. a cell reading a
   variable no other cell defines) before you open it in the browser.

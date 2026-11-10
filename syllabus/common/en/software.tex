@@ -1,0 +1,31 @@
+% Shared by the syllabi of labs 3, 4 and 5. Edit it here, not in the lab files.
+\section{Software and materials}
+
+Every lab is a \textbf{marimo notebook} in the \code{labs/} folder of the
+course repository. You can open it in two ways:
+
+\begin{itemize}
+    \item \textbf{Online:} go to \url{https://marimo.app}, choose
+        \emph{New $\rightarrow$ Open from URL\dots} and paste the raw URL
+        of the notebook on GitHub. The data is then read from GitHub, so
+        you don't have to install anything.
+    \item \textbf{Locally:} install the packages from
+        \code{requirements.txt} and open the notebook with marimo. The
+        data is then read from the \code{data/} folder.
+\end{itemize}
+
+Three things to know about marimo:
+
+\begin{itemize}
+  \item Notebooks are \textbf{reactive}: when you change a cell, every
+        cell that depends on it runs again, in the order of their
+        dependencies.
+  \item \textbf{Two cells cannot define the same variable.} Give every
+        step its own clear name, such as \code{tests\_raw} and
+        \code{tests\_clean}, or keep a sequence of steps together in one
+        cell.
+  \item Every exercise contains a \code{...} placeholder. A hidden cell
+        below it checks your answer: it turns \textbf{green} when the
+        answer is right, and otherwise gives a general hint about what is
+        still wrong, without giving the answer away.
+\end{itemize}

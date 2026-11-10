@@ -1,6 +1,7 @@
 """Bouw de cursusteksten (PDF) voor de labo's.
 
-Elke bron in `sources/` is LaTeX met Python-blokken:
+Elke bron in `sources/nl/` (Nederlands) of `sources/en/` (Engels) is LaTeX
+met Python-blokken:
 
     \\begin{python}            code tonen, uitvoeren en de uitvoer tonen
     \\begin{python}[noout]     code tonen en uitvoeren, geen uitvoer tonen
@@ -13,8 +14,12 @@ Elke bron in `sources/` is LaTeX met Python-blokken:
 De blokken van één bron draaien na elkaar in dezelfde namespace, zoals
 cellen in een notebook. Zo komt elke getoonde uitvoer echt uit de data.
 
-Gebruik:  python build.py [labo3 labo4 ...]
-Vereist:  pandas, plotly, kaleido, pygments en tectonic (of xelatex).
+De PDF's komen in `nl/` en `en/`.
+
+Gebruik:  python build.py                     alles, beide talen
+          python build.py nl                  alleen de Nederlandse teksten
+          python build.py en/lab4_data_processing_II
+Vereist:  pandas, plotly, kaleido, pygments, en tectonic of pdflatex.
 """
 
 import contextlib
@@ -35,6 +40,7 @@ from pygments.lexers import PythonLexer
 HERE = Path(__file__).resolve().parent
 SRC = HERE / "sources"
 BUILD = HERE / "build"
+LANGS = ("nl", "en")
 DATA_DIR = str(HERE.parent / "data")
 
 FORMATTER = LatexFormatter(commandprefix="PY", commandchars=True)
@@ -81,9 +87,10 @@ def verbatim(text, kind):
     return "\\begin{uitvoer}\n\\begin{Verbatim}[breaklines]\n" + text + "\n\\end{Verbatim}\n\\end{uitvoer}\n"
 
 
-def process(name):
-    src = (SRC / f"{name}.tex").read_text()
-    figdir = BUILD / "fig"
+def process(lang, name):
+    src = (SRC / lang / f"{name}.tex").read_text()
+    build = BUILD / lang
+    figdir = build / "fig"
     figdir.mkdir(parents=True, exist_ok=True)
     ns = {"DATA_DIR": DATA_DIR, "__name__": "__cursus__"}
 
@@ -111,28 +118,38 @@ def process(name):
             return shown
         return shown + verbatim(result, "out")
 
-    (BUILD / f"{name}.tex").write_text(BLOCK.sub(replace, src))
+    (build / f"{name}.tex").write_text(BLOCK.sub(replace, src))
 
 
-def compile_pdf(name):
+def compile_pdf(lang, name):
+    build = BUILD / lang
     engine = shutil.which("tectonic") or os.environ.get("TECTONIC")
     if engine:
-        cmd = [engine, "-X", "compile", f"{name}.tex"]
+        subprocess.run([engine, "-X", "compile", f"{name}.tex"], cwd=build, check=True)
     else:
-        cmd = ["latexmk", "-xelatex", "-interaction=nonstopmode", f"{name}.tex"]
-    subprocess.run(cmd, cwd=BUILD, check=True)
-    shutil.copy(BUILD / f"{name}.pdf", HERE / f"{name}.pdf")
+        # Twee keer, zodat verwijzingen naar secties kloppen.
+        for _ in range(2):
+            subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", f"{name}.tex"],
+                           cwd=build, check=True, stdout=subprocess.DEVNULL)
+    (HERE / lang).mkdir(exist_ok=True)
+    shutil.copy(build / f"{name}.pdf", HERE / lang / f"{name}.pdf")
 
 
 def main():
-    BUILD.mkdir(exist_ok=True)
-    shutil.copy(HERE / "cursus.sty", BUILD / "cursus.sty")
-    (BUILD / "pygments.tex").write_text(FORMATTER.get_style_defs())
-    names = sys.argv[1:] or sorted(p.stem for p in SRC.glob("*.tex"))
-    for name in names:
-        print(f"== {name}")
-        process(name)
-        compile_pdf(name)
+    targets = []
+    for arg in sys.argv[1:] or LANGS:
+        lang, _, name = arg.partition("/")
+        names = [name] if name else sorted(p.stem for p in (SRC / lang).glob("*.tex"))
+        targets += [(lang, n) for n in names]
+    for lang in {lang for lang, _ in targets}:
+        build = BUILD / lang
+        build.mkdir(parents=True, exist_ok=True)
+        shutil.copy(HERE / "cursus.sty", build / "cursus.sty")
+        (build / "pygments.tex").write_text(FORMATTER.get_style_defs())
+    for lang, name in targets:
+        print(f"== {lang}/{name}")
+        process(lang, name)
+        compile_pdf(lang, name)
 
 
 if __name__ == "__main__":
