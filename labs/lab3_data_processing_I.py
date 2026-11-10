@@ -195,7 +195,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Loading and exploring a dataset (13:20-14:00)
+    ## 2. Loading and exploring a dataset
 
     The core loading function is `pd.read_csv`. Once loaded, a handful
     of methods give you a fast first impression of any dataset:
@@ -284,7 +284,7 @@ def _(checks, tests_raw, tests_raw_shape):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Selecting and filtering (14:00-14:50)
+    ## 3. Selecting and filtering
 
     A few core tools:
 
@@ -411,7 +411,7 @@ def _(checks, suspicious_30m_raw, tests_raw):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. New columns (15:05-15:50)
+    ## 4. New columns
 
     Adding a column is just an assignment: `df["new_col"] = ...`. A few
     examples we'll need for this club:
@@ -547,7 +547,7 @@ def _(REFERENCE_DATE, athletes_with_age, checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Cleaning (15:50-17:00)
+    ## 5. Cleaning
 
     Time to fix everything the previous sections uncovered. A quick
     overview of missing values first:
@@ -845,7 +845,7 @@ def _(fix_sprint_units, tests_raw):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Challenge (17:00-17:30) - fastest 5 per position
+    ## 6. Challenge - fastest 5 per position
 
     The coach wants a cleaned overview: **the 5 fastest athletes per
     position**, based on their best (lowest) 30 m sprint time across all

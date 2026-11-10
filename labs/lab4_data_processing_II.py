@@ -74,7 +74,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1. Recap - repair a broken cleaning cell (13:00-13:15)
+    ## 1. Recap - repair a broken cleaning cell
 
     The cell below is a tiny, self-contained cleaning pipeline with two
     bugs. Fix them directly in the cell (a typo in a column name, and a
@@ -163,7 +163,7 @@ def _(DATA_DIR, fix_sprint_units, pd):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. groupby + agg (13:15-14:10)
+    ## 3. groupby + agg
 
     `groupby("column")` splits a dataframe into groups; call an
     aggregation afterwards (`.mean()`, `.size()`, `.agg(...)`) to
@@ -239,7 +239,7 @@ def _(athletes_with_age_group, checks, gender_age_summary):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. merge (14:10-14:55)
+    ## 4. merge
 
     `pd.merge(left, right, on="key", how=...)` combines two tables on a
     shared key. `how="inner"` keeps only keys present in **both**
@@ -335,7 +335,7 @@ def _(checks, combined, merged_inner, rows_lost_to_dedup):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Wide ↔ long: `melt` and `pivot` (15:10-15:50)
+    ## 5. Wide ↔ long: `melt` and `pivot`
 
     `tests` is already in **long** format: one row per
     `(athlete_id, test_moment)` combination. `pivot` turns it **wide**:
@@ -418,7 +418,7 @@ def _(checks, cmj_progress_1_to_2, cmj_wide, combined):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Time series with `hr_session.csv` (15:50-16:50)
+    ## 6. Time series with `hr_session.csv`
 
     One training, five athletes, one heart-rate + speed reading per
     second.
@@ -548,7 +548,7 @@ def _(checks, hr_zoned, zone_4_5_minutes):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 7. Mini-case, in pairs: training report (16:50-17:30)
+    ## 7. Mini-case, in pairs: training report
 
     Build one summary row per athlete from `hr_zoned`: total minutes in
     zone 4-5, maximum speed reached, and total distance covered. Speed

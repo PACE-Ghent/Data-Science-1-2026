@@ -164,7 +164,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1. Principles: the right chart for the right question (13:00-13:30)
+    ## 1. Principles: the right chart for the right question
 
     | Question type | Example | Good chart |
     |---|---|---|
@@ -257,7 +257,7 @@ def _(chart_critique, mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Basic plotly express charts (13:30-14:30)
+    ## 2. Basic plotly express charts
 
     Every `plotly.express` function follows the same shape:
     `px.<chart_type>(dataframe, x=..., y=..., color=..., title=...,
@@ -368,7 +368,7 @@ def _(checks, weight_histogram):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. More dimensions: color, facet, size (14:30-15:15)
+    ## 3. More dimensions: color, facet, size
 
     `color` encodes a category as hue, `facet_col` splits one chart into
     a row of small charts, and `size` encodes a number as marker size -
@@ -428,7 +428,7 @@ def _(checks, yoyo_by_age):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. Heart-rate time series with zone bands (15:30-16:15)
+    ## 4. Heart-rate time series with zone bands
 
     `add_hrect` draws a horizontal band behind the data - perfect for
     showing heart-rate zones without adding a second y-axis (which we
@@ -513,7 +513,7 @@ def _(checks, speed_line):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Interactivity in marimo (16:15-16:45)
+    ## 5. Interactivity in marimo
 
     A `mo.ui.dropdown` (or slider) is just a variable whose `.value`
     changes when the viewer interacts with it - use `.value` inside a
@@ -588,7 +588,7 @@ def _(pd, selectable_scatter):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Mini-dashboard assignment (16:45-17:30)
+    ## 6. Mini-dashboard assignment
 
     Build a small "coach dashboard": **3 charts** plus **1 interactive
     selector** that at least one of the charts responds to. Reuse
