@@ -1,0 +1,92 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{labo 3}
+\usepackage{syllabus}
+
+\begin{document}
+
+\syllabustitel{labo 3 -- \emph{Dataverwerking I}}{Van bestand tot nette tabel}
+
+% ---------------------------------------------------------------------------
+\input{common/overzicht}
+
+% ---------------------------------------------------------------------------
+\section{Leerdoelen}
+
+Na labo 3 kun je:
+
+\begin{enumerate}[label=\textbf{LD\arabic*}, leftmargin=1.4cm]
+  \item een CSV-bestand inladen met \code{pandas} en de structuur, de
+        datatypes en de ontbrekende waarden beschrijven;
+  \item rijen en kolommen selecteren en filteren met logische
+        voorwaarden, en het resultaat sorteren;
+  \item nieuwe kolommen afleiden (leeftijd, snelheid, BMI) en tekst
+        omzetten naar getallen en datums;
+  \item een dataset opkuisen en elke keuze verantwoorden: inconsistente
+        tekstlabels, verkeerde eenheden, ontbrekende waarden en dubbels.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Voorkennis}
+
+Labo 1 en 2 (\emph{Introductie Python I en II}): variabelen en datatypes,
+operatoren, \code{if}/\code{elif}/\code{else}, functies,
+stringmethodes, lijsten, dictionaries, lussen en een CSV-bestand inlezen
+met de module \code{csv}. Labo 2 eindigt met een samenvatting van
+\code{athletes.csv} in gewone Python; in labo 3 zie je hoe \code{pandas}
+hetzelfde doet in enkele regels.
+
+% ---------------------------------------------------------------------------
+\input{common/software}
+
+% ---------------------------------------------------------------------------
+\input{common/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Planning}
+
+\textbf{Doel:} een dataset inladen en verkennen, rijen en kolommen
+selecteren en filteren, nieuwe kolommen toevoegen en de data opkuisen.
+
+\begin{schedule}
+13:00--13:20 & Opwarmer: waarom niet gewoon Excel? & De ruwe tekst van een CSV-bestand bekijken en zien wat een tabelbibliotheek toevoegt. \\
+13:20--14:00 & Inladen en verkennen & \code{read\_csv}, \code{.head()}, \code{.shape}, \code{.dtypes}, \code{.info()}, \code{.describe()}, \code{mo.ui.table}. \\
+14:00--14:50 & Selecteren en filteren & Kolommen selecteren, \code{.loc} met logische voorwaarden, voorwaarden combineren, \code{sort\_values}. \\
+14:50--15:05 & Pauze & \\
+15:05--15:50 & Nieuwe kolommen & Tekst naar getal, leeftijd uit een geboortedatum, snelheid uit een sprinttijd, BMI. \\
+15:50--17:00 & Opkuisen & Ontbrekende waarden (\code{dropna} of \code{fillna}), tekstlabels, eenheden, dubbels, één volledige opkuis-pipeline. \\
+17:00--17:30 & Uitdaging & De 5 snelste atleten per positie. Exit ticket. \\
+\end{schedule}
+
+\textbf{Oefeningen:} (1) \code{tests.csv} inladen; (2) aanvallers jonger
+dan 16; (3) verdachte sprinttijden; (4) BMI; (5) leeftijd in jaren;
+(6) de posities opkuisen; (7) de eenheden van de sprinttijden
+corrigeren; (8) de dubbele atleet verwijderen; \textbf{uitdaging:} de
+5 snelsten per positie.
+
+% ---------------------------------------------------------------------------
+\section{Werkwijze}
+
+\begin{itemize}
+  \item Elk blok start met een korte demo in het notebook, gevolgd door
+        oefeningen die je in het notebook zelf oplost.
+  \item Gebruik de automatische controles als feedback, niet als doel:
+        als een controle groen kleurt, zorg dan dat je kunt uitleggen
+        \emph{waarom} je code werkt.
+  \item Het labo eindigt met een exit ticket: één techniek die je opnieuw
+        zult gebruiken en één ding dat nog niet duidelijk is. Breng de
+        onduidelijke punten mee naar labo 4.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Voorbereiding}
+
+\begin{itemize}
+  \item Controleer vóór de sessie dat je het notebook kunt openen,
+        lokaal of op marimo.app.
+  \item Herhaal lijsten, dictionaries en functies uit labo 2: pandas
+        gebruikt ze voortdurend.
+  \item Lees de cursustekst bij labo 3 naast het notebook.
+\end{itemize}
+
+\end{document}

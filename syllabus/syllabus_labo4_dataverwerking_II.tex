@@ -1,0 +1,88 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{labo 4}
+\usepackage{syllabus}
+
+\begin{document}
+
+\syllabustitel{labo 4 -- \emph{Dataverwerking II}}{Combineren, samenvatten, herschikken}
+
+% ---------------------------------------------------------------------------
+\input{common/overzicht}
+
+% ---------------------------------------------------------------------------
+\section{Leerdoelen}
+
+Na labo 4 kun je:
+
+\begin{enumerate}[label=\textbf{LD\arabic*}, leftmargin=1.4cm]
+  \item data per groep samenvatten met \code{groupby} en \code{agg}, en
+        tabellen koppelen met \code{merge} zonder dubbel te tellen;
+  \item data herschikken tussen een lange en een brede vorm met
+        \code{melt} en \code{pivot\_table};
+  \item eenvoudige kenmerken van een tijdreeks berekenen: hartslagzones,
+        voortschrijdende gemiddelden en hersampling.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Voorkennis}
+
+Labo 3 (\emph{Dataverwerking I}): een CSV-bestand inladen met
+\code{pandas}, rijen en kolommen selecteren en filteren, nieuwe kolommen
+berekenen en de data opkuisen. Labo 4 start met de opkuis-pipeline van
+labo 3, in compacte vorm.
+
+% ---------------------------------------------------------------------------
+\input{common/software}
+
+% ---------------------------------------------------------------------------
+\input{common/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Planning}
+
+\textbf{Doel:} data aggregeren met \code{groupby}, tabellen koppelen met
+\code{merge}, herschikken met \code{melt} en \code{pivot}, en eenvoudige
+kenmerken van een tijdreeks berekenen.
+
+\begin{schedule}
+13:00--13:15 & Herhaling: een kapotte cel herstellen & Een kleine opkuis-pipeline met twee fouten repareren. \\
+13:15--14:10 & \code{groupby} + \code{agg} & Statistieken per groep, leeftijdscategorieën met \code{pd.cut}, meerdere benoemde aggregaties tegelijk. \\
+14:10--14:55 & \code{merge} & Inner en left joins; waarom een dubbele atleet twee keer meetelt, en waarom je dubbels verwijdert vóór het koppelen. \\
+14:55--15:10 & Pauze & \\
+15:10--15:50 & \code{melt} en \code{pivot} & Lange en brede vorm; vooruitgang tussen twee testmomenten. \\
+15:50--16:50 & Tijdreeksen & Hartslagzones als \% van $HR_{max}$ (220 $-$ leeftijd), tijd per zone, \code{rolling}, \code{resample}. \\
+16:50--17:30 & Minicase per twee & Een trainingsrapport: één rij per atleet. \\
+\end{schedule}
+
+\textbf{Oefeningen:} (0) herhaling: de kapotte cel herstellen;
+(1) groeperen per geslacht en leeftijdscategorie; (2) wat heeft het
+verwijderen van de dubbels gekost?; (3) vooruitgang in spronghoogte;
+(4) minuten in zone 4--5 per atleet; \textbf{minicase:}
+trainingsrapport met de minuten in zone 4--5, de maximale snelheid en de
+afgelegde afstand per atleet.
+
+% ---------------------------------------------------------------------------
+\section{Werkwijze}
+
+\begin{itemize}
+  \item Elk blok start met een korte demo in het notebook, gevolgd door
+        oefeningen die je in het notebook zelf oplost.
+  \item Gebruik de automatische controles als feedback, niet als doel:
+        als een controle groen kleurt, zorg dan dat je kunt uitleggen
+        \emph{waarom} je code werkt.
+  \item De minicase op het einde maak je per twee.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Voorbereiding}
+
+\begin{itemize}
+  \item Controleer vóór de sessie dat je het notebook kunt openen,
+        lokaal of op marimo.app.
+  \item Zorg dat je elke stap van de opkuis-pipeline op het einde van
+        labo 3 kunt uitleggen, want labo 4 vertrekt daarvan.
+  \item Lees de cursustekst bij labo 4 naast het notebook.
+\end{itemize}
+
+\end{document}

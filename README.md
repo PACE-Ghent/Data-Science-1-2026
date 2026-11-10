@@ -14,8 +14,10 @@ labs/                  student notebooks — hand these out
 solutions/             instructor answer keys — same notebooks, fully solved
 checks/                answer checks loaded by the notebooks
 cursus/                course texts (PDF, in Flemish) for labs 3-5
-slides/                slide deck for labs 3-5
-syllabus/              syllabus for labs 3-5 (LaTeX + PDF)
+slides/nl/, slides/en/ one slide deck per lab (3-5) plus a deck on installing
+                       marimo locally (Windows and macOS), in Flemish and English
+syllabus/              one syllabus per lab (3-5), LaTeX + PDF; the parts
+                       shared by all labs are in syllabus/common/
 ```
 
 ## The datasets (`data/`)

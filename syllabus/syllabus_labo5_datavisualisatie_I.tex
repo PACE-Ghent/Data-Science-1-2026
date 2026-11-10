@@ -1,0 +1,98 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{labo 5}
+\usepackage{syllabus}
+
+\begin{document}
+
+\syllabustitel{labo 5 -- \emph{Datavisualisatie I}}{Vertel het verhaal met plotly}
+
+% ---------------------------------------------------------------------------
+\input{common/overzicht}
+
+% ---------------------------------------------------------------------------
+\section{Leerdoelen}
+
+Na labo 5 kun je:
+
+\begin{enumerate}[label=\textbf{LD\arabic*}, leftmargin=1.4cm]
+  \item een grafiektype kiezen dat bij de vraag past, en misleidende
+        grafieken herkennen, zoals een afgeknotte as;
+  \item met \code{plotly.express} histogrammen, boxplots,
+        spreidingsdiagrammen en lijngrafieken maken, met kleur, facetten
+        en grootte voor extra dimensies;
+  \item grafieken interactief maken met UI-elementen van marimo en ze
+        combineren tot een dashboard.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Voorkennis}
+
+Labo 3 en 4 (\emph{Dataverwerking I en II}): data inladen, filteren en
+opkuisen met \code{pandas}, groeperen met \code{groupby}, tabellen
+koppelen met \code{merge} en het verschil tussen een lange en een brede
+vorm. Labo 5 start met de volledige opkuis van labo 3 en 4 in één cel.
+
+% ---------------------------------------------------------------------------
+\input{common/software}
+
+% ---------------------------------------------------------------------------
+\input{common/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Planning}
+
+\textbf{Doel:} een grafiektype kiezen voor een gegeven vraag, de
+standaardgrafieken van \code{plotly.express} maken, extra dimensies
+toevoegen met kleur, facetten en grootte, en eenvoudige interactiviteit
+inbouwen.
+
+\begin{schedule}
+13:00--13:30 & Principes & De juiste grafiek voor de vraag (verdeling, vergelijking, verband, evolutie); kritiek op een misleidende grafiek. \\
+13:30--14:30 & Basis van \code{plotly.express} & Histogram, boxplot, spreidingsdiagram en lijngrafiek, met titels, aslabels en hover-informatie. \\
+14:30--15:15 & Meer dimensies & \code{color}, \code{facet\_col} en \code{size}; één vaste kleur per positie. \\
+15:15--15:30 & Pauze & \\
+15:30--16:15 & Hartslag als tijdreeks & Zonebanden met \code{add\_hrect}, en waarom we geen tweede y-as gebruiken. \\
+16:15--16:45 & Interactiviteit & \code{mo.ui.dropdown}, \code{mo.ui.range\_slider}, optioneel selecties met \code{mo.ui.plotly}. \\
+16:45--17:30 & Minidashboard & 3 grafieken en 1 keuzemenu waarop minstens één grafiek reageert. \\
+\end{schedule}
+
+\textbf{Oefeningen:} (1) een histogram van het gewicht; (2) Yo-Yo-niveau
+per positie, met facetten per geslacht; (3) snelheid doorheen de tijd
+voor één atleet; \textbf{opdracht:} het minidashboard.
+
+% ---------------------------------------------------------------------------
+\section{Werkwijze}
+
+\begin{itemize}
+  \item Elk blok start met een korte demo in het notebook, gevolgd door
+        oefeningen die je in het notebook zelf oplost.
+  \item Gebruik de automatische controles als feedback, niet als doel:
+        als een controle groen kleurt, zorg dan dat je kunt uitleggen
+        \emph{waarom} je code werkt.
+  \item Het minidashboard bouw je met alles uit dit labo: het doel is
+        combineren, niet nieuwe grafiektypes leren.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Evaluatie}
+
+\begin{itemize}
+  \item \textbf{Minidashboard:} drie grafieken en één interactief
+        keuzemenu, gemaakt met de data van de club. Het kan dienen als je
+        inzending voor deze module en bereidt de casepresentaties en het
+        Project Lab van volgend semester voor.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Voorbereiding}
+
+\begin{itemize}
+  \item Controleer vóór de sessie dat je het notebook kunt openen,
+        lokaal of op marimo.app.
+  \item Herhaal \code{groupby}, \code{merge} en de lange vorm uit labo 4.
+        Grafieken met plotly express vertrekken van data in de lange vorm.
+  \item Lees de cursustekst bij labo 5 naast het notebook.
+\end{itemize}
+
+\end{document}
