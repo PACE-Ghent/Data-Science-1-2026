@@ -15,7 +15,8 @@ solutions/             instructor answer keys — same notebooks, fully solved
 checks/                answer checks loaded by the notebooks
 cursus/nl/, cursus/en/ course texts (PDF) for labs 3-5, in Flemish and English
 slides/nl/, slides/en/ one slide deck per lab (3-5) plus a deck on installing
-                       Python and marimo with uv (Windows and macOS), in Flemish and English
+                       Python and marimo with uv (Windows and macOS) and an
+                       introduction of the lecturer, in Flemish and English
 syllabus/              one syllabus per lab (3-5) plus one for labs 3-5 together
                        (syllabus_labo_3-5, syllabus_labs_3-5), in Flemish
                        (syllabus_labo*) and English (syllabus_lab*), LaTeX + PDF;
