@@ -1,0 +1,20 @@
+% Schedule of one lab. Used by this lab's syllabus and by the syllabus for labs 3-5.
+\textbf{Goal:} aggregate data with \code{groupby}, combine tables with
+\code{merge}, reshape with \code{melt} and \code{pivot}, and compute
+basic features of a time series.
+
+\begin{schedule}
+13:00--13:15 & Recap: repair a broken cell & Fix a small cleaning pipeline with two bugs. \\
+13:15--14:10 & \code{groupby} + \code{agg} & Statistics per group, age groups with \code{pd.cut}, several named aggregations at once. \\
+14:10--14:55 & \code{merge} & Inner and left joins; why a duplicated athlete is counted twice, and why you remove duplicates before merging. \\
+14:55--15:10 & Break & \\
+15:10--15:50 & \code{melt} and \code{pivot} & Long and wide shape; progress between two test moments. \\
+15:50--16:50 & Time series & Heart-rate zones as \% of $HR_{max}$ (220 $-$ age), time per zone, \code{rolling}, \code{resample}. \\
+16:50--17:30 & Mini-case in pairs & A training report: one row per athlete. \\
+\end{schedule}
+
+\textbf{Exercises:} (0) recap: repair the broken cell; (1) group by
+gender and age group; (2) what did removing the duplicates cost?;
+(3) progress in jump height; (4) minutes in zone 4--5 per athlete;
+\textbf{mini-case:} training report with the minutes in zone 4--5, the
+maximum speed and the distance covered per athlete.

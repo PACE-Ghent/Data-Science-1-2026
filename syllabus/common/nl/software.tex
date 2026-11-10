@@ -9,9 +9,12 @@ cursusrepository. Je kunt het op twee manieren openen:
         \emph{New $\rightarrow$ Open from URL\dots} en plak de raw-URL van
         het notebook op GitHub. De data wordt dan van GitHub gelezen, dus
         je hoeft niets te installeren.
-    \item \textbf{Lokaal:} installeer de pakketten uit
-        \code{requirements.txt} en open het notebook met marimo. De data
-        wordt dan uit de map \code{data/} gelezen.
+    \item \textbf{Lokaal:} installeer \code{uv} en Python 3.12 volgens de
+        handleiding \emph{Python installeren} (of de slides). Ga daarna in
+        een terminal naar de map van de cursus en open een labo met:\newline
+        \code{uv run marimo edit labs/lab3\_data\_processing\_I.py}\newline uv
+        installeert de eerste keer zelf de nodige packages; de data wordt
+        uit de map \code{data/} gelezen.
 
 \end{itemize}
 

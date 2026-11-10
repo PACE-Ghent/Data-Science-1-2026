@@ -15,7 +15,7 @@ solutions/             instructor answer keys — same notebooks, fully solved
 checks/                answer checks loaded by the notebooks
 cursus/nl/, cursus/en/ course texts (PDF) for labs 3-5, in Flemish and English
 slides/nl/, slides/en/ one slide deck per lab (3-5) plus a deck on installing
-                       marimo locally (Windows and macOS), in Flemish and English
+                       Python and marimo with uv (Windows and macOS), in Flemish and English
 syllabus/              one syllabus per lab (3-5), in Flemish (syllabus_labo*)
                        and English (syllabus_lab*), LaTeX + PDF; the parts
                        shared by all labs are in syllabus/common/nl/ and en/
@@ -178,24 +178,24 @@ a Chrome/Chromium browser for kaleido. Generated files go to
 
 ## Running notebooks locally
 
-To work with the notebooks from a local checkout, install the dependencies
-once:
+Students install `uv` and Python 3.12 following the manual "Python
+installeren" (also in `slides/nl/python_installeren.pptx` and
+`slides/en/installing_python.pptx`). After that, from the repository
+folder:
 
 ```bash
-pip install -r requirements.txt
+uv run marimo edit labs/lab3_data_processing_I.py
 ```
 
-Open a notebook for editing (either a student lab or an instructor
-solution):
-
-```bash
-marimo edit labs/lab3_data_processing_I.py
-```
+The first time, uv creates a `.venv` with the packages from
+`pyproject.toml` (marimo, pandas, plotly, numpy). `requirements.txt` lists
+the same packages for anyone who prefers `pip install -r requirements.txt`;
+keep the two in sync.
 
 This opens an interactive, reactive notebook in your browser. Cells re-run
 automatically when their dependencies change. To run a notebook read-only,
 as students would see a shared app:
 
 ```bash
-marimo run labs/lab3_data_processing_I.py
+uv run marimo run labs/lab3_data_processing_I.py
 ```

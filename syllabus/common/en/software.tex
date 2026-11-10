@@ -9,9 +9,12 @@ course repository. You can open it in two ways:
         \emph{New $\rightarrow$ Open from URL\dots} and paste the raw URL
         of the notebook on GitHub. The data is then read from GitHub, so
         you don't have to install anything.
-    \item \textbf{Locally:} install the packages from
-        \code{requirements.txt} and open the notebook with marimo. The
-        data is then read from the \code{data/} folder.
+    \item \textbf{Locally:} install \code{uv} and Python 3.12 following
+        the \emph{Installing Python} manual (or the slides). Then go to the
+        course folder in a terminal and open a lab with:\newline
+        \code{uv run marimo edit labs/lab3\_data\_processing\_I.py}\newline The
+        first time, uv installs the packages it needs; the data is read
+        from the \code{data/} folder.
 \end{itemize}
 
 Three things to know about marimo:
