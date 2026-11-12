@@ -1,0 +1,85 @@
+% Gemeenschappelijke opmaak voor de syllabi van labo 3, 4 en 5.
+% Elk labobestand zet eerst \labonaam{...} en laadt dan dit pakket.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{syllabus}
+
+% Taal: \usepackage{syllabus} voor Nederlands, \usepackage[english]{syllabus} voor Engels.
+\newif\ifsyllabusenglish
+\DeclareOption{english}{\syllabusenglishtrue}
+\DeclareOption{dutch}{\syllabusenglishfalse}
+\ProcessOptions\relax
+
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\ifsyllabusenglish
+  \RequirePackage[english]{babel}
+  \newcommand{\lbltbd}{TO FILL IN}
+  \newcommand{\lbltime}{Time}
+  \newcommand{\lblblock}{Block}
+  \newcommand{\lblpractise}{What you practise}
+  \newcommand{\lblsyllabusfor}{Syllabus for}
+  \newcommand{\lbllecturer}{Lecturer}
+  \newcommand{\lblsession}{Session}
+\else
+  \RequirePackage[dutch]{babel}
+  \newcommand{\lbltbd}{IN TE VULLEN}
+  \newcommand{\lbltime}{Tijd}
+  \newcommand{\lblblock}{Blok}
+  \newcommand{\lblpractise}{Wat je oefent}
+  \newcommand{\lblsyllabusfor}{Syllabus voor}
+  \newcommand{\lbllecturer}{Lesgever}
+  \newcommand{\lblsession}{Sessie}
+\fi
+\RequirePackage{lmodern}
+\RequirePackage[a4paper,margin=2.2cm]{geometry}
+\RequirePackage[dvipsnames,table]{xcolor}
+\RequirePackage{booktabs,tabularx,array,needspace,enumitem,titlesec,fancyhdr}
+\RequirePackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------------------
+% Kleuren (zelfde palet als de slides)
+\definecolor{pitch}{HTML}{0F3D2E}
+\definecolor{accent}{HTML}{EB6834}
+\definecolor{muted}{HTML}{5B6B63}
+\definecolor{tint}{HTML}{EEF3EF}
+
+% Vul alles wat met \tbd gemarkeerd is in voor je dit uitdeelt.
+\newcommand{\tbd}[1]{\colorbox{accent!20}{\textcolor{accent!80!black}{\textsf{\small \lbltbd: #1}}}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\titleformat{\section}{\Large\bfseries\color{pitch}}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\large\bfseries\color{pitch}}{\thesubsection}{0.8em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.5em}
+\setlist{itemsep=0.25em, topsep=0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\color{muted}Data Science 1 -- Syllabus \labonaamwaarde}
+\rhead{\small\color{muted}\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Een planningstabel: tijd | blok | wat je oefent
+\newenvironment{schedule}
+  {\par\noindent\rowcolors{2}{tint}{white}\tabularx{\textwidth}{@{}L{2.3cm}L{4.3cm}Y@{}}\toprule
+   \textbf{\lbltime} & \textbf{\lblblock} & \textbf{\lblpractise}\\\midrule}
+  {\bottomrule\endtabularx\par}
+
+% Titelblok: \syllabustitel{Labo 4 -- Dataverwerking II}{Combineren, samenvatten, herschikken}
+\newcommand{\syllabustitel}[2]{%
+  \begin{center}
+    {\color{muted}\textsf{DATA SCIENCE 1 \textperiodcentered{} 2026--2027}}\\[0.6em]
+    {\huge\bfseries\color{pitch} #2}\\[0.6em]
+    {\large \lblsyllabusfor{} #1}
+  \end{center}
+  \vspace{1em}
+  \noindent
+  \begin{tabularx}{\textwidth}{@{}p{3.6cm}X@{}}
+  \toprule
+  \lbllecturer & dr. Maarten Slembrouck \\
+  \lblsession  & #1 \\
+  \bottomrule
+  \end{tabularx}}

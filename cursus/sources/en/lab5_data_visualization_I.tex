@@ -1,0 +1,497 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[english]{cursus}
+\author{dr. Maarten Slembrouck}
+
+\begin{document}
+
+\labtitle{Lab 5 -- Data Visualization I}{Tell the story with plotly}{Course text for the notebook \code{lab5\_data\_visualization\_I.py}}
+
+\section*{What is this lab about?}
+
+In two labs you turned messy exports into tidy, combined tables. But a
+coach does not read a table with 111 rows. A good chart shows at a
+glance what is hidden in the table: who is fastest, who is improving,
+how hard a training session was.
+
+\textbf{After this lab you can} choose a chart type that fits a
+question, build the standard charts with \code{plotly.express}, show
+extra information with colour, facets and size, and make charts
+interactive in marimo.
+
+All charts in this text were made with the code above them, on the
+club's data. In the notebook they are interactive: you can zoom in and
+hover over a point for more information.
+
+\begin{python}[hide]
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+pio.templates.default = "plotly_white"
+
+def clean_positions(position_column):
+    position_map = {
+        "forward": "Forward", "fwd": "Forward",
+        "midfielder": "Midfielder", "mid": "Midfielder",
+        "defender": "Defender", "def": "Defender",
+        "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
+    }
+    return position_column.str.strip().str.lower().map(position_map)
+
+def fix_sprint_units(seconds_column):
+    return seconds_column.where(seconds_column < 20, seconds_column / 1000)
+
+REFERENCE_DATE = pd.Timestamp("2026-09-14")
+athletes = pd.read_csv(f"{DATA_DIR}/athletes.csv").assign(
+    position=lambda d: clean_positions(d["position"]),
+    weight_kg=lambda d: d["weight_kg"].str.replace(",", ".").astype(float),
+    age=lambda d: (REFERENCE_DATE - pd.to_datetime(d["birthdate"])).dt.days // 365,
+).drop_duplicates(subset=["name", "birthdate"], keep="first")
+tests = pd.read_csv(f"{DATA_DIR}/tests.csv").assign(
+    sprint_10m_s=lambda d: fix_sprint_units(d["sprint_10m_s"]),
+    sprint_30m_s=lambda d: fix_sprint_units(d["sprint_30m_s"]),
+)
+combined = athletes.merge(tests, on="athlete_id", how="inner")
+hr_session = pd.read_csv(f"{DATA_DIR}/hr_session.csv")
+hr_session["timestamp"] = pd.to_datetime(hr_session["date"]) + pd.to_timedelta(hr_session["time_s"], unit="s")
+hr_with_age = hr_session.merge(athletes[["athlete_id", "age", "name"]], on="athlete_id", how="left")
+hr_with_age["hr_max"] = 220 - hr_with_age["age"]
+hr_with_age["pct_hr_max"] = 100 * hr_with_age["heart_rate_bpm"] / hr_with_age["hr_max"]
+hr_zoned = hr_with_age.assign(hr_zone=lambda d: pd.cut(
+    d["pct_hr_max"], bins=[0, 60, 70, 80, 90, 1000],
+    labels=["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"]))
+\end{python}
+
+% ---------------------------------------------------------------------------
+\section{The data for this lab}
+
+The notebook starts with one cell that repeats the complete cleaning of
+labs 3 and 4. After that you have two tables:
+
+\begin{itemize}
+  \item \code{combined}: one row per athlete per test moment, with
+        position, gender, weight, sprint times, jump height and Yo-Yo
+        level;
+  \item \code{hr\_zoned}: the training session per second, with heart
+        rate, speed, name and heart-rate zone.
+\end{itemize}
+
+\begin{python}
+combined.shape, hr_zoned.shape
+\end{python}
+
+Both are \textbf{long}: one row per measurement. That is exactly the
+shape \code{plotly.express} expects (see lab 4).
+
+The notebook also fixes one colour per position up front, in a
+dictionary. That way ``Forward'' has the same colour in every chart, and
+the reader only has to learn the legend once.
+
+\begin{python}[noout]
+POSITION_COLORS = {
+    "Forward": "#2a78d6",
+    "Midfielder": "#eb6834",
+    "Defender": "#1baf7a",
+    "Goalkeeper": "#eda100",
+}
+\end{python}
+
+You write a colour as a \emph{hex code}: a hash sign followed by six
+characters, two for red, two for green and two for blue.
+
+% ---------------------------------------------------------------------------
+\section{Principles: the right chart for the right question}
+
+Every chart answers a question. So start from the question, not from the
+chart type you happen to know.
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{2.8cm}Y L{3.3cm}@{}}
+\toprule
+\textbf{Kind of question} & \textbf{Example} & \textbf{Suitable chart} \\
+\midrule
+Distribution & How are sprint times spread out? & histogram, box plot \\
+Comparison & Which position jumps highest on average? & bar chart, box plot \\
+Relationship & Does a faster sprint mean a higher jump? & scatter plot \\
+Evolution & Is this athlete's heart rate climbing? & line chart \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Honest axes}
+
+A chart can mislead as easily as it informs. The best-known trap is a
+\textbf{truncated axis}. Below are the same means twice. In the first
+chart the y-axis starts at 0:
+
+\begin{python}[fig=honest]
+sprint_means = combined.groupby("position", as_index=False)["sprint_30m_s"].mean()
+fig = px.bar(
+    sprint_means, x="position", y="sprint_30m_s",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="Average 30 m sprint time by position",
+    labels={"sprint_30m_s": "Average sprint time (s)", "position": "Position"},
+)
+fig.update_yaxes(rangemode="tozero")
+\end{python}
+
+\code{as\_index=False} keeps \code{position} as an ordinary column
+(instead of making it the index), so you can use it as \code{x}. In the
+second chart the y-axis starts just below the smallest value:
+
+\begin{python}[fig=misleading]
+fig = px.bar(
+    sprint_means, x="position", y="sprint_30m_s",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="MISLEADING - average 30 m sprint time by position",
+    labels={"sprint_30m_s": "Average sprint time (s)", "position": "Position"},
+)
+fig.update_yaxes(range=[5.1, 5.55])
+\end{python}
+
+The same small differences (at most 0.3 seconds) now look huge. A bar
+shows a size with its \emph{length}; so that length has to start at
+zero. For the same reason you never use two different y-axes in one
+chart: the reader cannot compare the two scales.
+
+% ---------------------------------------------------------------------------
+\section{Making charts with \code{plotly.express}}
+
+\code{plotly.express} is a library for making interactive charts with
+little code. You import it as \code{px}:
+
+\begin{python}[noout]
+import plotly.express as px
+\end{python}
+
+Every function follows the same pattern:
+
+\begin{python}[noeval]
+fig = px.KIND(table, x="column", y="column", color="column",
+              title="...", labels={"column": "Readable name"})
+\end{python}
+
+\begin{itemize}
+  \item the \textbf{table} comes first; after that you refer to columns
+        by their name, as text;
+  \item \code{title} is the title above the chart;
+  \item \code{labels} is a dictionary that translates column names into
+        readable axis labels, with a unit: ``Sprint time (s)'' instead of
+        \code{sprint\_30m\_s};
+  \item the result is a \textbf{figure} object. Put the variable on the
+        last line of a cell and marimo shows the chart.
+\end{itemize}
+
+\subsection{Histogram: how is one variable distributed?}
+
+A histogram divides the values into bins and shows how many values fall
+in each bin. \code{nbins} chooses the (approximate) number of bins.
+
+\begin{python}[fig=histogram]
+fig = px.histogram(
+    athletes, x="height_cm", nbins=15,
+    title="Distribution of athlete height",
+    labels={"height_cm": "Height (cm)"},
+)
+\end{python}
+
+A histogram needs only one column (\code{x}); the y-axis is the number
+of athletes per bin, which plotly counts itself. Play with
+\code{nbins}: too few bins hide detail, too many make the chart messy.
+
+\subsection{Box plot: comparing distributions}
+
+A box plot summarizes a distribution in five numbers. This is how you
+read it:
+
+\begin{itemize}
+  \item the \textbf{line in the box} is the median: half of the values
+        are below it, half above;
+  \item the \textbf{box} runs from the first to the third quartile: the
+        middle half of the values;
+  \item the \textbf{whiskers} run to the lowest and highest value that
+        is not exceptionally far from the box;
+  \item \textbf{separate points} are outliers.
+\end{itemize}
+
+\begin{python}[fig=boxplot]
+fig = px.box(
+    combined, x="position", y="sprint_30m_s",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="30 m sprint time by position",
+    labels={"sprint_30m_s": "Sprint time (s)", "position": "Position"},
+    hover_data=["name"],
+)
+\end{python}
+
+\code{hover\_data=["name"]} adds the name to the information box that
+appears when you hover over a point. In the notebook you immediately see
+who that outlier is.
+
+\subsection{Scatter plot: is there a relationship?}
+
+In a scatter plot every row is a point, with one variable on the x-axis
+and the other on the y-axis.
+
+\begin{python}[fig=scatter]
+fig = px.scatter(
+    combined, x="sprint_30m_s", y="cmj_height_cm",
+    color="position", color_discrete_map=POSITION_COLORS,
+    title="Sprint time vs. jump height",
+    labels={"sprint_30m_s": "30 m sprint time (s)", "cmj_height_cm": "Jump height (cm)"},
+    hover_data=["name", "test_moment"],
+)
+\end{python}
+
+The points form a broad cloud without a clear direction. If there were a
+strong relationship, they would lie around a sloping line: going down if
+faster sprinters (a lower time) also jump higher. That is not the case
+here: in this data the sprint time says little about the jump height.
+``No clear relationship'' is also an answer to the coach's question. And
+when you do see a relationship, remember that it is not yet proof that
+one causes the other.
+
+\subsection{Line chart: how does something change?}
+
+A line chart connects consecutive points. For that, the data has to be
+\textbf{sorted} on the x-axis, otherwise the line jumps back and forth.
+With \code{color="athlete\_id"} every athlete gets their own line:
+
+\begin{python}[fig=line]
+fig = px.line(
+    combined.sort_values("test_moment"), x="test_moment", y="sprint_30m_s",
+    color="athlete_id",
+    title="30 m sprint time across the season, per athlete",
+    labels={"sprint_30m_s": "Sprint time (s)", "test_moment": "Test moment"},
+)
+fig.update_layout(showlegend=False)
+\end{python}
+
+\code{update\_layout(showlegend=False)} hides the legend: with 42
+athletes it would take up more space than the chart itself. This works
+without \code{pivot\_table}, because \code{combined} is already long.
+
+% ---------------------------------------------------------------------------
+\section{More dimensions: colour, facets and size}
+
+A scatter plot shows two variables. With three extra arguments you can
+show more:
+
+\begin{itemize}
+  \item \code{color="column"}: a category as colour;
+  \item \code{facet\_col="column"}: one small chart per value, side by
+        side, with the same axes;
+  \item \code{size="column"}: a number as the size of the point.
+\end{itemize}
+
+\begin{python}[fig=facet]
+fig = px.scatter(
+    combined, x="sprint_30m_s", y="cmj_height_cm",
+    color="position", color_discrete_map=POSITION_COLORS,
+    facet_col="gender", size="weight_kg",
+    title="Sprint vs. jump height, by position and gender",
+    labels={"sprint_30m_s": "30 m sprint time (s)", "cmj_height_cm": "Jump height (cm)"},
+)
+\end{python}
+
+Five variables in one chart: sprint time, jump height, position, gender
+and weight. Notice the third, empty panel \code{gender=nan}: a few rows
+have no gender, and plotly makes a separate panel for them. If you don't
+want that, drop those rows first with
+\code{combined.dropna(subset=["gender"])}, and rename the panel titles
+with \code{labels=\{"gender": "Gender"\}}. Facets are often clearer than
+cramming everything into one chart, because you can compare the panels
+side by side. But more is not always better: only add a dimension if it
+helps answer the question.
+
+% ---------------------------------------------------------------------------
+\section{Heart rate as a time series, with zones}
+
+A line chart of the heart rate becomes much easier to read when you show
+the heart-rate zones as coloured bands in the background. That is what
+\code{add\_hrect} is for: a horizontal rectangle between two values on
+the y-axis.
+
+\begin{python}[fig=heartrate]
+ZONE_COLORS = {"Zone 1": "#cde2fb", "Zone 2": "#86b6ef", "Zone 3": "#3987e5",
+               "Zone 4": "#1c5cab", "Zone 5": "#0d366b"}
+one_athlete_hr = hr_zoned.loc[hr_zoned["athlete_id"] == "A001"].sort_values("timestamp")
+hr_max = one_athlete_hr["hr_max"].iloc[0]
+
+fig = px.line(
+    one_athlete_hr, x="timestamp", y="heart_rate_bpm",
+    title=f"Heart rate during training - {one_athlete_hr['name'].iloc[0]}",
+    labels={"heart_rate_bpm": "Heart rate (bpm)", "timestamp": "Time"},
+)
+zone_edges_pct = [0, 60, 70, 80, 90, 100]
+zone_names = ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"]
+for lo, hi, zone in zip(zone_edges_pct[:-1], zone_edges_pct[1:], zone_names):
+    fig.add_hrect(y0=lo / 100 * hr_max, y1=hi / 100 * hr_max,
+                  fillcolor=ZONE_COLORS[zone], opacity=0.35, line_width=0,
+                  annotation_text=zone, annotation_position="right")
+fig
+\end{python}
+
+The loop deserves some explanation:
+
+\begin{itemize}
+  \item \code{zone\_edges\_pct[:-1]} is the list without its last
+        element (0, 60, 70, 80, 90): the lower edges.
+        \code{zone\_edges\_pct[1:]} is the list without its first element
+        (60, 70, 80, 90, 100): the upper edges.
+  \item \code{zip(...)} walks through three lists at once and gives one
+        element of each list every time: first \code{(0, 60, "Zone 1")},
+        then \code{(60, 70, "Zone 2")}, and so on.
+  \item \code{lo / 100 * hr\_max} turns a percentage into a heart rate in
+        beats per minute.
+\end{itemize}
+
+In the notebook you use \code{\_lo} instead of \code{lo}: in marimo a
+name that starts with \code{\_} stays inside the cell, so it does not
+clash with variables in other cells.
+
+% ---------------------------------------------------------------------------
+\section{Interactivity in marimo}
+
+\subsection{UI elements and \code{.value}}
+
+marimo has \textbf{UI elements}: dropdowns, sliders, text boxes. A UI
+element is an ordinary Python variable. Its most important property is
+\code{.value}: what the user has chosen right now.
+
+\begin{python}[noeval]
+athlete_picker = mo.ui.dropdown(
+    options=sorted(hr_zoned["name"].unique()),
+    value=sorted(hr_zoned["name"].unique())[0],
+    label="Athlete",
+)
+time_window = mo.ui.range_slider(
+    start=0, stop=2400, step=60, value=(0, 2400),
+    label="Time window (s)", show_value=True,
+)
+mo.hstack([athlete_picker, time_window])
+\end{python}
+
+\begin{itemize}
+  \item \code{options} are the choices; \code{value} is the initial
+        choice. \code{.unique()} gives every name once, \code{sorted}
+        puts them in alphabetical order.
+  \item a \code{range\_slider} has two handles; its \code{.value} is a
+        tuple, e.g.\ \code{(0, 2400)}.
+  \item \code{mo.hstack([...])} puts elements side by side,
+        \code{mo.vstack([...])} below each other.
+\end{itemize}
+
+In a \emph{different} cell you use the chosen values to filter the data
+and make the chart:
+
+\begin{python}[noeval]
+selected_hr = hr_zoned.loc[
+    (hr_zoned["name"] == athlete_picker.value)
+    & hr_zoned["time_s"].between(*time_window.value)
+].sort_values("timestamp")
+
+reactive_hr_chart = px.line(selected_hr, x="timestamp", y="heart_rate_bpm",
+                            title=f"Heart rate - {athlete_picker.value}")
+reactive_hr_chart
+\end{python}
+
+\code{.between(a, b)} gives a mask that is \code{True} for values from
+\code{a} up to and including \code{b}. The star in
+\code{between(*time\_window.value)} \emph{unpacks the tuple}:
+\code{between(*(0, 2400))} is the same as \code{between(0, 2400)}.
+
+\begin{keyidea}[Why two cells?]
+marimo runs a cell again when a variable it depends on changes. When you
+change the dropdown, \code{athlete\_picker.value} changes, and marimo
+runs every cell that uses \code{athlete\_picker} again. The cell that
+\emph{creates} the element must not read its \code{.value} itself: then
+the element would be recreated with every choice. So: \textbf{create a
+UI element in one cell, read its value in another}.
+\end{keyidea}
+
+\subsection{Selecting in the chart (optional)}
+
+\code{mo.ui.plotly(figure)} goes one step further: when you select
+points in the chart with the box or lasso tool, those points are in
+\code{.value}. \code{pd.DataFrame(selectable\_scatter.value)} gives them
+to you as a table.
+
+% ---------------------------------------------------------------------------
+\section{The mini-dashboard}
+
+Today's assignment: a small dashboard for the coach, with \textbf{three
+charts} and \textbf{one selector} that at least one chart responds to.
+The selector (\code{dashboard\_selector}, a choice between the
+positions) is already in the notebook. You make a list
+\code{dashboard\_charts} with three figures.
+
+A few tips:
+
+\begin{itemize}
+  \item \textbf{Reuse.} The goal is combining, not learning new chart
+        types. Anything from this lab can come back.
+  \item \textbf{One question per chart.} First write down, for each
+        chart, which question of the coach it answers, then choose the
+        type (table in section 2).
+  \item \textbf{Filter with the selection.} Filter the data with
+        \code{dashboard\_selector.value} before you make the chart, as
+        with the heart-rate chart above.
+  \item \textbf{Finishing.} Every chart has a title and readable axis
+        labels with units, and uses \code{POSITION\_COLORS} where
+        positions appear.
+  \item \textbf{Layout.} \code{mo.vstack} and \code{mo.hstack} arrange
+        the selector and the charts neatly below and next to each other.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Summary}
+
+\begin{center}
+\rowcolors{2}{tint}{white}
+\begin{tabularx}{\textwidth}{@{}L{7.6cm}Y@{}}
+\toprule
+\textbf{Code} & \textbf{What it does} \\
+\midrule
+\code{px.histogram(df, x=, nbins=)} & distribution of one variable \\
+\code{px.box(df, x=, y=)} & compare distributions per group \\
+\code{px.scatter(df, x=, y=)} & relationship between two variables \\
+\code{px.line(df.sort\_values(x), x=, y=)} & evolution; sort first \\
+\code{px.bar(df, x=, y=)} & compare values; axis from 0 \\
+\code{title=}, \code{labels=\{...\}}, \code{hover\_data=[...]} & title, readable axis labels, extra info on hover \\
+\code{color=}, \code{color\_discrete\_map=} & category as colour, with fixed colours \\
+\code{facet\_col=}, \code{size=} & panels per value, number as point size \\
+\code{fig.update\_yaxes(rangemode="tozero")} & let the y-axis start at 0 \\
+\code{fig.add\_hrect(y0=, y1=, ...)} & horizontal band, e.g.\ a heart-rate zone \\
+\code{mo.ui.dropdown}, \code{mo.ui.range\_slider} & dropdown, slider with two handles \\
+\code{element.value} & the user's current choice \\
+\code{mo.hstack}, \code{mo.vstack} & put elements side by side or below each other \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Common mistakes}
+
+\begin{itemize}
+  \item A bar chart whose y-axis does not start at 0.
+  \item No title, or no units on the axes.
+  \item A line chart on data that is not sorted on the x-axis.
+  \item Creating a UI element and reading its \code{.value} in the same
+        cell.
+  \item Letting every chart choose its own colours, so ``Forward'' is
+        blue in one chart and orange in another.
+\end{itemize}
+
+\subsection*{Glossary}
+
+\begin{description}[leftmargin=3.2cm, labelwidth=3.0cm, font=\normalfont\bfseries]
+  \item[figure] the object a \code{px} function returns; marimo shows it as a chart.
+  \item[median] middle value: half of the values are below it, half above.
+  \item[quartile] boundary of the lowest or highest 25\,\% of the values.
+  \item[outlier] value that lies far from the others.
+  \item[facet] small panel with the same axes, one per value of a column.
+  \item[UI element] dropdown, slider or other element the user chooses something with.
+\end{description}
+
+\end{document}

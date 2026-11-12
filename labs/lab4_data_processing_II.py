@@ -41,12 +41,23 @@ def _(mo):
 def _(mo):
     import sys
 
-    # In the browser (marimo.app / WASM) there is no local data/ folder,
-    # so read the CSV files straight from GitHub instead.
+    # The CSV files live in the data/ folder one level up, as in the
+    # course folder. Files that are missing there (e.g. when you
+    # downloaded only this notebook) are downloaded into it once.
+    # In the browser (marimo.app) they are read straight from GitHub.
+    _DATA_URL = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    _DATA_FILES = ["athletes.csv", "tests.csv", "hr_session.csv"]
     if sys.platform == "emscripten":
-        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+        DATA_DIR = _DATA_URL
     else:
-        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _data_dir = (mo.notebook_dir() / ".." / "data").resolve()
+        _data_dir.mkdir(exist_ok=True)
+        for _name in _DATA_FILES:
+            if not (_data_dir / _name).exists():
+                _urlretrieve(f"{_DATA_URL}/{_name}", _data_dir / _name)
+        DATA_DIR = str(_data_dir)
     return (DATA_DIR,)
 
 
@@ -57,15 +68,24 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
+    # The checks file lives in the checks/ folder one level up, as in the
+    # course folder. If it is missing there (e.g. when you downloaded
+    # only this notebook), it is downloaded into it once. In the browser
+    # (marimo.app) it is read straight from GitHub.
     _CHECKS_FILE = "lab4_checks.py"
+    _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
     if _sys.platform == "emscripten":
         from urllib.request import urlopen as _urlopen
 
-        _checks_source = _urlopen(
-            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
-        ).read().decode("utf-8")
+        _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
     else:
-        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        if not _checks_path.is_file():
+            _checks_path.parent.mkdir(exist_ok=True)
+            _urlretrieve(_CHECKS_URL, _checks_path)
+        _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
@@ -74,7 +94,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1. Recap - repair a broken cleaning cell (13:00-13:15)
+    ## 1. Recap - repair a broken cleaning cell
 
     The cell below is a tiny, self-contained cleaning pipeline with two
     bugs. Fix them directly in the cell (a typo in a column name, and a
@@ -163,7 +183,7 @@ def _(DATA_DIR, fix_sprint_units, pd):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. groupby + agg (13:15-14:10)
+    ## 3. groupby + agg
 
     `groupby("column")` splits a dataframe into groups; call an
     aggregation afterwards (`.mean()`, `.size()`, `.agg(...)`) to
@@ -239,7 +259,7 @@ def _(athletes_with_age_group, checks, gender_age_summary):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. merge (14:10-14:55)
+    ## 4. merge
 
     `pd.merge(left, right, on="key", how=...)` combines two tables on a
     shared key. `how="inner"` keeps only keys present in **both**
@@ -335,7 +355,7 @@ def _(checks, combined, merged_inner, rows_lost_to_dedup):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Wide ↔ long: `melt` and `pivot` (15:10-15:50)
+    ## 5. Wide ↔ long: `melt` and `pivot`
 
     `tests` is already in **long** format: one row per
     `(athlete_id, test_moment)` combination. `pivot` turns it **wide**:
@@ -418,7 +438,7 @@ def _(checks, cmj_progress_1_to_2, cmj_wide, combined):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Time series with `hr_session.csv` (15:50-16:50)
+    ## 6. Time series with `hr_session.csv`
 
     One training, five athletes, one heart-rate + speed reading per
     second.
@@ -548,7 +568,7 @@ def _(checks, hr_zoned, zone_4_5_minutes):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 7. Mini-case, in pairs: training report (16:50-17:30)
+    ## 7. Mini-case, in pairs: training report
 
     Build one summary row per athlete from `hr_zoned`: total minutes in
     zone 4-5, maximum speed reached, and total distance covered. Speed

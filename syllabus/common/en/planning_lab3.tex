@@ -1,0 +1,18 @@
+% Schedule of one lab. Used by this lab's syllabus and by the syllabus for labs 3-5.
+\textbf{Goal:} load and explore a dataset, select and filter rows and
+columns, add new columns and clean the data.
+
+\begin{schedule}
+13:00--13:20 & Warm-up: why not just Excel? & Look at the raw text of a CSV file and see what a table library adds. \\
+13:20--14:00 & Loading and exploring & \code{read\_csv}, \code{.head()}, \code{.shape}, \code{.dtypes}, \code{.info()}, \code{.describe()}, \code{mo.ui.table}. \\
+14:00--14:50 & Selecting and filtering & Selecting columns, \code{.loc} with boolean conditions, combining conditions, \code{sort\_values}. \\
+14:50--15:05 & Break & \\
+15:05--15:50 & New columns & Text to number, age from a birthdate, speed from a sprint time, BMI. \\
+15:50--17:00 & Cleaning & Missing values (\code{dropna} or \code{fillna}), text labels, units, duplicates, one complete cleaning pipeline. \\
+17:00--17:30 & Challenge & The 5 fastest athletes per position. Exit ticket. \\
+\end{schedule}
+
+\textbf{Exercises:} (1) load \code{tests.csv}; (2) forwards younger than
+16; (3) suspicious sprint times; (4) BMI; (5) age in years; (6) clean the
+positions; (7) fix the sprint units; (8) remove the duplicate athlete;
+\textbf{challenge:} the 5 fastest per position.

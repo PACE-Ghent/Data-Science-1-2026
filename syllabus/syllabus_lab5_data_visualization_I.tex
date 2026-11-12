@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{lab 5}
+\usepackage[english]{syllabus}
+
+\begin{document}
+
+\syllabustitel{lab 5 -- \emph{Data Visualization I}}{Tell the story with plotly}
+
+% ---------------------------------------------------------------------------
+\input{common/en/overview}
+
+% ---------------------------------------------------------------------------
+\section{Learning outcomes}
+
+After lab 5 you can:
+
+\begin{enumerate}[label=\textbf{LO\arabic*}, leftmargin=1.4cm]
+  \item choose a chart type that fits the question, and recognise
+        misleading charts, such as a truncated axis;
+  \item make histograms, box plots, scatter plots and line charts with
+        \code{plotly.express}, with colour, facets and size for extra
+        dimensions;
+  \item make charts interactive with marimo UI elements and combine them
+        into a dashboard.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Prerequisites}
+
+Labs 3 and 4 (\emph{Data Processing I and II}): loading, filtering and
+cleaning data with \code{pandas}, grouping with \code{groupby}, combining
+tables with \code{merge}, and the difference between a long and a wide
+shape. Lab 5 starts with the complete cleaning of labs 3 and 4 in one
+cell.
+
+% ---------------------------------------------------------------------------
+\input{common/en/software}
+
+% ---------------------------------------------------------------------------
+\input{common/en/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Schedule}
+
+\input{common/en/planning_lab5}
+
+% ---------------------------------------------------------------------------
+\section{Working method}
+
+\begin{itemize}
+  \item Each block starts with a short demo in the notebook, followed by
+        exercises you solve in the notebook itself.
+  \item Use the automatic checks as feedback, not as the goal: when a
+        check turns green, make sure you can explain \emph{why} your code
+        works.
+  \item You build the mini-dashboard with everything from this lab: the
+        goal is combining, not learning new chart types.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Assessment}
+
+\begin{itemize}
+  \item \textbf{Mini-dashboard:} three charts and one interactive
+        selector, made with the club's data. It can serve as your
+        submission for this module and prepares the case presentations
+        and the Project Lab next semester.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Preparation}
+
+\begin{itemize}
+  \item Check before the session that you can open the notebook, locally
+        or on marimo.app.
+  \item Review \code{groupby}, \code{merge} and the long shape from lab 4.
+        Charts with plotly express start from data in the long shape.
+  \item Read the course text for lab 5 next to the notebook.
+\end{itemize}
+
+\end{document}

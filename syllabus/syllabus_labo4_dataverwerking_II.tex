@@ -1,0 +1,69 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{labo 4}
+\usepackage{syllabus}
+
+\begin{document}
+
+\syllabustitel{labo 4 -- \emph{Dataverwerking II}}{Combineren, samenvatten, herschikken}
+
+% ---------------------------------------------------------------------------
+\input{common/nl/overzicht}
+
+% ---------------------------------------------------------------------------
+\section{Leerdoelen}
+
+Na labo 4 kun je:
+
+\begin{enumerate}[label=\textbf{LD\arabic*}, leftmargin=1.4cm]
+  \item data per groep samenvatten met \code{groupby} en \code{agg}, en
+        tabellen koppelen met \code{merge} zonder dubbel te tellen;
+  \item data herschikken tussen een lange en een brede vorm met
+        \code{melt} en \code{pivot\_table};
+  \item eenvoudige kenmerken van een tijdreeks berekenen: hartslagzones,
+        voortschrijdende gemiddelden en hersampling.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Voorkennis}
+
+Labo 3 (\emph{Dataverwerking I}): een CSV-bestand inladen met
+\code{pandas}, rijen en kolommen selecteren en filteren, nieuwe kolommen
+berekenen en de data opkuisen. Labo 4 start met de opkuis-pipeline van
+labo 3, in compacte vorm.
+
+% ---------------------------------------------------------------------------
+\input{common/nl/software}
+
+% ---------------------------------------------------------------------------
+\input{common/nl/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Planning}
+
+\input{common/nl/planning_labo4}
+
+% ---------------------------------------------------------------------------
+\section{Werkwijze}
+
+\begin{itemize}
+  \item Elk blok start met een korte demo in het notebook, gevolgd door
+        oefeningen die je in het notebook zelf oplost.
+  \item Gebruik de automatische controles als feedback, niet als doel:
+        als een controle groen kleurt, zorg dan dat je kunt uitleggen
+        \emph{waarom} je code werkt.
+  \item De minicase op het einde maak je per twee.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Voorbereiding}
+
+\begin{itemize}
+  \item Controleer vóór de sessie dat je het notebook kunt openen,
+        lokaal of op marimo.app.
+  \item Zorg dat je elke stap van de opkuis-pipeline op het einde van
+        labo 3 kunt uitleggen, want labo 4 vertrekt daarvan.
+  \item Lees de cursustekst bij labo 4 naast het notebook.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,69 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{lab 4}
+\usepackage[english]{syllabus}
+
+\begin{document}
+
+\syllabustitel{lab 4 -- \emph{Data Processing II}}{Combine, summarize, reshape}
+
+% ---------------------------------------------------------------------------
+\input{common/en/overview}
+
+% ---------------------------------------------------------------------------
+\section{Learning outcomes}
+
+After lab 4 you can:
+
+\begin{enumerate}[label=\textbf{LO\arabic*}, leftmargin=1.4cm]
+  \item summarize data per group with \code{groupby} and \code{agg}, and
+        combine tables with \code{merge} without double counting;
+  \item reshape data between a long and a wide shape with \code{melt}
+        and \code{pivot\_table};
+  \item compute basic features of a time series: heart-rate zones,
+        rolling averages and resampling.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Prerequisites}
+
+Lab 3 (\emph{Data Processing I}): loading a CSV file with \code{pandas},
+selecting and filtering rows and columns, computing new columns and
+cleaning the data. Lab 4 starts with the cleaning pipeline of lab 3, in
+compact form.
+
+% ---------------------------------------------------------------------------
+\input{common/en/software}
+
+% ---------------------------------------------------------------------------
+\input{common/en/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Schedule}
+
+\input{common/en/planning_lab4}
+
+% ---------------------------------------------------------------------------
+\section{Working method}
+
+\begin{itemize}
+  \item Each block starts with a short demo in the notebook, followed by
+        exercises you solve in the notebook itself.
+  \item Use the automatic checks as feedback, not as the goal: when a
+        check turns green, make sure you can explain \emph{why} your code
+        works.
+  \item You do the mini-case at the end in pairs.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Preparation}
+
+\begin{itemize}
+  \item Check before the session that you can open the notebook, locally
+        or on marimo.app.
+  \item Make sure you can explain every step of the cleaning pipeline at
+        the end of lab 3, because lab 4 starts from it.
+  \item Read the course text for lab 4 next to the notebook.
+\end{itemize}
+
+\end{document}

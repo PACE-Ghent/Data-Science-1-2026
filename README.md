@@ -13,9 +13,15 @@ requirements.txt       Python dependencies (marimo, pandas, plotly, numpy)
 labs/                  student notebooks — hand these out
 solutions/             instructor answer keys — same notebooks, fully solved
 checks/                answer checks loaded by the notebooks
-cursus/                course texts (PDF, in Flemish) for labs 3-5
-slides/                slide deck for labs 3-5
-syllabus/              syllabus for labs 3-5 (LaTeX + PDF)
+cursus/nl/, cursus/en/ course texts (PDF) for labs 3-5, in Flemish and English
+slides/nl/, slides/en/ one slide deck per lab (3-5) plus a deck on installing
+                       Python and marimo with uv (Windows and macOS) and an
+                       introduction of the lecturer, in Flemish and English
+syllabus/              one syllabus per lab (3-5) plus one for labs 3-5 together
+                       (syllabus_labo_3-5, syllabus_labs_3-5), in Flemish
+                       (syllabus_labo*) and English (syllabus_lab*), LaTeX + PDF;
+                       shared parts, including each lab's planning, are in
+                       syllabus/common/nl/ and en/
 ```
 
 ## The datasets (`data/`)
@@ -133,22 +139,24 @@ trigger its own "Correct!" callout — not just "runs without crashing."
 
 ## `cursus/` — course texts
 
-One PDF per lab (`labo3_...pdf`, `labo4_...pdf`, `labo5_...pdf`) that
-explains the concepts behind the notebook from scratch, for students with
+One PDF per lab, in Flemish (`cursus/nl/labo3_...pdf`, ...) and English
+(`cursus/en/lab3_...pdf`, ...), that explains the concepts behind the notebook from scratch, for students with
 little Python experience. They explain the demos and use their own
 examples, so they don't give away the exercise answers.
 
-The sources are in `cursus/sources/`. They are LaTeX with `\begin{python}`
+The sources are in `cursus/sources/nl/` and `cursus/sources/en/`. They are LaTeX with `\begin{python}`
 blocks that `cursus/build.py` actually runs against `data/`, so every
 output and chart in the PDFs is real. Rebuild after changing the data or
 a text:
 
 ```bash
 pip install pandas plotly kaleido pygments
-python cursus/build.py            # all labs, or e.g. labo4_dataverwerking_II
+python cursus/build.py                              # everything, both languages
+python cursus/build.py en                           # only the English texts
+python cursus/build.py nl/labo4_dataverwerking_II   # one text
 ```
 
-This needs `tectonic` (or `xelatex` with `latexmk`) and, for the charts,
+This needs `tectonic` or `pdflatex` and, for the charts,
 a Chrome/Chromium browser for kaleido. Generated files go to
 `cursus/build/`, which is git-ignored.
 
@@ -163,31 +171,34 @@ a Chrome/Chromium browser for kaleido. Generated files go to
   pass — some checks depend on exact counts (e.g. "exactly one duplicate
   athlete", "5 goalkeepers") that assume the current generator output.
 - **Change a demo or the data:** rebuild the course texts in `cursus/`
-  and reread any sentence that quotes a number from the output.
+  and reread any sentence that quotes a number from the output, in both
+  languages.
+- **Edit a course text or syllabus:** make the same change in the other
+  language.
 - Run `marimo check path/to/notebook.py` after any manual edit to a
   notebook file — it catches structural issues (e.g. a cell reading a
   variable no other cell defines) before you open it in the browser.
 
 ## Running notebooks locally
 
-To work with the notebooks from a local checkout, install the dependencies
-once:
+Students install `uv` and Python 3.12 following the manual "Python
+installeren" (also in `slides/nl/python_installeren.pptx` and
+`slides/en/installing_python.pptx`). After that, from the repository
+folder:
 
 ```bash
-pip install -r requirements.txt
+uv run marimo edit labs/lab3_data_processing_I.py
 ```
 
-Open a notebook for editing (either a student lab or an instructor
-solution):
-
-```bash
-marimo edit labs/lab3_data_processing_I.py
-```
+The first time, uv creates a `.venv` with the packages from
+`pyproject.toml` (marimo, pandas, plotly, numpy). `requirements.txt` lists
+the same packages for anyone who prefers `pip install -r requirements.txt`;
+keep the two in sync.
 
 This opens an interactive, reactive notebook in your browser. Cells re-run
 automatically when their dependencies change. To run a notebook read-only,
 as students would see a shared app:
 
 ```bash
-marimo run labs/lab3_data_processing_I.py
+uv run marimo run labs/lab3_data_processing_I.py
 ```

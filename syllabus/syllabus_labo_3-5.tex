@@ -1,0 +1,114 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\labonaamwaarde}{labo 3--5}
+\usepackage{syllabus}
+
+\begin{document}
+
+\syllabustitel{labo 3, 4 en 5}{Van rommelige export tot coachdashboard}
+
+% ---------------------------------------------------------------------------
+\input{common/nl/overzicht}
+
+% ---------------------------------------------------------------------------
+\section{Leerdoelen}
+
+Na deze drie sessies kun je:
+
+\begin{enumerate}[label=\textbf{LD\arabic*}, leftmargin=1.4cm]
+  \item een CSV-bestand inladen met \code{pandas} en de structuur, de
+        datatypes en de ontbrekende waarden beschrijven;
+  \item rijen en kolommen selecteren en filteren met logische
+        voorwaarden, en het resultaat sorteren;
+  \item nieuwe kolommen afleiden (leeftijd, snelheid, BMI) en tekst
+        omzetten naar getallen en datums;
+  \item een dataset opkuisen en elke keuze verantwoorden: inconsistente
+        tekstlabels, verkeerde eenheden, ontbrekende waarden en dubbels;
+  \item data per groep samenvatten met \code{groupby} en \code{agg}, en
+        tabellen koppelen met \code{merge} zonder dubbel te tellen;
+  \item data herschikken tussen een lange en een brede vorm met
+        \code{melt} en \code{pivot\_table};
+  \item eenvoudige kenmerken van een tijdreeks berekenen: hartslagzones,
+        voortschrijdende gemiddelden en hersampling;
+  \item een grafiektype kiezen dat bij de vraag past, en misleidende
+        grafieken herkennen, zoals een afgeknotte as;
+  \item met \code{plotly.express} histogrammen, boxplots,
+        spreidingsdiagrammen en lijngrafieken maken, met kleur, facetten
+        en grootte voor extra dimensies;
+  \item grafieken interactief maken met UI-elementen van marimo en ze
+        combineren tot een dashboard.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Voorkennis}
+
+Labo 1 en 2 (\emph{Introductie Python I en II}): variabelen en datatypes,
+operatoren, \code{if}/\code{elif}/\code{else}, functies,
+stringmethodes, lijsten, dictionaries, lussen en een CSV-bestand inlezen
+met de module \code{csv}. Labo 2 eindigt met een samenvatting van
+\code{athletes.csv} in gewone Python; in labo 3 zie je hoe \code{pandas}
+hetzelfde doet in enkele regels.
+
+% ---------------------------------------------------------------------------
+\input{common/nl/software}
+
+% ---------------------------------------------------------------------------
+\input{common/nl/dataset}
+
+% ---------------------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Planning per sessie}
+
+\needspace{16\baselineskip}
+\subsection{Labo 3 -- Dataverwerking I: van bestand tot nette tabel}
+\input{common/nl/planning_labo3}
+
+\needspace{16\baselineskip}
+\subsection{Labo 4 -- Dataverwerking II: combineren, samenvatten, herschikken}
+\input{common/nl/planning_labo4}
+
+\needspace{16\baselineskip}
+\subsection{Labo 5 -- Datavisualisatie I: vertel het verhaal met plotly}
+\input{common/nl/planning_labo5}
+
+% ---------------------------------------------------------------------------
+\section{Werkwijze}
+
+\begin{itemize}
+  \item Elk blok start met een korte demo in het notebook, gevolgd door
+        oefeningen die je in het notebook zelf oplost.
+  \item Gebruik de automatische controles als feedback, niet als doel:
+        als een controle groen kleurt, zorg dan dat je kunt uitleggen
+        \emph{waarom} je code werkt.
+  \item De minicase van labo 4 maak je per twee.
+  \item Labo 3 eindigt met een exit ticket: één techniek die je opnieuw
+        zult gebruiken en één ding dat nog niet duidelijk is. Breng de
+        onduidelijke punten mee naar de volgende sessie.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Evaluatie}
+
+\begin{itemize}
+  \item \textbf{Minidashboard (labo 5):} drie grafieken en één interactief
+        keuzemenu, gemaakt met de data van de club. Het kan dienen als je
+        inzending voor deze module en bereidt de casepresentaties en het
+        Project Lab van volgend semester voor.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Voorbereiding per sessie}
+
+\begin{itemize}
+  \item Controleer vóór elke sessie dat je het notebook kunt openen,
+        lokaal of op marimo.app.
+  \item Vóór labo 3: herhaal lijsten, dictionaries en functies uit
+        labo 2.
+  \item Vóór labo 4: zorg dat je elke stap van de opkuis-pipeline op het
+        einde van labo 3 kunt uitleggen, want labo 4 vertrekt daarvan.
+  \item Vóór labo 5: herhaal \code{groupby}, \code{merge} en de lange
+        vorm uit labo 4. Grafieken met plotly express vertrekken van data
+        in de lange vorm.
+  \item Lees bij elk labo de cursustekst naast het notebook.
+\end{itemize}
+
+\end{document}

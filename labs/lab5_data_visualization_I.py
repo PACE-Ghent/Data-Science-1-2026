@@ -41,12 +41,23 @@ def _(mo):
 def _(mo):
     import sys
 
-    # In the browser (marimo.app / WASM) there is no local data/ folder,
-    # so read the CSV files straight from GitHub instead.
+    # The CSV files live in the data/ folder one level up, as in the
+    # course folder. Files that are missing there (e.g. when you
+    # downloaded only this notebook) are downloaded into it once.
+    # In the browser (marimo.app) they are read straight from GitHub.
+    _DATA_URL = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    _DATA_FILES = ["athletes.csv", "tests.csv", "hr_session.csv"]
     if sys.platform == "emscripten":
-        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+        DATA_DIR = _DATA_URL
     else:
-        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _data_dir = (mo.notebook_dir() / ".." / "data").resolve()
+        _data_dir.mkdir(exist_ok=True)
+        for _name in _DATA_FILES:
+            if not (_data_dir / _name).exists():
+                _urlretrieve(f"{_DATA_URL}/{_name}", _data_dir / _name)
+        DATA_DIR = str(_data_dir)
     return (DATA_DIR,)
 
 
@@ -57,15 +68,24 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
+    # The checks file lives in the checks/ folder one level up, as in the
+    # course folder. If it is missing there (e.g. when you downloaded
+    # only this notebook), it is downloaded into it once. In the browser
+    # (marimo.app) it is read straight from GitHub.
     _CHECKS_FILE = "lab5_checks.py"
+    _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
     if _sys.platform == "emscripten":
         from urllib.request import urlopen as _urlopen
 
-        _checks_source = _urlopen(
-            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
-        ).read().decode("utf-8")
+        _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
     else:
-        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        if not _checks_path.is_file():
+            _checks_path.parent.mkdir(exist_ok=True)
+            _urlretrieve(_CHECKS_URL, _checks_path)
+        _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
@@ -164,7 +184,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1. Principles: the right chart for the right question (13:00-13:30)
+    ## 1. Principles: the right chart for the right question
 
     | Question type | Example | Good chart |
     |---|---|---|
@@ -257,7 +277,7 @@ def _(chart_critique, mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Basic plotly express charts (13:30-14:30)
+    ## 2. Basic plotly express charts
 
     Every `plotly.express` function follows the same shape:
     `px.<chart_type>(dataframe, x=..., y=..., color=..., title=...,
@@ -368,7 +388,7 @@ def _(checks, weight_histogram):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. More dimensions: color, facet, size (14:30-15:15)
+    ## 3. More dimensions: color, facet, size
 
     `color` encodes a category as hue, `facet_col` splits one chart into
     a row of small charts, and `size` encodes a number as marker size -
@@ -428,7 +448,7 @@ def _(checks, yoyo_by_age):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. Heart-rate time series with zone bands (15:30-16:15)
+    ## 4. Heart-rate time series with zone bands
 
     `add_hrect` draws a horizontal band behind the data - perfect for
     showing heart-rate zones without adding a second y-axis (which we
@@ -513,7 +533,7 @@ def _(checks, speed_line):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Interactivity in marimo (16:15-16:45)
+    ## 5. Interactivity in marimo
 
     A `mo.ui.dropdown` (or slider) is just a variable whose `.value`
     changes when the viewer interacts with it - use `.value` inside a
@@ -588,7 +608,7 @@ def _(pd, selectable_scatter):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Mini-dashboard assignment (16:45-17:30)
+    ## 6. Mini-dashboard assignment
 
     Build a small "coach dashboard": **3 charts** plus **1 interactive
     selector** that at least one of the charts responds to. Reuse
@@ -635,14 +655,6 @@ def _():
 @app.cell(hide_code=True)
 def _(checks, dashboard_charts, dashboard_selector):
     checks.dashboard(dashboard_charts, dashboard_selector)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    Congratulations - you've gone from a messy CSV export to an interactive dashboard in three sessions. See you at the case presentations.
-    """)
     return
 
 

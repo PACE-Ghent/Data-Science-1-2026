@@ -1,0 +1,35 @@
+% Gedeeld door de syllabi van labo 3, 4 en 5. Pas dit hier aan, niet in de labobestanden.
+\section{Software en lesmateriaal}
+
+Elk labo is een \textbf{marimo-notebook} in de map \code{labs/} van de
+cursusrepository. Je kunt het op twee manieren openen:
+
+\begin{itemize}
+    \item \textbf{Online:} surf naar \url{https://marimo.app}, kies
+        \emph{New $\rightarrow$ Open from URL\dots} en plak de link naar
+        het notebook die je van de lesgever krijgt. De data wordt dan online
+        gelezen, dus je hoeft niets te installeren.
+    \item \textbf{Lokaal:} installeer \code{uv} en Python 3.12 volgens de
+        handleiding \emph{Python installeren} (of de slides). Ga daarna in
+        een terminal naar de map van de cursus en open een labo met:\newline
+        \code{uv run marimo edit labs/lab3\_data\_processing\_I.py}\newline uv
+        installeert de eerste keer zelf de nodige packages; de data wordt
+        uit de map \code{data/} gelezen.
+
+\end{itemize}
+
+Drie dingen die je moet weten over marimo:
+
+\begin{itemize}
+  \item Notebooks zijn \textbf{reactief}: als je een cel aanpast, worden
+        alle cellen die ervan afhangen opnieuw uitgevoerd, in de volgorde
+        van hun afhankelijkheden.
+  \item \textbf{Twee cellen kunnen niet dezelfde variabele definiëren.}
+        Geef elke stap een eigen, duidelijke naam (\code{tests\_raw},
+        \code{tests\_clean}, \dots) of zet een reeks stappen samen in één
+        cel.
+  \item Elke oefening bevat een placeholder \code{...}. Een verborgen cel
+        eronder controleert je antwoord: die kleurt \textbf{groen} als het
+        juist is, en geeft anders een algemene hint over wat nog niet
+        klopt, zonder het antwoord te verklappen.
+\end{itemize}

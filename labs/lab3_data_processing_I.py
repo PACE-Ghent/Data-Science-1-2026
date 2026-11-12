@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.2"
 app = marimo.App(width="medium")
 
 
@@ -113,15 +113,24 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
+    # The checks file lives in the checks/ folder one level up, as in the
+    # course folder. If it is missing there (e.g. when you downloaded
+    # only this notebook), it is downloaded into it once. In the browser
+    # (marimo.app) it is read straight from GitHub.
     _CHECKS_FILE = "lab3_checks.py"
+    _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
     if _sys.platform == "emscripten":
         from urllib.request import urlopen as _urlopen
 
-        _checks_source = _urlopen(
-            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
-        ).read().decode("utf-8")
+        _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
     else:
-        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        if not _checks_path.is_file():
+            _checks_path.parent.mkdir(exist_ok=True)
+            _urlretrieve(_CHECKS_URL, _checks_path)
+        _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
@@ -133,10 +142,11 @@ def _(mo):
     ## Where does the data come from?
 
     When you run this notebook locally, it reads the CSV files from the
-    `data/` folder next to this project. When you run it online
-    (marimo.app, molab or a WASM link) there is no local filesystem, so
-    the notebook automatically reads the same files from the course's
-    GitHub repository instead. `pandas.read_csv` accepts both local paths
+    `data/` folder one level up, as in the course folder. Files that are
+    missing there - for example when you downloaded only this notebook -
+    are downloaded into that folder the first time. Online (marimo.app, molab or a WASM link) there
+    is no local filesystem, so it reads the same files straight from the
+    course's GitHub repository. `pandas.read_csv` accepts both local paths
     and URLs, so nothing else in this notebook needs to change.
     """)
     return
@@ -146,12 +156,23 @@ def _(mo):
 def _(mo):
     import sys
 
-    # In the browser (marimo.app / WASM) there is no local data/ folder,
-    # so read the CSV files straight from GitHub instead.
+    # The CSV files live in the data/ folder one level up, as in the
+    # course folder. Files that are missing there (e.g. when you
+    # downloaded only this notebook) are downloaded into it once.
+    # In the browser (marimo.app) they are read straight from GitHub.
+    _DATA_URL = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+    _DATA_FILES = ["athletes.csv", "tests.csv", "hr_session.csv"]
     if sys.platform == "emscripten":
-        DATA_DIR = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
+        DATA_DIR = _DATA_URL
     else:
-        DATA_DIR = str(mo.notebook_dir() / ".." / "data")
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _data_dir = (mo.notebook_dir() / ".." / "data").resolve()
+        _data_dir.mkdir(exist_ok=True)
+        for _name in _DATA_FILES:
+            if not (_data_dir / _name).exists():
+                _urlretrieve(f"{_DATA_URL}/{_name}", _data_dir / _name)
+        DATA_DIR = str(_data_dir)
     return (DATA_DIR,)
 
 
@@ -195,7 +216,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Loading and exploring a dataset (13:20-14:00)
+    ## 2. Loading and exploring a dataset
 
     The core loading function is `pd.read_csv`. Once loaded, a handful
     of methods give you a fast first impression of any dataset:
@@ -271,7 +292,7 @@ def _(mo):
 def _(DATA_DIR, pd):
     # TODO: read data/tests.csv into `tests_raw` and store its shape
     tests_raw = pd.read_csv(f"{DATA_DIR}/tests.csv")
-    tests_raw_shape = ...
+    tests_raw_shape = tests_raw.shape
     return tests_raw, tests_raw_shape
 
 
@@ -284,7 +305,7 @@ def _(checks, tests_raw, tests_raw_shape):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Selecting and filtering (14:00-14:50)
+    ## 3. Selecting and filtering
 
     A few core tools:
 
@@ -367,9 +388,15 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(athletes_raw, younger_than_16):
     # TODO: select rows where position == "Forward" AND younger_than_16 is True
-    forwards_u16_raw = ...
+    print(athletes_raw["position"].unique())
+
+    athletes_forwards = athletes_raw["position"] == "Forward"
+
+    younger_than_16_and_forward = younger_than_16 & athletes_forwards
+
+    forwards_u16_raw = athletes_raw.loc[younger_than_16_and_forward]
     return (forwards_u16_raw,)
 
 
@@ -411,7 +438,7 @@ def _(checks, suspicious_30m_raw, tests_raw):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. New columns (15:05-15:50)
+    ## 4. New columns
 
     Adding a column is just an assignment: `df["new_col"] = ...`. A few
     examples we'll need for this club:
@@ -547,7 +574,7 @@ def _(REFERENCE_DATE, athletes_with_age, checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Cleaning (15:50-17:00)
+    ## 5. Cleaning
 
     Time to fix everything the previous sections uncovered. A quick
     overview of missing values first:
@@ -845,7 +872,7 @@ def _(fix_sprint_units, tests_raw):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Challenge (17:00-17:30) - fastest 5 per position
+    ## 6. Challenge - fastest 5 per position
 
     The coach wants a cleaned overview: **the 5 fastest athletes per
     position**, based on their best (lowest) 30 m sprint time across all
@@ -891,6 +918,11 @@ def _(athletes_clean, checks, fastest_per_position, tests_clean):
 def _(mo):
     mo.md("""
     ## Exit ticket
+
+    This one is for yourself: what you type stays in your own notebook and
+    is not sent to anyone. Write it down anyway - putting it into words
+    helps - and bring the points that are still unclear to the next
+    session, where we start with them.
     """)
     return
 

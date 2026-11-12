@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.2"
 app = marimo.App(width="medium")
 
 
@@ -57,7 +57,9 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(demo_slider, mo):
-    mo.md(f"{demo_slider.value} squared is **{demo_slider.value ** 2}**.")
+    mo.md(f"""
+    {demo_slider.value} squared is **{demo_slider.value ** 2}**.
+    """)
     return
 
 
@@ -89,15 +91,24 @@ def _(mo):
 
     # The answer checks live in a separate file (checks/ in the course
     # repository), so that this notebook does not give the answers away.
+    # The checks file lives in the checks/ folder one level up, as in the
+    # course folder. If it is missing there (e.g. when you downloaded
+    # only this notebook), it is downloaded into it once. In the browser
+    # (marimo.app) it is read straight from GitHub.
     _CHECKS_FILE = "lab1_checks.py"
+    _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
     if _sys.platform == "emscripten":
         from urllib.request import urlopen as _urlopen
 
-        _checks_source = _urlopen(
-            f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
-        ).read().decode("utf-8")
+        _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
     else:
-        _checks_source = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).read_text()
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        if not _checks_path.is_file():
+            _checks_path.parent.mkdir(exist_ok=True)
+            _urlretrieve(_CHECKS_URL, _checks_path)
+        _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
     return (checks,)
@@ -143,7 +154,7 @@ def _():
 
     print(name)
     print("Height:", height_cm, "cm")
-    return birth_year, height_cm, is_injured, name, sprint_30m_s, weight_kg
+    return birth_year, height_cm, is_injured, name, sprint_30m_s
 
 
 @app.cell(hide_code=True)
@@ -176,7 +187,13 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(checks, keeper_birth_year, keeper_height_cm, keeper_name, keeper_weight_kg):
+def _(
+    checks,
+    keeper_birth_year,
+    keeper_height_cm,
+    keeper_name,
+    keeper_weight_kg,
+):
     checks.keeper_profile(
         keeper_birth_year,
         keeper_height_cm,
@@ -486,7 +503,7 @@ def _(mo):
 
 
 @app.cell
-def _(keeper_height_cm, keeper_weight_kg):
+def _():
     # TODO: BMI = weight_kg / (height in metres) ** 2
     keeper_bmi = ...
     return (keeper_bmi,)
@@ -563,7 +580,7 @@ def _(mo):
 
 
 @app.cell
-def _(sprint_30m_s):
+def _():
     cmj_height_cm = 30.0
     # TODO: two comparisons, each giving True or False
     is_fast = ...
@@ -630,7 +647,7 @@ def _(mo):
 
 
 @app.cell
-def _(birth_year, is_injured):
+def _():
     # TODO: combine an age condition and an injury condition
     eligible_u16 = ...
     return (eligible_u16,)
@@ -722,7 +739,7 @@ def _(mo):
 
 
 @app.cell
-def _(cmj_slider):
+def _():
     # TODO: write an if / elif / else that sets jump_category
     # based on cmj_slider.value
     jump_category = ...
@@ -772,7 +789,7 @@ def _(mo):
 
 
 @app.cell
-def _(heart_rate_slider):
+def _():
     hr_max = 205
     # TODO: compute hr_percent, then set hr_zone with if / elif / else
     hr_percent = ...
@@ -827,7 +844,7 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(eror_name):
     error_name = "Emma Verhoeven"
     greeting = "Welcome, " + eror_name
     print(greeting)
@@ -1004,7 +1021,7 @@ def _(mo):
 
 
 @app.cell
-def _(math):
+def _():
     # TODO: radius, lap length and number of cones for lane 8
     lane_8_radius_m = ...
     lane_8_length_m = ...
@@ -1062,14 +1079,7 @@ def _():
 
 
 @app.cell
-def _(
-    candidate_birth_year,
-    candidate_has_exemption,
-    candidate_is_injured,
-    candidate_name,
-    candidate_sprint_30m_s,
-    candidate_yoyo_level,
-):
+def _():
     # TODO: combine the three rules into one boolean, then build the message
     selected = ...
     selection_message = ...
@@ -1106,6 +1116,11 @@ def _(
 def _(mo):
     mo.md("""
     ## Exit ticket
+
+    This one is for yourself: what you type stays in your own notebook and
+    is not sent to anyone. Write it down anyway - putting it into words
+    helps - and bring the points that are still unclear to the next
+    session, where we start with them.
     """)
     return
 

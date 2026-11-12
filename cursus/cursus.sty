@@ -2,7 +2,24 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{cursus}
 
-\RequirePackage[dutch]{babel}
+% Taal: \usepackage{cursus} voor Nederlands, \usepackage[english]{cursus} voor Engels.
+\newif\ifcursusenglish
+\DeclareOption{english}{\cursusenglishtrue}
+\DeclareOption{dutch}{\cursusenglishfalse}
+\ProcessOptions\relax
+\ifcursusenglish
+  \RequirePackage[english]{babel}
+  \newcommand{\lbloutput}{output}
+  \newcommand{\lblkeyidea}{Key idea}
+  \newcommand{\lblwatchout}{Watch out}
+  \newcommand{\lbltryit}{Try it yourself}
+\else
+  \RequirePackage[dutch]{babel}
+  \newcommand{\lbloutput}{uitvoer}
+  \newcommand{\lblkeyidea}{Kernidee}
+  \newcommand{\lblwatchout}{Opgelet}
+  \newcommand{\lbltryit}{Probeer zelf}
+\fi
 \RequirePackage{lmodern}
 \RequirePackage[T1]{fontenc}
 \RequirePackage[a4paper,margin=2.3cm,headheight=14pt]{geometry}
@@ -26,7 +43,7 @@
 \definecolor{goalkeeper}{HTML}{EDA100}
 
 \input{pygments.tex}
-\AtBeginDocument{\shorthandoff{"}}
+\ifcursusenglish\else\AtBeginDocument{\shorthandoff{"}}\fi
 
 \setlength{\parindent}{0pt}
 \setlength{\emergencystretch}{3em}
@@ -59,16 +76,16 @@
   left=2mm, right=2mm, top=1mm, bottom=1mm, before skip=0.6em, after skip=0.2em}
 \newtcolorbox{uitvoer}{enhanced, breakable, colback=white, colframe=muted!35, boxrule=0.4pt, arc=2mm,
   left=2mm, right=2mm, top=1mm, bottom=1mm, before skip=0.2em, after skip=0.7em,
-  overlay={\node[anchor=north east, font=\scriptsize\sffamily, text=muted, inner sep=1.5mm] at (frame.north east) {uitvoer};}}
+  overlay={\node[anchor=north east, font=\scriptsize\sffamily, text=muted, inner sep=1.5mm] at (frame.north east) {\lbloutput};}}
 
 % Kaders
-\newtcolorbox{kernidee}[1][Kernidee]{enhanced, breakable, colback=pitch!6, colframe=pitch, boxrule=0pt,
+\newtcolorbox{kernidee}[1][\lblkeyidea]{enhanced, breakable, colback=pitch!6, colframe=pitch, boxrule=0pt,
   leftrule=0pt, arc=2mm, fonttitle=\bfseries\sffamily, coltitle=white, colbacktitle=pitch, title=#1,
   before skip=0.8em, after skip=0.8em}
-\newtcolorbox{opgelet}[1][Opgelet]{enhanced, breakable, colback=accent!8, colframe=accent, boxrule=0pt,
+\newtcolorbox{opgelet}[1][\lblwatchout]{enhanced, breakable, colback=accent!8, colframe=accent, boxrule=0pt,
   arc=2mm, fonttitle=\bfseries\sffamily, coltitle=white, colbacktitle=accent, title=#1,
   before skip=0.8em, after skip=0.8em}
-\newtcolorbox{probeer}[1][Probeer zelf]{enhanced, breakable, colback=white, colframe=pitch!50, boxrule=0.6pt,
+\newtcolorbox{probeer}[1][\lbltryit]{enhanced, breakable, colback=white, colframe=pitch!50, boxrule=0.6pt,
   arc=2mm, fonttitle=\bfseries\sffamily, coltitle=pitch, colbacktitle=tint, title=#1,
   before skip=0.8em, after skip=0.8em}
 
@@ -85,3 +102,9 @@
     {\color{white}\large #3}\par\vspace{0.8em}
     {\color{lime}\sffamily \auteur}
   \end{tcolorbox}\vspace{-1em}}
+
+% Engelse namen voor de kaders, zodat de Engelse bronnen leesbaar blijven.
+\newenvironment{keyidea}[1][\lblkeyidea]{\begin{kernidee}[#1]}{\end{kernidee}}
+\newenvironment{watchout}[1][\lblwatchout]{\begin{opgelet}[#1]}{\end{opgelet}}
+\newenvironment{tryit}[1][\lbltryit]{\begin{probeer}[#1]}{\end{probeer}}
+\newcommand{\labtitle}{\labotitel}
