@@ -102,8 +102,8 @@ The lab and its solutions notebook share the same checks file.
 
 | File | Session | Covers |
 |---|---|---|
-| `lab1_introduction_python_I.py` | 1 - Introductie Python I | variables, data types, overwriting variables, arithmetic / relational / logical operators, `if`/`elif`/`else`, reading errors, built-in functions, `import math` |
-| `lab2_introduction_python_II.py` | 2 - Introductie Python II | writing functions, string methods, scope, collections (list/tuple/dict/set), `for`/`while` loops, reading `athletes.csv` with the `csv` module |
+| `lab1_introduction_python_I.py` | 1 - Introductie Python I | `print`/`input`, variables, string methods, `int`/`float` and arithmetic, overwriting variables, writing functions, scope, relational / logical operators, `if`/`elif`/`else`, `match` |
+| `lab2_introduction_python_II.py` | 2 - Introductie Python II | `while` loops, lists and `for` loops, dictionaries and sets, reading errors, `try`/`except`, input validation loops, modules (`math`, `random`, `statistics`), reading `athletes.csv` with the `csv` module |
 | `lab3_data_processing_I.py` | 3 - Dataverwerking I | load, explore, filter, new columns, cleaning |
 | `lab4_data_processing_II.py` | 4 - Dataverwerking II | groupby/agg, merge, melt/pivot, time series (zones, rolling, resample) |
 | `lab5_data_visualization_I.py` | 5 - Datavisualisatie I | chart selection, plotly express, color/facet/size, HR zone bands, marimo interactivity, mini-dashboard |
@@ -111,8 +111,17 @@ The lab and its solutions notebook share the same checks file.
 Two things are intentionally unusual and worth knowing before teaching from
 these:
 
-- **Lab 1's "reading errors" section has four broken cells on purpose**
-  (a `NameError`, `TypeError`, `ValueError` and `ZeroDivisionError`) that
+- **Labs 1 and 2 follow the topic order of Harvard's CS50P** (*CS50's
+  Introduction to Programming with Python*, weeks 0-4: functions and
+  variables, conditionals, loops, exceptions, libraries), with original,
+  club-themed exercises. Programs ask for input with plain `input()`,
+  which marimo shows as an input box under the cell. Exercises that
+  define a function are checked with fixed test cases; the "probeer je
+  functie uit" cell below is where students call it with `input()`
+  (not checked). Opening a solutions notebook asks for every `input()`
+  in turn, from top to bottom.
+- **Lab 2's "errors" section has four broken cells on purpose**
+  (a `NameError`, `TypeError`, `KeyError` and `IndexError`) that
   students fix after learning to read a traceback. Running the lab
   end-to-end as shipped stops at the first of these - that's expected.
 - **Lab 4 opens with a broken cell on purpose** (`## 1. Recap`): a tiny
@@ -127,7 +136,7 @@ these:
 ## `solutions/` — instructor answer keys
 
 Identical notebooks, with every `...` replaced by a correct, verified
-solution (and the deliberately broken cells in Labs 1 and 4 already fixed). Use these to:
+solution (and the deliberately broken cells in Labs 2 and 4 already fixed). Use these to:
 
 - teach from directly, or project during class
 - check a student's approach against a reference implementation
