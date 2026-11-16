@@ -11,10 +11,10 @@ def _():
     return (mo,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Introductie Python I - Functies, variabelen en beslissingen
+    # Introductie Python I - Functies, variabelen en Conditionals
 
     Welkom! In deze cursus ben je de nieuwe data-analist van een
     (fictieve) jeugdclub voor voetbal en atletiek. Later krijg je de
@@ -37,7 +37,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## Een paar dingen over marimo voor we beginnen
@@ -50,14 +50,14 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     demo_slider = mo.ui.slider(1, 10, value=5, label="Verschuif mij")
     demo_slider
     return (demo_slider,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(demo_slider, mo):
     mo.md(f"""
     {demo_slider.value} in het kwadraat is **{demo_slider.value ** 2}**.
@@ -65,7 +65,46 @@ def _(demo_slider, mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Code blocks
+    """)
+    return
+
+
 @app.cell
+def _():
+    print("Hello world")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ### Comments in python and marimo
+
+    je kan in de code commentaar zetten met een `#` voor de regel. Alles na de `#` wordt genegeerd door Python.
+    bijvoorbeeld:
+
+    ```python
+    # dit is een commentaar
+    ```
+
+    Wil je een commentaar over meerdere regels, dan kan je een string tussen drie aanhalingstekens gebruiken. Python negeert die string als die niet aan een variabele wordt toegekend.
+    ```python
+    "\""
+    dit is een commentaar
+    over meerdere regels
+    "\""
+    ```
+
+    In marimo kan je markdown gebruiken om tekst te formatteren. Je kunt bijvoorbeeld een **kop** maken met `#`, een **lijst** met `-` of een **codeblok** met drie backticks ```.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Merk op dat je niets met de hand opnieuw moest uitvoeren - de
@@ -81,9 +120,6 @@ def _(mo):
       ingevuld hebt, wacht de rest van het notebook. Wil je iets anders
       proberen? Voer de cel opnieuw uit met het ▶-knopje (of
       Ctrl/Cmd + Enter).
-    - **Twee cellen kunnen niet dezelfde variabelenaam definiëren.** Krijg
-      je een fout die zegt dat een variabele "is defined by another
-      cell", kies dan een andere, meer beschrijvende naam.
     - Oefencellen bevatten een `...` als plaatshouder of een `# TODO`-
       commentaar. Vervang die door je eigen code. De cel er net onder
       controleert je antwoord automatisch en kleurt groen als het juist is.
@@ -91,32 +127,43 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
-    def check_exercise(check_fn, success_message):
-        """Voer `check_fn` uit; toon een groen kader bij succes, anders een uitleg."""
-        try:
-            check_fn()
-        except AssertionError as e:
-            message = str(e) or "Het resultaat is nog niet juist."
-            return mo.callout(mo.md(f"**Nog niet juist.** {message}"), kind="warn")
-        except Exception as e:
-            return mo.callout(
-                mo.md(f"**Fout bij het controleren van je antwoord:** {type(e).__name__}: {e}"),
-                kind="danger",
-            )
-        return mo.callout(mo.md(f"**Juist!** {success_message}"), kind="success")
+    import sys as _sys
+    import types as _types
 
-    return (check_exercise,)
+    # De antwoordcontroles staan in een apart bestand (checks/ in de
+    # cursusrepository), zodat dit notebook de antwoorden niet verklapt.
+    # Het controlebestand staat in de map checks/ één niveau hoger, zoals
+    # in de cursusmap. Ontbreekt het daar (bv. omdat je enkel dit notebook
+    # gedownload hebt), dan wordt het er één keer naartoe gedownload. In de
+    # browser (marimo.app) wordt het rechtstreeks van GitHub gelezen.
+    _CHECKS_FILE = "lab1_checks.py"
+    _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
+    if _sys.platform == "emscripten":
+        from urllib.request import urlopen as _urlopen
+
+        _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
+    else:
+        from urllib.request import urlretrieve as _urlretrieve
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        if not _checks_path.is_file():
+            _checks_path.parent.mkdir(exist_ok=True)
+            _urlretrieve(_CHECKS_URL, _checks_path)
+        _checks_source = _checks_path.read_text()
+    checks = _types.ModuleType("checks")
+    exec(_checks_source, checks.__dict__)
+    return (checks,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1. Je eerste programma: `print` en `input` (13:15-13:35)
+    ## 1. Je eerste programma: `print` en `input`
 
     Een programma doet bijna altijd drie dingen: het krijgt **invoer**,
-    het **verwerkt** die, en het toont **uitvoer**. Voor invoer en uitvoer
+    het **verwerkt** die, en het toont **uitvoer** denk aan de toverhoed van de eerste les. Voor invoer en uitvoer
     heeft Python twee ingebouwde **functies**:
 
     - `print(...)` toont iets. Geef je meerdere waarden mee, gescheiden
@@ -126,6 +173,8 @@ def _(mo):
     - `input(vraag)` toont de vraag, wacht tot de gebruiker iets typt en
       op Enter drukt, en **geeft terug** wat er getypt werd - altijd als
       **tekst**.
+
+    Een **functie** kan je vergelijken met een wiskundige functie: je geeft er een of meerdere **argumenten** aan mee, en ze geeft een **resultaat** terug.
 
     Tekst heet in Python een **string** en zet je tussen aanhalingstekens:
     `"Yana"` of `'Yana'`. Zonder aanhalingstekens denkt Python dat `Yana`
@@ -144,15 +193,16 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     De cel hieronder gebruikt `input()`. Typ je naam in het vak dat onder
     de cel verschijnt en druk op Enter.
 
     Het antwoord van `input()` bewaren we in een **variabele**
-    (`athlete_name`), zodat we het daarna kunnen gebruiken. De laatste
-    regel is een **f-string**: zet een `f` voor het openingsaanhalingsteken,
+    (`athlete_name`), zodat we het daarna kunnen gebruiken.
+
+    De laatste regel noemen we een **f-string**: zet een `f` voor het openingsaanhalingsteken,
     en je kunt variabelen tussen accolades `{...}` in de tekst zetten.
     """)
     return
@@ -166,7 +216,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Variabelen
@@ -214,7 +264,7 @@ def _():
     return birth_year, height_cm, is_injured, name, sprint_30m_s
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 1 - welkom in de club
@@ -222,7 +272,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     De club wil elk nieuw lid persoonlijk welkom heten. Vraag met
@@ -246,24 +296,16 @@ def _():
     return new_member, welcome_message
 
 
-@app.cell
-def _(check_exercise, new_member, welcome_message):
-    def _check():
-        assert new_member is not ... and welcome_message is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(new_member, str), "`new_member` moet de tekst bevatten die `input()` teruggeeft."
-        assert welcome_message == f"Welkom bij de club, {new_member}!", (
-            f"De boodschap {welcome_message!r} heeft niet precies de gevraagde vorm. "
-            "Let op de komma, de spaties en het uitroepteken."
-        )
-
-    check_exercise(_check, "Je eerste programma vraagt iets en antwoordt.")
+@app.cell(hide_code=True)
+def _(checks, new_member, welcome_message):
+    checks.welcome(new_member, welcome_message)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Werken met tekst: stringmethodes (13:35-14:05)
+    ## 2. Werken met tekst: stringmethodes
 
     Wat mensen intypen, is zelden netjes: spaties te veel, alles in
     hoofdletters, een komma in plaats van een punt. Gelukkig hebben
@@ -307,7 +349,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Opknippen en uitpakken
@@ -338,7 +380,79 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Een string kan ook **escape-tekens** bevatten, zoals `\n` voor een nieuwe regel of `\t` voor een tab. In een f-string kun je deze ook gebruiken. Wil je deze letterlijk tonen, gebruik dan een raw-string met een `r` ervoor, zoals `r"Dit is een raw-string\n"`.
+    """)
+    return
+
+
 @app.cell
+def _():
+    print("Welkom bij de club! \n Welke ploeg traint er nu?")
+    print(r"Welkom bij de club! \n Welke ploeg traint er nu?")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## presentation types
+
+    presentation types zijn types die je kan gebruiken om je output er mooier te laten uitzien.
+
+    `round(waarde, cijfers)` rondt een getal af. Wil je enkel bij het
+    *tonen* afronden, dan kan dat in een f-string met een opmaakcode na
+    een dubbelpunt: `f"{speed:.1f}"` toont 1 cijfer na de komma.
+
+    enkele andere **presentation types** are:
+
+    | Type | Naam                  | Voor        | Voorbeeld              | Resultaat       |
+    |------|-----------------------|-------------|------------------------|-----------------|
+    | `d`  | decimal integer       | int         | `f"{42:d}"`            | `42`            |
+    | `0N` | zero padding          | int/float   | `f"{7:03d}"`           | `007`           |
+    | `f`  | fixed-point           | float/int   | `f"{3.14159:.2f}"`     | `3.14`          |
+    | `e`  | scientific (exponent) | float/int   | `f"{1234.5:.2e}"`      | `1.23e+03`      |
+    | `g`  | general (f of e)      | float/int   | `f"{0.00001234:g}"`    | `1.234e-05`     |
+    | `%`  | percentage (×100)     | float/int   | `f"{0.256:.1%}"`       | `25.6%`         |
+    | `,`  | thousands separator   | int/float   | `f"{1234567:,d}"`      | `1,234,567`     |
+    | `+`  | always show sign      | int/float   | `f"{5:+d}"`            | `+5`            |
+    """)
+    return
+
+
+@app.cell
+def _(sprint_30m_s):
+    speed_ms = 30 / sprint_30m_s
+    print("Gemiddelde snelheid:", round(speed_ms, 2), "m/s")
+    print(f"Gemiddelde snelheid: {speed_ms * 3.6:.1f} km/u")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## escape sequences
+
+    Een escape sequence is een combinatie van tekens in een string die staat voor één ander teken, meestal een teken dat je niet rechtstreeks kunt typen of dat anders een speciale betekenis zou hebben.
+
+    | Escape       | Naam                    | Voorbeeld                   | Resultaat                 |
+    |--------------|-------------------------|-----------------------------|---------------------------|
+    | `\n`         | newline                 | `print("a\nb")`             | `a` en `b` op 2 regels    |
+    | `\t`         | tab                     | `print("a\tb")`             | `a       b`               |
+    | `\\`         | backslash               | `print("C:\\Users")`        | `C:\Users`                |
+    | `\'`         | single quote            | `print('it\'s')`            | `it's`                    |
+    | `\"`         | double quote            | `print("zei \"hoi\"\")`      | `zei "hoi"`               |
+
+    **raw Strings** schakelen escape sequences uit wat handig is voor bijvoorbeeld een pad in windows
+
+    `print(r"C:\Users\Yana\Documents")` geeft `C:\Users\Yana\Documents` weer, zonder dat de `\U` als escape sequence wordt geïnterpreteerd.)
+    """)
+    return
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 2 - een rommelig inschrijvingsformulier
@@ -346,7 +460,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Op het online inschrijvingsformulier typen ouders de naam van hun kind
@@ -368,24 +482,13 @@ def _():
     return clean_name, raw_name
 
 
-@app.cell
-def _(check_exercise, clean_name, raw_name):
-    def _check():
-        assert raw_name is not ... and clean_name is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(raw_name, str), "`raw_name` moet de tekst bevatten die `input()` teruggeeft."
-        assert clean_name == raw_name.strip().title(), (
-            f"{clean_name!r} is nog niet helemaal opgekuist. "
-            "Denk aan de spaties aan de uiteinden en aan de hoofdletters."
-        )
-
-    check_exercise(
-        _check,
-        f"{raw_name!r} werd {clean_name!r}. Probeer ook een naam met extra spaties en rare hoofdletters.",
-    )
+@app.cell(hide_code=True)
+def _(checks, clean_name, raw_name):
+    checks.clean_name(raw_name, clean_name)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 3 - een naam voor op het shirt
@@ -393,7 +496,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Op de wedstrijdshirts van de club staat de **familienaam in
@@ -417,30 +520,16 @@ def _():
     return first_name, full_name, last_name, shirt_name
 
 
-@app.cell
-def _(check_exercise, first_name, full_name, last_name, shirt_name):
-    def _check():
-        values = [full_name, first_name, last_name, shirt_name]
-        assert all(value is not ... for value in values), 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(full_name, str) and " " in full_name, (
-            "Typ bij `input()` een naam met minstens één spatie, zoals `Yana De Backer`."
-        )
-        expected_first, expected_last = full_name.split(" ", 1)
-        assert first_name == expected_first, '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="first_name", value=first_name)
-        assert last_name == expected_last, (
-            '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="last_name", value=last_name)
-            + " Knip je enkel bij de eerste spatie?"
-        )
-        assert shirt_name == expected_last.upper(), '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="shirt_name", value=shirt_name)
-
-    check_exercise(_check, f"Op het shirt komt {shirt_name!r}.")
+@app.cell(hide_code=True)
+def _(checks, first_name, full_name, last_name, shirt_name):
+    checks.shirt_name(first_name, full_name, last_name, shirt_name)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Getallen: `int`, `float` en rekenen (14:05-15:00)
+    ## 3. Getallen: `int`, `float` en rekenen
 
     Elke waarde in Python heeft een **type**. De vier die je voortdurend
     zult gebruiken:
@@ -451,15 +540,15 @@ def _(mo):
     | `float` (kommagetal) | `5.34` | sprinttijd, lengte, gewicht |
     | `str` (string = tekst) | `"Yana De Backer"` | naam, positie |
     | `bool` (booleaanse waarde) | `True` / `False` | is de atleet geblesseerd? |
-
-    Daarnaast is er `None`, de manier waarop Python "*geen waarde*" zegt -
-    bijvoorbeeld voor een test die nooit afgelegd werd.
+    | `none` (geen waarde) | `None` | Een lege test |
 
     Je hoeft een type nooit te *declareren*: Python **kent het type
-    automatisch toe** op basis van de waarde. `2010` wordt een `int`,
-    `2010.0` een `float` en `"2010"` een `str`. De ingebouwde functie
-    `type()` vertelt je welk type een waarde heeft. Let op: Python
-    gebruikt een **punt** als decimaalteken, dus `176.3` en niet `176,3`.
+    automatisch toe** op basis van de waarde.
+    `2010` wordt een `int`, `2010.0` een `float` en `"2010"` een `str`.
+
+    De ingebouwde functie `type()` vertelt je welk type een waarde heeft.
+
+    Let op: Python gebruikt een **punt** als decimaalteken, dus `176.3` en niet `176,3`.
     """)
     return
 
@@ -474,25 +563,29 @@ def _(birth_year, height_cm, is_injured, name):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### `input()` geeft altijd tekst
+    ## Types hints
 
-    Het type bepaalt wat je met een waarde kunt doen. `2010 + 1` is
-    `2011`, maar `"2010" + "1"` plakt de twee teksten aan elkaar tot
-    `"20101"`. En omdat `input()` **altijd een string** teruggeeft - ook als
-    de gebruiker een getal typt - moet je die tekst eerst **omzetten**
-    voor je ermee kunt rekenen:
+    Type hints zijn annotaties in je code die aangeven welk type een variabele, parameter of returnwaarde hoort te hebben.
+
+    Een type hint wordt geschreven als `variabele: type` of `def functie(param: type) -> type:`. Ze zijn optioneel en hebben geen invloed op de uitvoering van het programma, maar kunnen helpen bij het begrijpen van de code en bij het gebruik van tools die type-informatie gebruiken.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Type conversions
+
 
     | Functie | Zet om naar | Voorbeeld |
     |---|---|---|
     | `int(...)` | geheel getal | `int("16")` -> `16`, `int(5.9)` -> `5` (kapt af, rondt niet af!) |
     | `float(...)` | kommagetal | `float("63.9")` -> `63.9` |
     | `str(...)` | tekst | `str(2010)` -> `"2010"` |
-
-    Vaak doe je het vragen en omzetten in één regel:
-    `age = int(input("Leeftijd? "))`.
     """)
     return
 
@@ -505,10 +598,12 @@ def _(birth_year, name):
     print(int(5.9))
     print(float("63.9") * 2)
     print(f"{name} is geboren in {birth_year}.")
+
+    variable_met_type_hint: int = 42
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Rekenen
@@ -523,23 +618,21 @@ def _(mo):
     | `%` | modulo (rest) | `135 % 60` | `15` |
     | `**` | macht | `1.67 ** 2` | `2.7889` |
 
+    Het type bepaalt wat je met een waarde kunt doen. `2010 + 1` is
+    `2011`, maar `"2010" + "1"` plakt de twee teksten aan elkaar tot
+    `"20101"`. En omdat `input()` **altijd een string** teruggeeft - ook als
+    de gebruiker een getal typt - moet je die tekst eerst **omzetten**
+    voor je ermee kunt rekenen:
+
     De gewone volgorde van bewerkingen geldt: eerst `**`, dan `*` `/` `//`
     `%`, dan `+` `-`. Gebruik **haakjes** zodra je twijfelt - ze kosten
     niets en maken duidelijk wat je bedoelt.
-
-    `round(waarde, cijfers)` rondt een getal af. Wil je enkel bij het
-    *tonen* afronden, dan kan dat in een f-string met een opmaakcode na
-    een dubbelpunt: `f"{speed:.1f}"` toont 1 cijfer na de komma.
     """)
     return
 
 
 @app.cell
-def _(sprint_30m_s):
-    speed_ms = 30 / sprint_30m_s
-    print("Gemiddelde snelheid:", round(speed_ms, 2), "m/s")
-    print(f"Gemiddelde snelheid: {speed_ms * 3.6:.1f} km/u")
-
+def _():
     session_duration_s = 135
     print(session_duration_s // 60, "min", session_duration_s % 60, "s")
 
@@ -548,7 +641,7 @@ def _(sprint_30m_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Variabelen overschrijven
@@ -591,7 +684,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 4 - hoe snel was die sprint?
@@ -599,7 +692,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Vraag met `input()` de tijd op de 30 m-sprint in seconden (bv.
@@ -621,25 +714,13 @@ def _():
     return speed_kmh, sprint_time_s
 
 
-@app.cell
-def _(check_exercise, speed_kmh, sprint_time_s):
-    def _check():
-        assert sprint_time_s is not ... and speed_kmh is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(sprint_time_s, float), (
-            f"`sprint_time_s` is een {type(sprint_time_s).__name__}. "
-            "`input()` geeft altijd tekst terug - zet die om naar het juiste getaltype."
-        )
-        exact = 30 / sprint_time_s * 3.6
-        assert abs(speed_kmh - exact) <= 0.05 + 1e-9, (
-            '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="speed_kmh", value=speed_kmh) + " Controleer de formule en de eenheden."
-        )
-        assert speed_kmh == round(speed_kmh, 1), "Rond `speed_kmh` af op 1 decimaal."
-
-    check_exercise(_check, f"{sprint_time_s} s op de 30 m is {speed_kmh} km/u.")
+@app.cell(hide_code=True)
+def _(checks, speed_kmh, sprint_time_s):
+    checks.sprint_speed(speed_kmh, sprint_time_s)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 5 - werk de trainingsteller bij
@@ -647,7 +728,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Stan heeft dit seizoen al 12 trainingen gevolgd. Vraag met `input()`
@@ -667,22 +748,13 @@ def _():
     return season_sessions, sessions_this_week
 
 
-@app.cell
-def _(check_exercise, season_sessions, sessions_this_week):
-    def _check():
-        assert sessions_this_week is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(sessions_this_week, int), (
-            f"`sessions_this_week` is een {type(sessions_this_week).__name__}, geen geheel getal."
-        )
-        assert season_sessions == 12 + sessions_this_week, (
-            '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="season_sessions", value=season_sessions)
-        )
-
-    check_exercise(_check, f"De teller staat nu op {season_sessions} trainingen.")
+@app.cell(hide_code=True)
+def _(checks, season_sessions, sessions_this_week):
+    checks.season_sessions(season_sessions, sessions_this_week)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 6 - duur van de Yo-Yo-test
@@ -690,7 +762,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     De software van de Yo-Yo intermittent recovery test geeft de duur
@@ -711,33 +783,16 @@ def _():
     return yoyo_duration_s, yoyo_minutes, yoyo_seconds
 
 
-@app.cell
-def _(check_exercise, yoyo_duration_s, yoyo_minutes, yoyo_seconds):
-    def _check():
-        values = [yoyo_duration_s, yoyo_minutes, yoyo_seconds]
-        assert all(value is not ... for value in values), 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(yoyo_duration_s, int), (
-            f"`yoyo_duration_s` is een {type(yoyo_duration_s).__name__}, geen geheel getal."
-        )
-        assert yoyo_minutes == yoyo_duration_s // 60, '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="yoyo_minutes", value=yoyo_minutes)
-        assert yoyo_seconds == yoyo_duration_s % 60, '`{name}` heeft nog niet de verwachte waarde (je kreeg {value!r}). Lees de opgave opnieuw.'.format(name="yoyo_seconds", value=yoyo_seconds)
-
-    check_exercise(_check, f"{yoyo_duration_s} s is {yoyo_minutes} min {yoyo_seconds} s.")
+@app.cell(hide_code=True)
+def _(checks, yoyo_duration_s, yoyo_minutes, yoyo_seconds):
+    checks.yoyo_time(yoyo_duration_s, yoyo_minutes, yoyo_seconds)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## ☕ Pauze (15:00-15:10)
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ## 4. Eigen functies schrijven (15:10-15:55)
+    ## 4. Eigen functies schrijven
 
     Je hebt al heel wat functies **opgeroepen**: `print()`, `input()`,
     `int()`, `round()`, `len()`. Nu ga je er zelf **definiëren** - je eigen
@@ -780,12 +835,12 @@ def _():
     return (average_speed_kmh,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### `return` is niet hetzelfde als `print`
 
-    Een functie die enkel **afdrukt**, toont iets op het scherm, maar geeft
+    Een functie die enkel **print**, toont iets op het scherm, maar geeft
     niets terug: het resultaat van de oproep is `None`. Daar kun je niet
     verder mee rekenen.
     """)
@@ -802,14 +857,14 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Standaardwaarden
 
-    Een parameter kan een **standaardwaarde** hebben, die gebruikt wordt
+    Een parameter kan een **standaard waarde** hebben, die gebruikt wordt
     als wie de functie oproept dat argument niet meegeeft. Parameters met
-    een standaardwaarde komen **na** die zonder.
+    een standaardwaarde komen **na** die zonder. we noemen deze **keyword arguments**.
     """)
     return
 
@@ -825,7 +880,7 @@ def _(average_speed_kmh):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Rekenen en vragen gescheiden houden
@@ -847,7 +902,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 7 - een functie voor de BMI
@@ -855,7 +910,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     De Body Mass Index is het gewicht in kg gedeeld door het **kwadraat**
@@ -866,37 +921,27 @@ def _(mo):
     return
 
 
+@app.function
+def bmi(weight_kg, height_cm):
+    """Body Mass Index, afgerond op 1 decimaal."""
+    return round(weight_kg / (height_cm / 100) ** 2, 1)
+
+
+@app.cell(hide_code=True)
+def _(checks):
+    checks.bmi(bmi)
+    return
+
+
 @app.cell
 def _():
-    def bmi(weight_kg, height_cm):
-        """Body Mass Index, afgerond op 1 decimaal."""
-        return round(weight_kg / (height_cm / 100) ** 2, 1)
-
-    return (bmi,)
-
-
-@app.cell
-def _(bmi, check_exercise):
-    def _check():
-        result = bmi(66.2, 176.3)
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert result is not None, 'Je functie geeft None terug - gebruikte je `print` in plaats van `return`?'
-        for args, expected in [((66.2, 176.3), 21.3), ((65.5, 167.1), 23.5), ((80, 180), 24.7)]:
-            assert bmi(*args) == expected, (
-                '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=f"bmi{args}", value=bmi(*args)) + " Controleer de formule en de afronding."
-            )
-
-    check_exercise(_check, "Eén functie, herbruikbaar voor elke atleet van de club.")
+    _weight_kg = float(input("Gewicht (kg): "))
+    _height_cm = float(input("Lengte (cm): "))
+    print("BMI:", bmi(_weight_kg, _height_cm))
     return
 
 
-@app.cell
-def _(bmi):
-    print(bmi(float(input("Gewicht (kg): ")), float(input("Lengte (cm): "))))
-    return
-
-
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 8 - toon een tijd zoals een stopwatch
@@ -904,7 +949,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Een stopwatch toont 1385 seconden als `23:05`: minuten, een dubbelpunt,
@@ -917,32 +962,21 @@ def _(mo):
     return
 
 
-@app.cell
-def _():
-    def format_time(total_s):
-        """Toon een aantal seconden als 'm:ss', bv. 1385 -> '23:05'."""
-        minutes = total_s // 60
-        seconds = total_s % 60
-        return f"{minutes}:{seconds:02d}"
-
-    return (format_time,)
+@app.function
+def format_time(total_s):
+    """Toon een aantal seconden als 'm:ss', bv. 1385 -> '23:05'."""
+    minutes = total_s // 60
+    seconds = total_s % 60
+    return f"{minutes}:{seconds:02d}"
 
 
-@app.cell
-def _(check_exercise, format_time):
-    def _check():
-        result = format_time(1385)
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert result is not None, 'Je functie geeft None terug - gebruikte je `print` in plaats van `return`?'
-        for total_s, expected in [(1385, "23:05"), (65, "1:05"), (600, "10:00"), (59, "0:59"), (0, "0:00")]:
-            result = format_time(total_s)
-            assert result == expected, '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=f"format_time({total_s})", value=result)
-
-    check_exercise(_check, "Zo toont ook een stopwatch de tijd.")
+@app.cell(hide_code=True)
+def _(checks):
+    checks.format_time(format_time)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### Scope: waar is een variabele zichtbaar?
@@ -977,7 +1011,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Goede gewoonte: een functie krijgt alles wat ze nodig heeft via haar
@@ -993,7 +1027,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 9 - verwijder een verborgen globale variabele
@@ -1001,7 +1035,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     De functie `age_in_season` hieronder hangt af van de globale variabele
@@ -1015,34 +1049,24 @@ def _(mo):
 
 @app.cell
 def _():
+    SEASON_YEAR = 2026
+
     def age_in_season(birth_year, season_year=2026):
         return season_year - birth_year
 
     return (age_in_season,)
 
 
-@app.cell
-def _(age_in_season, check_exercise):
-    def _check():
-        assert age_in_season(2010) == 16, (
-            '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call="age_in_season(2010)", value=age_in_season(2010))
-        )
-        try:
-            age_2030 = age_in_season(2010, season_year=2030)
-        except TypeError:
-            raise AssertionError("`age_in_season` heeft nog geen parameter `season_year`.")
-        assert age_2030 == 20, (
-            '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call="age_in_season(2010, season_year=2030)", value=age_2030)
-        )
-
-    check_exercise(_check, "De functie hangt niet langer af van een verborgen globale variabele.")
+@app.cell(hide_code=True)
+def _(age_in_season, checks):
+    checks.age_in_season(age_in_season)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Vergelijken en combineren (15:55-16:20)
+    ## 5. Vergelijken en combineren
 
     Vergelijkingsoperatoren vergelijken twee waarden en geven altijd een
     `bool` (`True` of `False`):
@@ -1074,6 +1098,7 @@ def _(mo):
     | `a and b` | zowel `a` als `b` `True` zijn |
     | `a or b` | minstens één van beide `True` is |
     | `not a` | `a` `False` is |
+    | `a is b` | `a` en `b` naar **hetzelfde object** verwijzen (zelfde `id()`) naar hetzelfde element in memory |
 
     Python laat ook **geketende vergelijkingen** toe, die lezen zoals in
     de wiskunde: `140 <= heart_rate <= 160` betekent "*hartslag tussen 140
@@ -1085,12 +1110,27 @@ def _(mo):
 
 
 @app.cell
-def _(height_cm, is_injured, sprint_30m_s):
+def _():
+    a = 5 < 2
+    b = 3 > 1
+
+    print(a or b)
+    print(b and a)
+    print(b and not a)
+    return
+
+
+@app.cell
+def _(sprint_30m_s):
     print(sprint_30m_s < 5.5)
     print("Forward" == "forward ")
     print("Forward".lower() == "forward ".strip().lower())
     print(0.1 + 0.2 == 0.3, 0.1 + 0.2)
+    return
 
+
+@app.cell
+def _(height_cm, is_injured, sprint_30m_s):
     heart_rate = 152
     print(sprint_30m_s < 5.5 and height_cm > 160)
     print(sprint_30m_s < 5.0 or height_cm > 160)
@@ -1099,7 +1139,7 @@ def _(height_cm, is_injured, sprint_30m_s):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 10 - mag deze atleet bij de U16 spelen?
@@ -1107,7 +1147,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Een atleet mag in de U16-competitie spelen als die in het seizoensjaar
@@ -1122,46 +1162,29 @@ def _(mo):
     return
 
 
+@app.function
+def is_eligible_u16(birth_year, is_injured, season_year=2026):
+    """True als de atleet in season_year bij de U16 mag spelen."""
+    return season_year - birth_year < 16 and not is_injured
+
+
+@app.cell(hide_code=True)
+def _(checks):
+    checks.is_eligible_u16(is_eligible_u16)
+    return
+
+
 @app.cell
 def _():
-    def is_eligible_u16(birth_year, is_injured, season_year=2026):
-        """True als de atleet in season_year bij de U16 mag spelen."""
-        return season_year - birth_year < 16 and not is_injured
-
-    return (is_eligible_u16,)
-
-
-@app.cell
-def _(check_exercise, is_eligible_u16):
-    def _check():
-        result = is_eligible_u16(2011, False)
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert isinstance(result, bool), f"Je functie moet True of False teruggeven, niet {result!r}."
-        cases = [
-            ((2011, False), True),
-            ((2010, False), False),
-            ((2011, True), False),
-            ((2012, False), True),
-            ((2012, False, 2028), False),
-        ]
-        for args, expected in cases:
-            call = f"is_eligible_u16({', '.join(repr(a) for a in args)})"
-            assert is_eligible_u16(*args) == expected, '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=call, value=is_eligible_u16(*args))
-
-    check_exercise(_check, "Leeftijd en blessure, gecombineerd met `and` en `not`.")
+    _birth_year = int(input("Geboortejaar: "))
+    print("Mag bij de U16:", is_eligible_u16(_birth_year, False))
     return
 
 
-@app.cell
-def _(is_eligible_u16):
-    print(is_eligible_u16(int(input("Geboortejaar: ")), False))
-    return
-
-
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Beslissingen: `if`, `elif`, `else` en `match` (16:20-17:10)
+    ## 6. Beslissingen: `if`, `elif`, `else` en `match`
 
     Met voorwaarden kan je code **beslissingen** nemen:
 
@@ -1203,7 +1226,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 11 - deel een sprong in
@@ -1211,7 +1234,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Schrijf `jump_category(cmj_cm)` die een countermovement jump (CMJ)
@@ -1224,47 +1247,30 @@ def _(mo):
     return
 
 
-@app.cell
-def _():
-    def jump_category(cmj_cm):
-        """Categorie van een CMJ-hoogte in cm."""
-        if cmj_cm < 25:
-            return "onder gemiddeld"
-        elif cmj_cm < 32:
-            return "gemiddeld"
-        else:
-            return "boven gemiddeld"
-
-    return (jump_category,)
+@app.function
+def jump_category(cmj_cm):
+    """Categorie van een CMJ-hoogte in cm."""
+    if cmj_cm < 25:
+        return "onder gemiddeld"
+    elif cmj_cm < 32:
+        return "gemiddeld"
+    else:
+        return "boven gemiddeld"
 
 
-@app.cell
-def _(check_exercise, jump_category):
-    def _check():
-        result = jump_category(28)
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert result is not None, 'Je functie geeft None terug - gebruikte je `print` in plaats van `return`?'
-        cases = [
-            (20, "onder gemiddeld"), (24.9, "onder gemiddeld"), (25, "gemiddeld"),
-            (31.9, "gemiddeld"), (32, "boven gemiddeld"), (40, "boven gemiddeld"),
-        ]
-        for jump, expected in cases:
-            result = jump_category(jump)
-            assert result == expected, (
-                '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=f"jump_category({jump})", value=result) + " Controleer je grenzen."
-            )
-
-    check_exercise(_check, "Elke tak van je `if` / `elif` / `else` doet wat hij moet doen.")
+@app.cell(hide_code=True)
+def _(checks):
+    checks.jump_category(jump_category)
     return
 
 
 @app.cell
-def _(jump_category):
+def _():
     print(jump_category(float(input("CMJ-hoogte (cm): "))))
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 12 - hartslagzones
@@ -1272,7 +1278,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     Een veelgebruikte manier om de intensiteit van een training uit te
@@ -1291,51 +1297,35 @@ def _(mo):
     return
 
 
-@app.cell
-def _():
-    def hr_zone(heart_rate, hr_max=205):
-        """Hartslagzone (1-5) op basis van het percentage van hr_max."""
-        percent = heart_rate / hr_max * 100
-        if percent < 60:
-            return 1
-        elif percent < 70:
-            return 2
-        elif percent < 80:
-            return 3
-        elif percent < 90:
-            return 4
-        else:
-            return 5
-
-    return (hr_zone,)
+@app.function
+def hr_zone(heart_rate, hr_max=205):
+    """Hartslagzone (1-5) op basis van het percentage van hr_max."""
+    percent = heart_rate / hr_max * 100
+    if percent < 60:
+        return 1
+    elif percent < 70:
+        return 2
+    elif percent < 80:
+        return 3
+    elif percent < 90:
+        return 4
+    else:
+        return 5
 
 
-@app.cell
-def _(check_exercise, hr_zone):
-    def _check():
-        result = hr_zone(150)
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert result is not None, 'Je functie geeft None terug - gebruikte je `print` in plaats van `return`?'
-        cases = [
-            ((100,), 1), ((130,), 2), ((150,), 3), ((165,), 4), ((190,), 5),
-            ((119, 200), 1), ((120, 200), 2), ((140, 200), 3),
-            ((160, 200), 4), ((179, 200), 4), ((180, 200), 5),
-        ]
-        for args, expected in cases:
-            call = f"hr_zone({', '.join(str(a) for a in args)})"
-            assert hr_zone(*args) == expected, '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=call, value=hr_zone(*args))
-
-    check_exercise(_check, "Je functie kan met elke zone om, en de standaardwaarde van `hr_max` werkt.")
+@app.cell(hide_code=True)
+def _(checks):
+    checks.hr_zone(hr_zone)
     return
 
 
 @app.cell
-def _(hr_zone):
+def _():
     print("Zone", hr_zone(int(input("Hartslag (bpm): "))))
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ### `match`: één waarde, veel mogelijke gevallen
@@ -1380,7 +1370,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md("""
     ### Oefening 13 - in welke linie speel je?
@@ -1388,7 +1378,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     In de spelersdatabank staat de positie als afkorting, en niet altijd
@@ -1406,51 +1396,36 @@ def _(mo):
     return
 
 
-@app.cell
-def _():
-    def team_line(code):
-        """Linie (verdediging, middenveld, aanval) bij een positieafkorting."""
-        match code.strip().upper():
-            case "GK" | "DEF":
-                return "verdediging"
-            case "MID":
-                return "middenveld"
-            case "FWD":
-                return "aanval"
-            case _:
-                return "onbekend"
-
-    return (team_line,)
+@app.function
+def team_line(code):
+    """Linie (verdediging, middenveld, aanval) bij een positieafkorting."""
+    match code.strip().upper():
+        case "GK" | "DEF":
+            return "verdediging"
+        case "MID":
+            return "middenveld"
+        case "FWD":
+            return "aanval"
+        case _:
+            return "onbekend"
 
 
-@app.cell
-def _(check_exercise, team_line):
-    def _check():
-        result = team_line("GK")
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        assert result is not None, 'Je functie geeft None terug - gebruikte je `print` in plaats van `return`?'
-        cases = {
-            "GK": "verdediging", " def ": "verdediging", "mid": "middenveld",
-            "MID": "middenveld", "FWD": "aanval", "fwd ": "aanval", "coach": "onbekend",
-        }
-        for code, expected in cases.items():
-            result = team_line(code)
-            assert result == expected, '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=f"team_line({code!r})", value=result)
-
-    check_exercise(_check, "Eén `match`, vijf mogelijke uitkomsten.")
+@app.cell(hide_code=True)
+def _(checks):
+    checks.team_line(team_line)
     return
 
 
 @app.cell
-def _(team_line):
+def _():
     print(team_line(input("Positie (GK, DEF, MID, FWD): ")))
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 7. Uitdaging (17:10-17:30) - welke ploeg traint er nu?
+    ## 7. Uitdaging - welke ploeg traint er nu?
 
     Een ouder komt aan op de club en wil weten welke ploeg er op dat
     moment op het veld staat. Het trainingsschema:
@@ -1478,8 +1453,8 @@ def _(mo):
 def _():
     def to_hours(time_text):
         """Zet een tijd 'uu:mm' om naar uren als kommagetal, bv. '17:45' -> 17.75."""
-        hours, minutes = time_text.split(":")
-        return int(hours) + int(minutes) / 60
+        hours_text, minutes_text = time_text.split(":")
+        return int(hours_text) + int(minutes_text) / 60
 
     def training_group(time_text):
         """Ploeg die op het gegeven uur traint."""
@@ -1496,69 +1471,16 @@ def _():
     return to_hours, training_group
 
 
-@app.cell
-def _(check_exercise, to_hours, training_group):
-    def _check():
-        result = to_hours("17:45")
-        assert result is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        for text, expected in [("17:45", 17.75), ("9:30", 9.5), ("16:00", 16.0), ("20:15", 20.25)]:
-            result = to_hours(text)
-            assert result == expected, '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=f"to_hours({text!r})", value=result)
-        assert training_group("18:00") is not ..., 'Vervang eerst elke `...` door je eigen code.'
-        cases = {
-            "16:00": "U12", "17:29": "U12", "17:30": "U14", "18:59": "U14", "19:00": "U16",
-            "20:29": "U16", "20:30": "geen training", "15:59": "geen training", "8:00": "geen training",
-        }
-        for text, expected in cases.items():
-            result = training_group(text)
-            assert result == expected, (
-                '`{call}` geeft niet het verwachte resultaat terug (je kreeg {value!r}).'.format(call=f"training_group({text!r})", value=result) + " Controleer je grenzen."
-            )
-
-    check_exercise(
-        _check,
-        "Tekst opknippen, omzetten naar getallen, een functie die een andere functie gebruikt, "
-        "en beslissingen - alles van vandaag in één programma.",
-    )
+@app.cell(hide_code=True)
+def _(checks, to_hours, training_group):
+    checks.training(to_hours, training_group)
     return
 
 
 @app.cell
 def _(training_group):
-    arrival_time = input("Hoe laat is het? (uu:mm) ")
-    print(f"Om {arrival_time}: {training_group(arrival_time)}")
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md("""
-    ## Exit ticket
-
-    Dit is voor jezelf: wat je hier typt, blijft in je eigen notebook en
-    wordt naar niemand verstuurd. Schrijf het toch op - iets onder woorden
-    brengen helpt - en neem de punten die nog niet duidelijk zijn mee naar
-    het volgende labo, waar we ermee beginnen.
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    exit_ticket = mo.ui.text_area(
-        label="Wat is vandaag goed doorgedrongen, en wat is nog niet duidelijk?",
-        rows=4,
-        full_width=True,
-    )
-    exit_ticket
-    return (exit_ticket,)
-
-
-@app.cell
-def _(exit_ticket, mo):
-    mo.md("Bedankt - tot volgende week voor Introductie Python II.") if exit_ticket.value else mo.md(
-        "Schrijf hierboven een paar woorden voor je vertrekt."
-    )
+    current_time = input("Hoe laat is het? (uu:mm) ")
+    print(f"Om {current_time} traint: {training_group(current_time)}")
     return
 
 

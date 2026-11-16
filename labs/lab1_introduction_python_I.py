@@ -68,6 +68,45 @@ def _(demo_slider, mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
+    ### Code blocks
+    """)
+    return
+
+
+@app.cell
+def _():
+    print("Hello world")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ### Comments in python and marimo
+
+    je kan in de code commentaar zetten met een `#` voor de regel. Alles na de `#` wordt genegeerd door Python.
+    bijvoorbeeld:
+
+    ```python
+    # dit is een commentaar
+    ```
+
+    Wil je een commentaar over meerdere regels, dan kan je een string tussen drie aanhalingstekens gebruiken. Python negeert die string als die niet aan een variabele wordt toegekend.
+    ```python
+    "\""
+    dit is een commentaar
+    over meerdere regels
+    "\""
+    ```
+
+    In marimo kan je markdown gebruiken om tekst te formatteren. Je kunt bijvoorbeeld een **kop** maken met `#`, een **lijst** met `-` of een **codeblok** met drie backticks ```.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     Merk op dat je niets met de hand opnieuw moest uitvoeren - de
     schuifregelaar verschuiven was genoeg.
 
@@ -81,9 +120,6 @@ def _(mo):
       ingevuld hebt, wacht de rest van het notebook. Wil je iets anders
       proberen? Voer de cel opnieuw uit met het ▶-knopje (of
       Ctrl/Cmd + Enter).
-    - **Twee cellen kunnen niet dezelfde variabelenaam definiëren.** Krijg
-      je een fout die zegt dat een variabele "is defined by another
-      cell", kies dan een andere, meer beschrijvende naam.
     - Oefencellen bevatten een `...` als plaatshouder of een `# TODO`-
       commentaar. Vervang die door je eigen code. De cel er net onder
       controleert je antwoord automatisch en kleurt groen als het juist is.
@@ -111,7 +147,7 @@ def _(mo):
     else:
         from urllib.request import urlretrieve as _urlretrieve
 
-        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
+        _checks_path = (mo.notebook_dir() / "checks" / _CHECKS_FILE).resolve()
         if not _checks_path.is_file():
             _checks_path.parent.mkdir(exist_ok=True)
             _urlretrieve(_CHECKS_URL, _checks_path)
@@ -164,8 +200,9 @@ def _(mo):
     de cel verschijnt en druk op Enter.
 
     Het antwoord van `input()` bewaren we in een **variabele**
-    (`athlete_name`), zodat we het daarna kunnen gebruiken. De laatste
-    regel is een **f-string**: zet een `f` voor het openingsaanhalingsteken,
+    (`athlete_name`), zodat we het daarna kunnen gebruiken.
+
+    De laatste regel noemen we een **f-string**: zet een `f` voor het openingsaanhalingsteken,
     en je kunt variabelen tussen accolades `{...}` in de tekst zetten.
     """)
     return
@@ -176,18 +213,7 @@ def _():
     athlete_name = input("Hoe heet je? ")
     print("Hallo,", athlete_name)
     print(f"Welkom bij de club, {athlete_name}!")
-
     return
-
-
-app._unparsable_cell(
-    r"""
-    print("Welkom bij de club! \n Welke ploeg traint er nu?")
-    print(r"Welkom bij de club! \n Welke ploeg traint er nu?")
-    -
-    """,
-    name="_"
-)
 
 
 @app.cell(hide_code=True)
@@ -280,7 +306,7 @@ def _(checks, new_member, welcome_message):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Werken met tekst: stringmethodes (13:35-14:05)
+    ## 2. Werken met tekst: stringmethodes
 
     Wat mensen intypen, is zelden netjes: spaties te veel, alles in
     hoofdletters, een komma in plaats van een punt. Gelukkig hebben
@@ -352,6 +378,78 @@ def _():
     print(day, month, year)
     print("Yana De Backer".split(" "))
     print("Yana De Backer".split(" ", 1))
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Een string kan ook **escape-tekens** bevatten, zoals `\n` voor een nieuwe regel of `\t` voor een tab. In een f-string kun je deze ook gebruiken. Wil je deze letterlijk tonen, gebruik dan een raw-string met een `r` ervoor, zoals `r"Dit is een raw-string\n"`.
+    """)
+    return
+
+
+@app.cell
+def _():
+    print("Welkom bij de club! \n Welke ploeg traint er nu?")
+    print(r"Welkom bij de club! \n Welke ploeg traint er nu?")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## presentation types
+
+    presentation types zijn types die je kan gebruiken om je output er mooier te laten uitzien.
+
+    `round(waarde, cijfers)` rondt een getal af. Wil je enkel bij het
+    *tonen* afronden, dan kan dat in een f-string met een opmaakcode na
+    een dubbelpunt: `f"{speed:.1f}"` toont 1 cijfer na de komma.
+
+    enkele andere **presentation types** are:
+
+    | Type | Naam                  | Voor        | Voorbeeld              | Resultaat       |
+    |------|-----------------------|-------------|------------------------|-----------------|
+    | `d`  | decimal integer       | int         | `f"{42:d}"`            | `42`            |
+    | `0N` | zero padding          | int/float   | `f"{7:03d}"`           | `007`           |
+    | `f`  | fixed-point           | float/int   | `f"{3.14159:.2f}"`     | `3.14`          |
+    | `e`  | scientific (exponent) | float/int   | `f"{1234.5:.2e}"`      | `1.23e+03`      |
+    | `g`  | general (f of e)      | float/int   | `f"{0.00001234:g}"`    | `1.234e-05`     |
+    | `%`  | percentage (×100)     | float/int   | `f"{0.256:.1%}"`       | `25.6%`         |
+    | `,`  | thousands separator   | int/float   | `f"{1234567:,d}"`      | `1,234,567`     |
+    | `+`  | always show sign      | int/float   | `f"{5:+d}"`            | `+5`            |
+    """)
+    return
+
+
+@app.cell
+def _(sprint_30m_s):
+    speed_ms = 30 / sprint_30m_s
+    print("Gemiddelde snelheid:", round(speed_ms, 2), "m/s")
+    print(f"Gemiddelde snelheid: {speed_ms * 3.6:.1f} km/u")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## escape sequences
+
+    Een escape sequence is een combinatie van tekens in een string die staat voor één ander teken, meestal een teken dat je niet rechtstreeks kunt typen of dat anders een speciale betekenis zou hebben.
+
+    | Escape       | Naam                    | Voorbeeld                   | Resultaat                 |
+    |--------------|-------------------------|-----------------------------|---------------------------|
+    | `\n`         | newline                 | `print("a\nb")`             | `a` en `b` op 2 regels    |
+    | `\t`         | tab                     | `print("a\tb")`             | `a       b`               |
+    | `\\`         | backslash               | `print("C:\\Users")`        | `C:\Users`                |
+    | `\'`         | single quote            | `print('it\'s')`            | `it's`                    |
+    | `\"`         | double quote            | `print("zei \"hoi\"\")`      | `zei "hoi"`               |
+
+    **raw Strings** schakelen escape sequences uit wat handig is voor bijvoorbeeld een pad in windows
+
+    `print(r"C:\Users\Yana\Documents")` geeft `C:\Users\Yana\Documents` weer, zonder dat de `\U` als escape sequence wordt geïnterpreteerd.)
+    """)
     return
 
 
@@ -435,7 +533,7 @@ def _(checks, first_name, full_name, last_name, shirt_name):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Getallen: `int`, `float` en rekenen (14:05-15:00)
+    ## 3. Getallen: `int`, `float` en rekenen
 
     Elke waarde in Python heeft een **type**. De vier die je voortdurend
     zult gebruiken:
@@ -446,15 +544,15 @@ def _(mo):
     | `float` (kommagetal) | `5.34` | sprinttijd, lengte, gewicht |
     | `str` (string = tekst) | `"Yana De Backer"` | naam, positie |
     | `bool` (booleaanse waarde) | `True` / `False` | is de atleet geblesseerd? |
-
-    Daarnaast is er `None`, de manier waarop Python "*geen waarde*" zegt -
-    bijvoorbeeld voor een test die nooit afgelegd werd.
+    | `none` (geen waarde) | `None` | Een lege test |
 
     Je hoeft een type nooit te *declareren*: Python **kent het type
-    automatisch toe** op basis van de waarde. `2010` wordt een `int`,
-    `2010.0` een `float` en `"2010"` een `str`. De ingebouwde functie
-    `type()` vertelt je welk type een waarde heeft. Let op: Python
-    gebruikt een **punt** als decimaalteken, dus `176.3` en niet `176,3`.
+    automatisch toe** op basis van de waarde.
+    `2010` wordt een `int`, `2010.0` een `float` en `"2010"` een `str`.
+
+    De ingebouwde functie `type()` vertelt je welk type een waarde heeft.
+
+    Let op: Python gebruikt een **punt** als decimaalteken, dus `176.3` en niet `176,3`.
     """)
     return
 
@@ -472,22 +570,26 @@ def _(birth_year, height_cm, is_injured, name):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### `input()` geeft altijd tekst
+    ## Types hints
 
-    Het type bepaalt wat je met een waarde kunt doen. `2010 + 1` is
-    `2011`, maar `"2010" + "1"` plakt de twee teksten aan elkaar tot
-    `"20101"`. En omdat `input()` **altijd een string** teruggeeft - ook als
-    de gebruiker een getal typt - moet je die tekst eerst **omzetten**
-    voor je ermee kunt rekenen:
+    Type hints zijn annotaties in je code die aangeven welk type een variabele, parameter of returnwaarde hoort te hebben.
+
+    Een type hint wordt geschreven als `variabele: type` of `def functie(param: type) -> type:`. Ze zijn optioneel en hebben geen invloed op de uitvoering van het programma, maar kunnen helpen bij het begrijpen van de code en bij het gebruik van tools die type-informatie gebruiken.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Type conversions
+
 
     | Functie | Zet om naar | Voorbeeld |
     |---|---|---|
     | `int(...)` | geheel getal | `int("16")` -> `16`, `int(5.9)` -> `5` (kapt af, rondt niet af!) |
     | `float(...)` | kommagetal | `float("63.9")` -> `63.9` |
     | `str(...)` | tekst | `str(2010)` -> `"2010"` |
-
-    Vaak doe je het vragen en omzetten in één regel:
-    `age = int(input("Leeftijd? "))`.
     """)
     return
 
@@ -500,6 +602,8 @@ def _(birth_year, name):
     print(int(5.9))
     print(float("63.9") * 2)
     print(f"{name} is geboren in {birth_year}.")
+
+    variable_met_type_hint: int = 42
     return
 
 
@@ -518,23 +622,21 @@ def _(mo):
     | `%` | modulo (rest) | `135 % 60` | `15` |
     | `**` | macht | `1.67 ** 2` | `2.7889` |
 
+    Het type bepaalt wat je met een waarde kunt doen. `2010 + 1` is
+    `2011`, maar `"2010" + "1"` plakt de twee teksten aan elkaar tot
+    `"20101"`. En omdat `input()` **altijd een string** teruggeeft - ook als
+    de gebruiker een getal typt - moet je die tekst eerst **omzetten**
+    voor je ermee kunt rekenen:
+
     De gewone volgorde van bewerkingen geldt: eerst `**`, dan `*` `/` `//`
     `%`, dan `+` `-`. Gebruik **haakjes** zodra je twijfelt - ze kosten
     niets en maken duidelijk wat je bedoelt.
-
-    `round(waarde, cijfers)` rondt een getal af. Wil je enkel bij het
-    *tonen* afronden, dan kan dat in een f-string met een opmaakcode na
-    een dubbelpunt: `f"{speed:.1f}"` toont 1 cijfer na de komma.
     """)
     return
 
 
 @app.cell
-def _(sprint_30m_s):
-    speed_ms = 30 / sprint_30m_s
-    print("Gemiddelde snelheid:", round(speed_ms, 2), "m/s")
-    print(f"Gemiddelde snelheid: {speed_ms * 3.6:.1f} km/u")
-
+def _():
     session_duration_s = 135
     print(session_duration_s // 60, "min", session_duration_s % 60, "s")
 
@@ -694,15 +796,7 @@ def _(checks, yoyo_duration_s, yoyo_minutes, yoyo_seconds):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## ☕ Pauze (15:00-15:10)
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 4. Eigen functies schrijven (15:10-15:55)
+    ## 4. Eigen functies schrijven
 
     Je hebt al heel wat functies **opgeroepen**: `print()`, `input()`,
     `int()`, `round()`, `len()`. Nu ga je er zelf **definiëren** - je eigen
@@ -750,7 +844,7 @@ def _(mo):
     mo.md(r"""
     ### `return` is niet hetzelfde als `print`
 
-    Een functie die enkel **afdrukt**, toont iets op het scherm, maar geeft
+    Een functie die enkel **print**, toont iets op het scherm, maar geeft
     niets terug: het resultaat van de oproep is `None`. Daar kun je niet
     verder mee rekenen.
     """)
@@ -772,9 +866,9 @@ def _(mo):
     mo.md(r"""
     ### Standaardwaarden
 
-    Een parameter kan een **standaardwaarde** hebben, die gebruikt wordt
+    Een parameter kan een **standaard waarde** hebben, die gebruikt wordt
     als wie de functie oproept dat argument niet meegeeft. Parameters met
-    een standaardwaarde komen **na** die zonder.
+    een standaardwaarde komen **na** die zonder. we noemen deze **keyword arguments**.
     """)
     return
 
@@ -977,7 +1071,7 @@ def _(age_in_season, checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Vergelijken en combineren (15:55-16:20)
+    ## 5. Vergelijken en combineren
 
     Vergelijkingsoperatoren vergelijken twee waarden en geven altijd een
     `bool` (`True` of `False`):
@@ -1009,6 +1103,7 @@ def _(mo):
     | `a and b` | zowel `a` als `b` `True` zijn |
     | `a or b` | minstens één van beide `True` is |
     | `not a` | `a` `False` is |
+    | `a is b` | `a` en `b` naar **hetzelfde object** verwijzen (zelfde `id()`) naar hetzelfde element in memory |
 
     Python laat ook **geketende vergelijkingen** toe, die lezen zoals in
     de wiskunde: `140 <= heart_rate <= 160` betekent "*hartslag tussen 140
@@ -1020,12 +1115,27 @@ def _(mo):
 
 
 @app.cell
-def _(height_cm, is_injured, sprint_30m_s):
+def _():
+    a = 5 < 2
+    b = 3 > 1
+
+    print(a or b)
+    print(b and a)
+    print(b and not a)
+    return
+
+
+@app.cell
+def _(sprint_30m_s):
     print(sprint_30m_s < 5.5)
     print("Forward" == "forward ")
     print("Forward".lower() == "forward ".strip().lower())
     print(0.1 + 0.2 == 0.3, 0.1 + 0.2)
+    return
 
+
+@app.cell
+def _(height_cm, is_injured, sprint_30m_s):
     heart_rate = 152
     print(sprint_30m_s < 5.5 and height_cm > 160)
     print(sprint_30m_s < 5.0 or height_cm > 160)
@@ -1081,7 +1191,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Beslissingen: `if`, `elif`, `else` en `match` (16:20-17:10)
+    ## 6. Beslissingen: `if`, `elif`, `else` en `match`
 
     Met voorwaarden kan je code **beslissingen** nemen:
 
@@ -1305,7 +1415,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 7. Uitdaging (17:10-17:30) - welke ploeg traint er nu?
+    ## 7. Uitdaging - welke ploeg traint er nu?
 
     Een ouder komt aan op de club en wil weten welke ploeg er op dat
     moment op het veld staat. Het trainingsschema:
