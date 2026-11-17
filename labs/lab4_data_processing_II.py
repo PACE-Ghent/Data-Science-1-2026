@@ -116,8 +116,8 @@ def _(pd):
 
     # BROKEN - fix the two bugs below.
     mini_clean = mini_messy.copy()
-    mini_clean["position"] = mini_clean["positio"].str.strip().str.upper()
-    mini_clean["weight_kg"] = mini_clean["weight_kg"].astype(float)
+    mini_clean["position"] = mini_clean["position"].str.strip().str.upper()
+    mini_clean["weight_kg"] = mini_clean["weight_kg"].str.replace(",",".").replace(" ","").astype(float)
     mini_clean
     return (mini_clean,)
 
@@ -238,15 +238,18 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    Using `athletes_with_age_group`, group by `gender` and `age_group`, then use `.agg(...)` to compute the mean `height_cm` and mean `weight_kg` per group. Store the result in `gender_age_summary` (use `observed=True` in `groupby` to skip empty combinations).
+    Using `athletes_with_age_group`, group by `gender` and `age_group`, then use `.agg(...)` to compute the mean `height_cm` and mean `weight_kg` per group, in columns named `mean_height_cm` and `mean_weight_kg`. Store the result in `gender_age_summary` (use `observed=True` in `groupby` to skip empty combinations).
     """)
     return
 
 
 @app.cell
-def _():
+def _(athletes_with_age_group):
     # TODO: groupby(["gender", "age_group"]) and agg mean height_cm + weight_kg
-    gender_age_summary = ...
+    gender_age_summary = athletes_with_age_group.groupby(["gender", "age_group"], observed=True).agg(
+        mean_height_cm=("height_cm", "mean"),
+        mean_weight_kg=("weight_kg", "mean"),
+    )
     return (gender_age_summary,)
 
 
@@ -274,6 +277,7 @@ def _(athletes, tests):
     merged_inner = athletes.merge(tests, on="athlete_id", how="inner")
     merged_left = athletes.merge(tests, on="athlete_id", how="left")
     (len(athletes), len(tests), len(merged_inner), len(merged_left))
+    merged_inner
     return (merged_inner,)
 
 
@@ -339,10 +343,14 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(combined, merged_inner):
     # TODO: find athlete_id values in merged_inner but not in combined,
     # then count how many merged_inner rows have one of those ids
-    rows_lost_to_dedup = ...
+
+    dropped_ids = set(merged_inner["athlete_id"]) - set(combined["athlete_id"])
+    rows_lost_to_dedup = merged_inner["athlete_id"].isin(dropped_ids).sum()
+    rows_lost_to_dedup
+
     return (rows_lost_to_dedup,)
 
 
@@ -422,10 +430,14 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(combined):
     # TODO: pivot_table to cmj_wide, then compute cmj_progress_1_to_2 = col 2 - col 1
-    cmj_wide = ...
-    cmj_progress_1_to_2 = ...
+    cmj_wide = combined.pivot_table(
+        index="athlete_id", columns="test_moment", values="cmj_height_cm"
+    )
+    cmj_wide
+    cmj_progress_1_to_2 = (cmj_wide[2] - cmj_wide[1]).rename("cmj_progress_1_to_2")
+    cmj_progress_1_to_2.describe()
     return cmj_progress_1_to_2, cmj_wide
 
 
