@@ -1,0 +1,19 @@
+% Content of one lab. Used by this lab's syllabus and by the syllabus for labs 3-5.
+\textbf{Goal:} aggregate data with \code{groupby}, combine tables with
+\code{merge}, reshape with \code{melt} and \code{pivot}, and compute
+basic features of a time series.
+
+\begin{itemize}
+  \item \textbf{Recap: repair a broken cell} -- Fix a small cleaning pipeline with two bugs.
+  \item \textbf{\code{groupby} + \code{agg}} -- Statistics per group, age groups with \code{pd.cut}, several named aggregations at once.
+  \item \textbf{\code{merge}} -- Inner and left joins; why a duplicated athlete is counted twice, and why you remove duplicates before merging.
+  \item \textbf{\code{melt} and \code{pivot}} -- Long and wide shape; progress between two test moments.
+  \item \textbf{Time series} -- Heart-rate zones as \% of $HR_{max}$ (220 $-$ age), time per zone, \code{rolling}, \code{resample}.
+  \item \textbf{Mini-case in pairs} -- A training report: one row per athlete.
+\end{itemize}
+
+\textbf{Exercises:} (0) recap: repair the broken cell; (1) group by
+gender and age group; (2) what did removing the duplicates cost?;
+(3) progress in jump height; (4) minutes in zone 4--5 per athlete;
+\textbf{mini-case:} training report with the minutes in zone 4--5, the
+maximum speed and the distance covered per athlete.

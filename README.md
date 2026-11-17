@@ -13,16 +13,22 @@ requirements.txt       Python dependencies (marimo, pandas, plotly, numpy)
 labs/                  student notebooks — hand these out
 solutions/             instructor answer keys — same notebooks, fully solved
 checks/                answer checks loaded by the notebooks
-cursus/nl/, cursus/en/ course texts (PDF) for labs 3-5, in Flemish and English
-slides/nl/, slides/en/ one slide deck per lab (3-5) plus a deck on installing
+notes/nl/, notes/en/   course notes (PDF) for labs 3-5, in Flemish and English
+slides/nl/, slides/en/ one slide deck per lab (3-5), an overview deck per lab with
+                       the key concepts (*_overzicht_slides, *_overview_slides), a deck on installing
                        Python and marimo with uv (Windows and macOS) and an
                        introduction of the lecturer, in Flemish and English
-syllabus/              one syllabus per lab (3-5) plus one for labs 3-5 together
-                       (syllabus_labo_3-5, syllabus_labs_3-5), in Flemish
-                       (syllabus_labo*) and English (syllabus_lab*), LaTeX + PDF;
-                       shared parts, including each lab's planning, are in
-                       syllabus/common/nl/ and en/
+syllabus/nl/, syllabus/en/ one syllabus per lab (3-5) plus one for labs 3-5 together,
+                       in Flemish and English (LaTeX + PDF); the shared parts,
+                       including each lab's content, are in nl/common/ and
+                       en/common/; syllabus/syllabus.sty is shared by both
 ```
+
+Files for the same lab share a base name with a suffix for the kind of
+material, e.g. for lab 3: `lab3_data_processing_I_slides.pptx`,
+`lab3_data_processing_I_overview_slides.pptx`,
+`lab3_data_processing_I_syllabus.pdf` and `lab3_data_processing_I_notes.pdf`
+(Flemish: `labo3_dataverwerking_I_…`).
 
 ## The datasets (`data/`)
 
@@ -146,28 +152,28 @@ solution (and the deliberately broken cells in Labs 2 and 4 already fixed). Use 
 Every exercise in every solutions file has been verified to actually
 trigger its own "Correct!" callout — not just "runs without crashing."
 
-## `cursus/` — course texts
+## `notes/` — course notes
 
-One PDF per lab, in Flemish (`cursus/nl/labo3_...pdf`, ...) and English
-(`cursus/en/lab3_...pdf`, ...), that explains the concepts behind the notebook from scratch, for students with
+One PDF per lab, in Flemish (`notes/nl/labo3_..._notes.pdf`, ...) and English
+(`notes/en/lab3_..._notes.pdf`, ...), that explains the concepts behind the notebook from scratch, for students with
 little Python experience. They explain the demos and use their own
 examples, so they don't give away the exercise answers.
 
-The sources are in `cursus/sources/nl/` and `cursus/sources/en/`. They are LaTeX with `\begin{python}`
-blocks that `cursus/build.py` actually runs against `data/`, so every
+The sources are in `notes/sources/nl/` and `notes/sources/en/`. They are LaTeX with `\begin{python}`
+blocks that `notes/build.py` actually runs against `data/`, so every
 output and chart in the PDFs is real. Rebuild after changing the data or
 a text:
 
 ```bash
 pip install pandas plotly kaleido pygments
-python cursus/build.py                              # everything, both languages
-python cursus/build.py en                           # only the English texts
-python cursus/build.py nl/labo4_dataverwerking_II   # one text
+python notes/build.py                                    # everything, both languages
+python notes/build.py en                                 # only the English notes
+python notes/build.py nl/labo4_dataverwerking_II_notes   # one text
 ```
 
 This needs `tectonic` or `pdflatex` and, for the charts,
 a Chrome/Chromium browser for kaleido. Generated files go to
-`cursus/build/`, which is git-ignored.
+`notes/build/`, which is git-ignored.
 
 ## If you change something
 
@@ -179,7 +185,7 @@ a Chrome/Chromium browser for kaleido. Generated files go to
 - **Regenerate `data/`:** re-verify both the lab checks and solutions still
   pass — some checks depend on exact counts (e.g. "exactly one duplicate
   athlete", "5 goalkeepers") that assume the current generator output.
-- **Change a demo or the data:** rebuild the course texts in `cursus/`
+- **Change a demo or the data:** rebuild the course notes in `notes/`
   and reread any sentence that quotes a number from the output, in both
   languages.
 - **Edit a course text or syllabus:** make the same change in the other
@@ -191,8 +197,8 @@ a Chrome/Chromium browser for kaleido. Generated files go to
 ## Running notebooks locally
 
 Students install `uv` and Python 3.12 following the manual "Python
-installeren" (also in `slides/nl/python_installeren.pptx` and
-`slides/en/installing_python.pptx`). After that, from the repository
+installeren" (also in `slides/nl/python_installeren_slides.pptx` and
+`slides/en/installing_python_slides.pptx`). After that, from the repository
 folder:
 
 ```bash
