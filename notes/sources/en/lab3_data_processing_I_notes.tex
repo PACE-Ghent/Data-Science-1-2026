@@ -44,6 +44,45 @@ The exercises are in the notebook; this text explains what you need to
 solve them.
 
 % ---------------------------------------------------------------------------
+\section{Working with a marimo notebook}
+
+Every lab is a \textbf{marimo notebook}. Before you start with pandas,
+first how to use one.
+
+\begin{itemize}
+  \item A notebook consists of \textbf{cells}. A cell contains Python code
+        or explanation. You run a cell with the play button next to it, or
+        with Ctrl + Enter (macOS: Cmd + Enter).
+  \item \textbf{After opening: run all cells.} marimo does not always run
+        anything by itself when you open a notebook. Then use the button
+        at the bottom right to run all cells. That also runs the hidden
+        cells at the top, which prepare the data and the checks of the
+        exercises. If an exercise shows an error about \code{checks} or
+        \code{DATA\_DIR}, those hidden cells have not run yet.
+  \item The notebook is \textbf{reactive}: when you change a cell, marimo
+        automatically runs every cell that depends on it again.
+  \item The \textbf{last line} of a cell is shown above the cell. Whatever
+        you \code{print(...)} appears below it.
+  \item A variable can only be created in \textbf{one cell}. If you create
+        the same name in two cells, marimo shows an error. Then choose
+        another, clear name.
+  \item You recognise \textbf{exercises} by \code{...} in a cell. Replace
+        the \code{...} with your own code and leave the rest of the cell as
+        it is. The (hidden) cell below it checks your answer:
+        \begin{itemize}
+          \item \textbf{green} (\emph{Correct!}): it is right;
+          \item \textbf{orange} (\emph{Not yet correct}): not right yet; the
+                hint says what is wrong, without giving the answer;
+          \item \textbf{red} (\emph{Error while checking}): your code gave an
+                error. Read the last line of the error message.
+        \end{itemize}
+  \item The notebook also contains \textbf{interactive elements}: a slider,
+        a table you can sort and search, a multiple-choice question and a
+        text box (the \emph{exit ticket}). You don't have to write their
+        code yourself; lab 5 shows how that works.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
 \section{A few Python concepts you need today}
 
 pandas is ordinary Python. Four things from the previous labs keep
@@ -207,7 +246,9 @@ athletes_raw["position"].value_counts()
 \end{python}
 
 The club has only four positions, but the column contains 13 different
-spellings. That is the second problem of today.
+spellings. That is the second problem of today. To see only the
+different values, without counting them, use \code{.unique()}:
+\code{athletes\_raw["position"].unique()}.
 
 % ---------------------------------------------------------------------------
 \section{Selecting columns}
@@ -515,6 +556,9 @@ in a single block of code. Such a sequence of steps is called a
         \code{.assign(bmi=lambda d: d["weight\_kg"] / ...)}, \code{d}
         stands for the table \emph{as it is at that point in the
         pipeline}. That lets you use a column made one step earlier.
+  \item \code{.rename(columns=\{"old": "new"\})} gives a column another
+        name. In the notebook, \code{gender} is renamed to \code{sex} this
+        way.
 \end{itemize}
 
 \begin{python}[noout]
@@ -538,15 +582,194 @@ own line. After removing a duplicate, one row number is missing; the last
 step, \code{.reset\_index(drop=True)}, numbers the rows again from 0.
 
 % ---------------------------------------------------------------------------
-\section{Looking ahead: the challenge}
+\section{The exercises step by step}
 
-The challenge at the end of the notebook asks for the 5 fastest athletes
-per position. For that you need to combine two tables
-(\code{athletes\_clean} has the position, \code{tests\_clean} the sprint
-times) and rank per group. The hints in the notebook show the three
-functions you need: \code{groupby}, \code{merge} and \code{.head(5)} per
-group. Lab~4 explains them in depth; try the challenge with the hints
-now, and see next week whether you understand it better.
+For every exercise you find here what is asked, the steps to tackle it,
+and how to check your own result. The answer itself is not given: the
+idea is that you turn each step into code yourself. Two general tips:
+
+\begin{itemize}
+  \item Read the exercise in the notebook twice. Note the \textbf{name of
+        the variable} you have to create: the check looks for exactly that
+        name.
+  \item Work in small steps. You may put an intermediate result in a
+        variable of its own and show it (as the last line of the cell or
+        with \code{print}), to see whether it is right before you go on.
+\end{itemize}
+
+\subsection*{Exercise 1 -- Load \code{tests.csv}}
+
+\textbf{Asked:} \code{tests\_raw} (the table) and \code{tests\_raw\_shape}
+(the number of rows and columns).
+
+\begin{enumerate}
+  \item The first line of the cell already reads the file with
+        \code{pd.read\_csv}. Leave it as it is.
+  \item Replace \code{...} with the property of \code{tests\_raw} that
+        gives the number of rows and columns (see ``A first impression of
+        the data''). Note: you write a property without parentheses.
+\end{enumerate}
+
+\textbf{Check yourself:} your result is a tuple of two numbers; the second
+(the number of columns) is 8.
+
+\subsection*{Exercise 2 -- Forwards younger than 16}
+
+\textbf{Asked:} \code{forwards\_u16\_raw}: the rows of \code{athletes\_raw}
+where the position is exactly \code{"Forward"} \emph{and} the athlete was
+born after 1 September 2010.
+
+\textbf{What you already have:} the mask \code{younger\_than\_16} from the
+example above (\code{True} for every athlete younger than 16).
+
+\begin{enumerate}
+  \item Make a second mask: compare the \code{position} column with the
+        text \code{"Forward"} (see ``Filtering on text'').
+  \item Combine the two masks with \code{\&}. Put each mask (or each
+        comparison) between parentheses (see ``Combining conditions'').
+  \item Pass the combined mask to \code{athletes\_raw.loc[...]}.
+\end{enumerate}
+
+\textbf{Check yourself:} every row in your result has position
+\code{"Forward"}. There are only a few rows: forwards written as
+\code{"FWD"} or \code{"forward"} drop out. That is intended; you clean the
+positions later.
+
+\textbf{Typical mistakes:} \code{and} instead of \code{\&}; no parentheses
+around the comparison; \code{"forward"} with a lower-case letter.
+
+\subsection*{Exercise 3 -- Suspicious sprint times}
+
+\textbf{Asked:} \code{suspicious\_30m\_raw}: the rows of \code{tests\_raw}
+where \code{sprint\_30m\_s} is greater than 20, sorted from the largest to
+the smallest value.
+
+\begin{enumerate}
+  \item Make a mask: the \code{sprint\_30m\_s} column greater than 20.
+  \item Filter the rows with \code{.loc[...]}.
+  \item Sort the result by \code{sprint\_30m\_s}, largest value first (see
+        ``Sorting''). You can put \code{.sort\_values(...)} right after the
+        filter.
+\end{enumerate}
+
+\textbf{Check yourself:} you get 12 rows, all with values in the
+thousands, and the first row has the largest value.
+
+\subsection*{Exercise 4 -- BMI}
+
+\textbf{Asked:} a new column \code{bmi} in \code{athletes\_with\_bmi}. The
+formula is in the notebook: weight divided by the square of the height in
+metres.
+
+\textbf{What you already have:} \code{weight\_kg\_numeric} (the weight as a
+number, see ``Turning text into a number'') and a copy of the table in
+\code{athletes\_with\_bmi}.
+
+\begin{enumerate}
+  \item The height is in centimetres in the \code{height\_cm} column.
+        Divide by 100 to get metres.
+  \item Square it with \code{** 2}. In Python \code{**} means ``to the
+        power of'': \code{3 ** 2} is 9. Put the height in metres between
+        parentheses, otherwise Python first computes \code{100 ** 2}.
+  \item Divide the weight by that square. The calculation is done for all
+        rows at once; the assignment \code{... ["bmi"] = ...} is already in
+        the cell.
+\end{enumerate}
+
+\textbf{Check yourself:} the values lie roughly between 17 and 26. Athletes
+without a height get \code{NaN}; that is normal.
+
+\textbf{Typical mistakes:} using the \code{weight\_kg} column (it is still
+text, so you get an error); forgetting to divide by 100; forgetting the
+parentheses.
+
+\subsection*{Exercise 5 -- Age in years}
+
+\textbf{Asked:} a column \code{age} in \code{athletes\_with\_age}, with the
+age in whole years.
+
+\begin{enumerate}
+  \item Turn \code{birthdate} into dates with \code{pd.to\_datetime}.
+  \item Subtract it from \code{REFERENCE\_DATE}. That gives a duration.
+  \item Take out the number of days with \code{.dt.days} and divide with
+        \code{// 365} (see ``Calculating with dates''). The example
+        \code{age\_years} does exactly this calculation.
+\end{enumerate}
+
+\textbf{Check yourself:} all ages lie between 10 and 19.
+
+\subsection*{Exercise 6 -- Clean the positions}
+
+\textbf{Asked:} \code{athletes\_step1}: a copy of \code{athletes\_raw} in
+which the \code{position} column is replaced by the cleaned positions.
+
+\textbf{What you already have:} \code{position\_clean} (see ``Cleaning text
+labels'') and the copy in \code{athletes\_step1}.
+
+\begin{enumerate}
+  \item Overwrite the \code{position} column of the copy with an
+        assignment: the column on the left, \code{position\_clean} on the
+        right.
+\end{enumerate}
+
+\textbf{Check yourself:} \code{athletes\_step1["position"].value\_counts()}
+shows exactly four positions.
+
+\subsection*{Exercise 7 -- Fix the sprint units}
+
+\textbf{Asked:} \code{sprint\_30m\_fixed}: the \code{sprint\_30m\_s} column,
+with all times in seconds.
+
+\begin{enumerate}
+  \item The function \code{fix\_sprint\_units} already exists (see
+        ``Numbers in the wrong unit''). You call it with a column between
+        the parentheses, as in the example with \code{sprint\_10m\_s}.
+  \item This time, pass the \code{sprint\_30m\_s} column of
+        \code{tests\_raw}.
+\end{enumerate}
+
+\textbf{Check yourself:} \code{sprint\_30m\_fixed.describe()} shows a
+maximum below 20 and a minimum above 3.
+
+\subsection*{Exercise 8 -- Remove the duplicate athlete}
+
+\textbf{Asked:} \code{athletes\_deduped}: \code{athletes\_step1} without the
+duplicate athlete.
+
+\begin{enumerate}
+  \item Use \code{.drop\_duplicates(...)} on \code{athletes\_step1} (see
+        ``Duplicates'').
+  \item With \code{subset=[...]}, pass the two columns that together
+        identify an athlete: name and birthdate.
+  \item Keep the first one: \code{keep="first"}.
+\end{enumerate}
+
+\textbf{Check yourself:} the result has exactly one row fewer than
+\code{athletes\_step1}.
+
+\subsection*{Challenge -- The 5 fastest per position}
+
+\textbf{Asked:} \code{fastest\_per\_position}: per position, the 5
+athletes with the best (lowest) 30\,m sprint time.
+
+The notebook gives three lines as a hint. This is how to read them:
+
+\begin{enumerate}
+  \item \code{tests\_clean.groupby("athlete\_id")["sprint\_30m\_s"].min()}
+        takes the lowest sprint time per athlete: their best test.
+        \code{.reset\_index()} turns the result back into an ordinary
+        table with an \code{athlete\_id} column. You learn \code{groupby}
+        in depth in lab 4.
+  \item \code{athletes\_clean.merge(best\_sprint, on="athlete\_id")}
+        combines the two tables, so every best time ends up next to the
+        athlete's position.
+  \item \code{.sort\_values("sprint\_30m\_s")} puts the fastest at the top
+        (lowest time first), and \code{.groupby("position").head(5)} keeps
+        the first 5 rows per position.
+\end{enumerate}
+
+\textbf{Check yourself:} every position appears exactly 5 times, and
+within each position the times go up.
 
 % ---------------------------------------------------------------------------
 \section{Summary}

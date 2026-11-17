@@ -492,6 +492,139 @@ A001 gets 10.0 and A002 gets 12.5, even though they were in a different
 order in \code{extra} than in \code{report}.
 
 % ---------------------------------------------------------------------------
+\section{The exercises step by step}
+
+For every exercise: what is asked, the steps, and how to check your own
+result. The answer itself is not given. Work in small steps and show
+intermediate results to see whether they are right.
+
+\subsection*{Exercise 0 -- Recap: repair the broken cell}
+
+\textbf{Asked:} get the cell with \code{mini\_clean} working. It contains
+two mistakes: a typo in a column name and a missing conversion from text
+to a number.
+
+\begin{enumerate}
+  \item Run the cell and read the \textbf{last line} of the error message
+        (see ``Recap: reading error messages''). A \code{KeyError} names
+        the column that does not exist. Compare it with the columns of
+        \code{mini\_messy} and fix the typo.
+  \item Run the cell again. Now you get a \code{ValueError}: the weight
+        \code{"57,5"} has a comma. First turn it into a dot, as in lab 3,
+        and only then apply \code{.astype(float)}.
+\end{enumerate}
+
+\code{.str.upper()} turns text into upper case; it is the counterpart of
+\code{.str.lower()} from lab 3.
+
+\textbf{Check yourself:} \code{mini\_clean} has 5 rows, the positions are
+\code{"FORWARD"} and \code{"MIDFIELDER"}, and \code{weight\_kg} is a number.
+
+\subsection*{Exercise 1 -- Group by gender and age group}
+
+\textbf{Asked:} \code{gender\_age\_summary}: for every combination of
+gender and age group, the mean height and the mean weight.
+
+\textbf{What you already have:} \code{athletes\_with\_age\_group}, with the
+\code{age\_group} column, and the example that groups by position and age
+group (see ``Grouping on several columns and \code{agg}'').
+
+\begin{enumerate}
+  \item Group on \emph{two} columns: pass a list to \code{groupby}, with
+        \code{gender} and \code{age\_group}. Add \code{observed=True}, so
+        empty combinations drop out.
+  \item Use \code{.agg(...)} with two named statistics. Call them
+        \code{mean\_height\_cm} and \code{mean\_weight\_kg}: the check looks
+        for exactly those names. You write each statistic as
+        \code{name=("column", "mean")}.
+\end{enumerate}
+
+\textbf{Check yourself:} your result has 8 rows (groups) and two columns
+with those names.
+
+\subsection*{Exercise 2 -- What did deduplication cost?}
+
+\textbf{Asked:} \code{rows\_lost\_to\_dedup}: the number of rows in
+\code{merged\_inner} whose \code{athlete\_id} is \emph{no longer} in
+\code{combined}.
+
+\begin{enumerate}
+  \item Make a set of all \code{athlete\_id}s in \code{merged\_inner} with
+        \code{set(...)}, and one for \code{combined}.
+  \item Subtract them (see ``Sets and \code{isin}''). What remains are the
+        IDs that disappeared through deduplication.
+  \item Use \code{.isin(...)} to make a mask on the \code{athlete\_id}
+        column of \code{merged\_inner}: \code{True} for every row with such
+        a disappeared ID.
+  \item Count the \code{True} values with \code{.sum()}.
+\end{enumerate}
+
+\textbf{Check yourself:} the result is a small number: the number of tests
+of the removed copy of the duplicated athlete (3).
+
+\subsection*{Exercise 3 -- Progress in jump height}
+
+\textbf{Asked:} \code{cmj\_wide} (one row per athlete, a column per test
+moment, with the jump height) and \code{cmj\_progress\_1\_to\_2} (test
+moment 2 minus test moment 1).
+
+\begin{enumerate}
+  \item Make \code{cmj\_wide} with \code{.pivot\_table(...)} on
+        \code{combined}: \code{index} is the athlete, \code{columns} the
+        test moment, \code{values} the jump height (\code{cmj\_height\_cm}).
+        The example with the sprint time does the same (see ``Two shapes
+        for the same data'').
+  \item Subtract column 1 from column 2. The column names are numbers, so
+        no quotes.
+\end{enumerate}
+
+\textbf{Check yourself:} \code{cmj\_wide} has columns 1, 2 and 3. In
+\code{cmj\_progress\_1\_to\_2} a positive number means the athlete jumped
+higher; athletes without a second test get \code{NaN}.
+
+\subsection*{Exercise 4 -- Minutes in zone 4--5 per athlete}
+
+\textbf{Asked:} \code{zone\_4\_5\_minutes}: per athlete, the number of
+minutes in zone 4 or zone 5 together.
+
+\begin{enumerate}
+  \item Make a mask with \code{.isin([...])} on the \code{hr\_zone}
+        column, with the two zones \code{"Zone 4"} and \code{"Zone 5"}.
+  \item Filter the rows of \code{hr\_zoned} with that mask.
+  \item Group by \code{athlete\_id} and count the rows with \code{.size()}.
+  \item Divide by 60: every row is one second (see ``Time per zone'').
+\end{enumerate}
+
+\textbf{Check yourself:} you get a Series with 5 values (one per athlete),
+each over 20 minutes, with \code{athlete\_id} as the index.
+
+\subsection*{Mini-case -- A training report}
+
+\textbf{Asked:} \code{training\_report}: one row per athlete, with the
+columns \code{zone\_4\_5\_minutes}, \code{max\_speed\_kmh} and
+\code{distance\_km}.
+
+The notebook gives a hint in four lines. This is how to read them:
+
+\begin{enumerate}
+  \item \code{in\_zone\_4\_5 = hr\_zoned["hr\_zone"].isin([...])} makes a
+        mask: \code{True} for every second in zone 4 or 5.
+  \item \code{hr\_zoned.assign(distance\_km=hr\_zoned["speed\_kmh"] / 3600)}
+        adds the distance covered per second (see ``The mini-case'').
+  \item \code{.groupby("athlete\_id").agg(...)} makes one row per athlete,
+        with the highest speed (\code{"max"}) and the total distance
+        (\code{"sum"}).
+  \item \code{in\_zone\_4\_5.groupby(hr\_zoned["athlete\_id"]).sum() / 60}
+        counts the \code{True} values of the mask per athlete, so the
+        number of seconds in zone 4--5, and turns them into minutes. In the
+        assignment every value ends up next to the right athlete (aligning
+        on the index).
+\end{enumerate}
+
+\textbf{Check yourself:} 5 rows, the three columns, a top speed around
+14\,km/h and a distance of just over 5\,km per athlete.
+
+% ---------------------------------------------------------------------------
 \section{Summary}
 
 \begin{center}

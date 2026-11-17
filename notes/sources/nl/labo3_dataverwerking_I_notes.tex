@@ -44,6 +44,45 @@ code die je leest. De oefeningen zelf staan in het notebook; deze tekst
 legt uit wat je nodig hebt om ze op te lossen.
 
 % ---------------------------------------------------------------------------
+\section{Werken met een marimo-notebook}
+
+Elk labo is een \textbf{marimo-notebook}. Voor je aan pandas begint, eerst
+hoe je zo'n notebook gebruikt.
+
+\begin{itemize}
+  \item Een notebook bestaat uit \textbf{cellen}. Een cel bevat Python-code
+        of uitleg. Een cel voer je uit met het afspeelknopje naast de cel,
+        of met Ctrl + Enter (macOS: Cmd + Enter).
+  \item \textbf{Na het openen: voer alle cellen uit.} marimo voert bij het
+        openen niet altijd vanzelf iets uit. Gebruik dan de knop rechtsonder
+        om alle cellen uit te voeren. Zo draaien ook de verborgen cellen
+        bovenaan, die de data en de controles van de oefeningen klaarzetten.
+        Zie je bij een oefening een fout over \code{checks} of
+        \code{DATA\_DIR}, dan zijn die verborgen cellen nog niet uitgevoerd.
+  \item Het notebook is \textbf{reactief}: pas je een cel aan, dan voert
+        marimo automatisch alle cellen opnieuw uit die van die cel afhangen.
+  \item De \textbf{laatste regel} van een cel wordt getoond boven de cel.
+        Wat je met \code{print(...)} afdrukt, verschijnt eronder.
+  \item Een variabele mag maar in \textbf{één cel} gemaakt worden. Maak je
+        dezelfde naam in twee cellen, dan geeft marimo een foutmelding. Kies
+        dan een andere, duidelijke naam.
+  \item \textbf{Oefeningen} herken je aan \code{...} in een cel. Vervang de
+        \code{...} door je eigen code en laat de rest van de cel staan. De
+        (verborgen) cel eronder controleert je antwoord:
+        \begin{itemize}
+          \item \textbf{groen} (\emph{Correct!}): het klopt;
+          \item \textbf{oranje} (\emph{Not yet correct}): het klopt nog niet;
+                de hint zegt wat er mis is, zonder het antwoord te geven;
+          \item \textbf{rood} (\emph{Error while checking}): je code gaf een
+                fout. Lees de laatste regel van de foutmelding.
+        \end{itemize}
+  \item Het notebook bevat ook \textbf{interactieve elementen}: een
+        schuifbalk, een tabel die je kunt sorteren en doorzoeken, een
+        meerkeuzevraag en een tekstvak (het \emph{exit ticket}). Je hoeft de
+        code daarvan niet zelf te schrijven; in labo 5 leer je hoe dat werkt.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
 \section{Een paar Python-begrippen die je vandaag nodig hebt}
 
 Pandas is gewone Python. Vier dingen uit de vorige labo's komen
@@ -207,7 +246,9 @@ athletes_raw["position"].value_counts()
 \end{python}
 
 De club heeft maar vier posities, maar er staan 13 verschillende
-schrijfwijzen in de kolom. Dat is het tweede probleem van vandaag.
+schrijfwijzen in de kolom. Dat is het tweede probleem van vandaag. Wil je alleen
+de verschillende waarden zien, zonder ze te tellen, gebruik dan
+\code{.unique()}: \code{athletes\_raw["position"].unique()}.
 
 % ---------------------------------------------------------------------------
 \section{Kolommen selecteren}
@@ -517,6 +558,9 @@ dingen kom je daar tegen:
         \code{.assign(bmi=lambda d: d["weight\_kg"] / ...)} staat \code{d}
         voor de tabel \emph{zoals ze op dat moment in de pipeline is}.
         Zo kun je een kolom gebruiken die een stap eerder gemaakt is.
+  \item \code{.rename(columns=\{"oud": "nieuw"\})} geeft een kolom een
+        andere naam. In het notebook wordt zo \code{gender} hernoemd naar
+        \code{sex}.
 \end{itemize}
 
 \begin{python}[noout]
@@ -541,16 +585,195 @@ van 0 tot het einde, want na het verwijderen van een dubbel ontbreekt er
 een nummer.
 
 % ---------------------------------------------------------------------------
-\section{Vooruitblik: de uitdaging}
+\section{De oefeningen stap voor stap}
 
-De uitdaging op het einde van het notebook vraagt de 5 snelste atleten
-per positie. Daarvoor moet je twee tabellen samenvoegen
-(\code{athletes\_clean} heeft de positie, \code{tests\_clean} de
-sprinttijden) en per groep rangschikken. De hints in het notebook tonen
-de drie functies die je daarvoor nodig hebt: \code{groupby},
-\code{merge} en \code{.head(5)} per groep. Die worden in labo~4 grondig
-uitgelegd; probeer de uitdaging nu al met de hints, en kijk volgende
-week of je ze beter begrijpt.
+Hier vind je per oefening wat er gevraagd wordt, in welke stappen je ze
+aanpakt en hoe je zelf controleert of je resultaat klopt. Het antwoord
+zelf staat er niet: de bedoeling is dat je elke stap zelf omzet in code.
+Twee algemene tips:
+
+\begin{itemize}
+  \item Lees de opdracht in het notebook twee keer. Onderstreep in
+        gedachten de \textbf{naam van de variabele} die je moet maken: de
+        controle zoekt precies die naam.
+  \item Werk in kleine stappen. Je mag een tussenresultaat in een eigen
+        variabele zetten en die tonen (als laatste regel van de cel of met
+        \code{print}), om te zien of het klopt voor je verder gaat.
+\end{itemize}
+
+\subsection*{Oefening 1 -- \code{tests.csv} inladen}
+
+\textbf{Gevraagd:} \code{tests\_raw} (de tabel) en \code{tests\_raw\_shape}
+(het aantal rijen en kolommen).
+
+\begin{enumerate}
+  \item De eerste regel van de cel leest het bestand al in met
+        \code{pd.read\_csv}. Die laat je staan.
+  \item Vervang \code{...} door de eigenschap van \code{tests\_raw} die het
+        aantal rijen en kolommen geeft (zie ``Een eerste indruk van de
+        data''). Let op: een eigenschap schrijf je zonder haakjes.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} je resultaat is een tuple met twee getallen;
+het tweede (het aantal kolommen) is 8.
+
+\subsection*{Oefening 2 -- Aanvallers jonger dan 16}
+
+\textbf{Gevraagd:} \code{forwards\_u16\_raw}: de rijen van
+\code{athletes\_raw} waar de positie precies \code{"Forward"} is
+\emph{en} de atleet na 1 september 2010 geboren is.
+
+\textbf{Wat je al hebt:} het masker \code{younger\_than\_16} uit het
+voorbeeld erboven (\code{True} voor elke atleet jonger dan 16).
+
+\begin{enumerate}
+  \item Maak een tweede masker: vergelijk de kolom \code{position} met de
+        tekst \code{"Forward"} (zie ``Filteren op tekst'').
+  \item Combineer de twee maskers met \code{\&}. Zet elk masker (of elke
+        vergelijking) tussen haakjes (zie ``Voorwaarden combineren'').
+  \item Geef het gecombineerde masker aan \code{athletes\_raw.loc[...]}.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} elke rij in je resultaat heeft positie
+\code{"Forward"}. Er zijn maar weinig rijen: aanvallers die als
+\code{"FWD"} of \code{"forward"} geschreven staan, vallen weg. Dat is de
+bedoeling; je kuist de posities later op.
+
+\textbf{Typische fouten:} \code{and} in plaats van \code{\&}; geen haakjes
+rond de vergelijking; \code{"forward"} met een kleine letter.
+
+\subsection*{Oefening 3 -- Verdachte sprinttijden}
+
+\textbf{Gevraagd:} \code{suspicious\_30m\_raw}: de rijen van
+\code{tests\_raw} waar \code{sprint\_30m\_s} groter is dan 20, gesorteerd
+van de grootste naar de kleinste waarde.
+
+\begin{enumerate}
+  \item Maak een masker: de kolom \code{sprint\_30m\_s} groter dan 20.
+  \item Filter de rijen met \code{.loc[...]}.
+  \item Sorteer het resultaat op \code{sprint\_30m\_s}, met de grootste
+        waarde eerst (zie ``Sorteren''). Je kunt \code{.sort\_values(...)}
+        meteen achter de filter zetten.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} je krijgt 12 rijen, allemaal met waarden in de
+duizenden, en de eerste rij heeft de grootste waarde.
+
+\subsection*{Oefening 4 -- BMI}
+
+\textbf{Gevraagd:} een nieuwe kolom \code{bmi} in
+\code{athletes\_with\_bmi}. De formule staat in het notebook: gewicht
+gedeeld door het kwadraat van de lengte in meter.
+
+\textbf{Wat je al hebt:} \code{weight\_kg\_numeric} (het gewicht als
+getal, zie ``Tekst omzetten naar een getal'') en een kopie van de tabel in
+\code{athletes\_with\_bmi}.
+
+\begin{enumerate}
+  \item De lengte staat in centimeter in de kolom \code{height\_cm}. Deel
+        door 100 om meter te krijgen.
+  \item Neem het kwadraat met \code{** 2}. In Python betekent \code{**}
+        ``tot de macht'': \code{3 ** 2} is 9. Zet de lengte in meter tussen
+        haakjes, anders rekent Python eerst \code{100 ** 2} uit.
+  \item Deel het gewicht door dat kwadraat. De berekening gebeurt voor
+        alle rijen tegelijk; de toewijzing \code{... ["bmi"] = ...} staat
+        al in de cel.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} de waarden liggen ongeveer tussen 17 en 26.
+Bij atleten zonder lengte staat \code{NaN}; dat is normaal.
+
+\textbf{Typische fouten:} de kolom \code{weight\_kg} gebruiken (die is
+nog tekst, dus je krijgt een fout); vergeten te delen door 100; de haakjes
+vergeten.
+
+\subsection*{Oefening 5 -- Leeftijd in jaren}
+
+\textbf{Gevraagd:} een kolom \code{age} in \code{athletes\_with\_age}, met
+de leeftijd in hele jaren.
+
+\begin{enumerate}
+  \item Zet \code{birthdate} om naar datums met \code{pd.to\_datetime}.
+  \item Trek die af van \code{REFERENCE\_DATE}. Dat geeft een tijdsduur.
+  \item Haal er het aantal dagen uit met \code{.dt.days} en deel met
+        \code{// 365} (zie ``Rekenen met datums''). Het voorbeeld
+        \code{age\_years} doet precies deze berekening.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} alle leeftijden liggen tussen 10 en 19.
+
+\subsection*{Oefening 6 -- De posities opkuisen}
+
+\textbf{Gevraagd:} \code{athletes\_step1}: een kopie van
+\code{athletes\_raw} waarin de kolom \code{position} vervangen is door de
+opgekuiste posities.
+
+\textbf{Wat je al hebt:} \code{position\_clean} (zie ``Tekstlabels
+opkuisen'') en de kopie in \code{athletes\_step1}.
+
+\begin{enumerate}
+  \item Overschrijf de kolom \code{position} van de kopie met een
+        toewijzing: links de kolom, rechts \code{position\_clean}.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} \code{athletes\_step1["position"].value\_counts()}
+toont nog precies vier posities.
+
+\subsection*{Oefening 7 -- De eenheden van de sprinttijden corrigeren}
+
+\textbf{Gevraagd:} \code{sprint\_30m\_fixed}: de kolom
+\code{sprint\_30m\_s}, met alle tijden in seconden.
+
+\begin{enumerate}
+  \item De functie \code{fix\_sprint\_units} bestaat al (zie ``Getallen in
+        de verkeerde eenheid''). Je roept ze op met een kolom tussen de
+        haakjes, zoals in het voorbeeld met \code{sprint\_10m\_s}.
+  \item Geef deze keer de kolom \code{sprint\_30m\_s} van \code{tests\_raw}
+        mee.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} \code{sprint\_30m\_fixed.describe()} toont een
+maximum onder 20 en een minimum boven 3.
+
+\subsection*{Oefening 8 -- De dubbele atleet verwijderen}
+
+\textbf{Gevraagd:} \code{athletes\_deduped}: \code{athletes\_step1} zonder
+de dubbele atleet.
+
+\begin{enumerate}
+  \item Gebruik \code{.drop\_duplicates(...)} op \code{athletes\_step1}
+        (zie ``Dubbels'').
+  \item Geef met \code{subset=[...]} de twee kolommen mee die samen een
+        atleet herkennen: naam en geboortedatum.
+  \item Bewaar de eerste: \code{keep="first"}.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} het resultaat heeft precies één rij minder dan
+\code{athletes\_step1}.
+
+\subsection*{Uitdaging -- De 5 snelsten per positie}
+
+\textbf{Gevraagd:} \code{fastest\_per\_position}: per positie de 5
+atleten met de beste (laagste) sprinttijd over 30\,m.
+
+Het notebook geeft drie regels als hint. Zo lees je ze:
+
+\begin{enumerate}
+  \item \code{tests\_clean.groupby("athlete\_id")["sprint\_30m\_s"].min()}
+        neemt per atleet de laagste sprinttijd: zijn beste test.
+        \code{.reset\_index()} maakt van het resultaat weer een gewone
+        tabel met een kolom \code{athlete\_id}. \code{groupby} leer je
+        grondig in labo 4.
+  \item \code{athletes\_clean.merge(best\_sprint, on="athlete\_id")} voegt
+        de twee tabellen samen, zodat elke beste tijd naast de positie van
+        de atleet komt te staan.
+  \item \code{.sort\_values("sprint\_30m\_s")} zet de snelsten bovenaan
+        (de laagste tijd eerst), en \code{.groupby("position").head(5)}
+        houdt per positie de eerste 5 rijen.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} elke positie komt precies 5 keer voor, en
+binnen elke positie stijgen de tijden.
 
 % ---------------------------------------------------------------------------
 \section{Samenvatting}

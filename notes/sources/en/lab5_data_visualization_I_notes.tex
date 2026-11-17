@@ -446,6 +446,111 @@ A few tips:
 \end{itemize}
 
 % ---------------------------------------------------------------------------
+\section{The exercises step by step}
+
+For every exercise: what is asked, the steps, and how to check your own
+result. The answer itself is not given. Every chart follows the same
+pattern (see ``Making charts with \code{plotly.express}''): first choose
+the function, then the table, then the columns, then the finishing.
+
+\subsection*{Exercise 1 -- A histogram of weight}
+
+\textbf{Asked:} \code{weight\_histogram}: a histogram of the athletes'
+weight, with a title and an axis label.
+
+\begin{enumerate}
+  \item Choose the function: a distribution of one variable is a
+        histogram, \code{px.histogram}.
+  \item The table is \code{athletes}; the column on the x-axis is
+        \code{weight\_kg}. A histogram needs no \code{y}.
+  \item Add a title with \code{title="..."}.
+  \item Give the x-axis a readable name with a unit, via
+        \code{labels=\{"weight\_kg": "..."\}}.
+\end{enumerate}
+
+The example with the height (see ``Histogram: how is one variable
+distributed?'') follows exactly these steps.
+
+\textbf{Check yourself:} the notebook shows a histogram with your title,
+and below the x-axis your label instead of \code{weight\_kg}.
+
+\subsection*{Exercise 2 -- Yo-Yo level per position, with facets}
+
+\textbf{Asked:} \code{yoyo\_by\_age}: a box plot of the Yo-Yo level per
+position, coloured by position, with a separate panel per gender.
+
+\begin{enumerate}
+  \item Choose the function: comparing distributions per group is a box
+        plot, \code{px.box}.
+  \item The table is \code{combined}. Put the position on the x-axis and
+        \code{yoyo\_level} on the y-axis.
+  \item Colour by position with \code{color="position"} and use the fixed
+        colours with:\newline \code{color\_discrete\_map=POSITION\_COLORS}
+  \item Make a panel per gender with \code{facet\_col="gender"} (see ``More
+        dimensions'').
+\end{enumerate}
+
+\textbf{Check yourself:} you see panels headed \code{gender=F} and
+\code{gender=M}, with a box per position in each panel. An extra panel
+\code{gender=nan} is normal: a few rows have no gender.
+
+\subsection*{Exercise 3 -- Speed over time}
+
+\textbf{Asked:} \code{speed\_line}: a line chart of the speed during the
+training session, for one athlete, with a title and axis labels.
+
+\textbf{What you already have:} \code{one\_athlete\_hr}: the rows of one
+athlete, already sorted by time (see ``Heart rate as a time series'').
+
+\begin{enumerate}
+  \item Choose the function: an evolution over time is a line chart,
+        \code{px.line}.
+  \item The table is \code{one\_athlete\_hr}; \code{timestamp} goes on the
+        x-axis and \code{speed\_kmh} on the y-axis.
+  \item Add a title and readable axis labels with units, such as ``Speed
+        (km/h)'' and ``Time''.
+\end{enumerate}
+
+The heart-rate chart above uses the same table and is a good example; you
+don't need zone bands here.
+
+\textbf{Check yourself:} one line going up and down over about 40 minutes,
+with your title and labels.
+
+\subsection*{Assignment -- The mini-dashboard}
+
+\textbf{Asked:} \code{dashboard\_charts}: a list of exactly three plotly
+figures. At least one chart must respond to the selector
+\code{dashboard\_selector}.
+
+\textbf{What you already have:} \code{dashboard\_selector}, a dropdown with
+the positions, in a cell of its own. \code{dashboard\_selector.value} is
+the chosen position, e.g.\ \code{"Forward"}.
+
+\begin{enumerate}
+  \item \textbf{Think of three questions} a coach would ask about the
+        squad, and choose a chart type per question (see ``Principles'').
+  \item \textbf{Filter the data for the chosen position}: make a mask that
+        compares the \code{position} column of \code{combined} with
+        \code{dashboard\_selector.value}, and filter with \code{.loc[...]}.
+        Use that filtered table in at least one chart.
+  \item \textbf{Make the three figures}, each in a variable of its own,
+        with a title, axis labels and \code{POSITION\_COLORS} where needed.
+  \item \textbf{Put them in a list}: you write a list between square
+        brackets, with commas between the elements. That list becomes
+        \code{dashboard\_charts}.
+  \item To also see the charts, put this as the last line of the cell:\newline
+        \code{mo.vstack(dashboard\_charts)}\newline It puts them below each other.
+\end{enumerate}
+
+\textbf{Check yourself:} choose another position in the dropdown. The
+chart that responds to the selection should change right away.
+
+\textbf{Typical mistake:} creating the dropdown again in the same cell.
+Use the existing \code{dashboard\_selector}; you only read its
+\code{.value}.
+
+% ---------------------------------------------------------------------------
 \section{Summary}
 
 \begin{center}

@@ -494,6 +494,142 @@ A001 krijgt 10.0 en A002 krijgt 12.5, ook al stonden ze in
 \code{extra} in een andere volgorde dan in \code{report}.
 
 % ---------------------------------------------------------------------------
+\section{De oefeningen stap voor stap}
+
+Per oefening: wat er gevraagd wordt, de stappen, en hoe je zelf
+controleert of het klopt. Het antwoord zelf staat er niet. Werk in kleine
+stappen en toon tussenresultaten om te zien of ze kloppen.
+
+\subsection*{Oefening 0 -- Herhaling: de kapotte cel herstellen}
+
+\textbf{Gevraagd:} de cel met \code{mini\_clean} werkend krijgen. Er zitten
+twee fouten in: een tikfout in een kolomnaam en een ontbrekende omzetting
+van tekst naar getal.
+
+\begin{enumerate}
+  \item Voer de cel uit en lees de \textbf{laatste regel} van de
+        foutmelding (zie ``Herhaling: foutmeldingen lezen''). Een
+        \code{KeyError} noemt de kolomnaam die niet bestaat. Vergelijk die
+        met de kolommen van \code{mini\_messy} en verbeter de tikfout.
+  \item Voer de cel opnieuw uit. Nu krijg je een \code{ValueError}: het
+        gewicht \code{"57,5"} heeft een komma. Zet die eerst om naar een
+        punt, zoals in labo 3, en pas daarna \code{.astype(float)} toe.
+\end{enumerate}
+
+\code{.str.upper()} zet tekst in hoofdletters; het is de tegenhanger van
+\code{.str.lower()} uit labo 3.
+
+\textbf{Controleer jezelf:} \code{mini\_clean} heeft 5 rijen, de posities
+zijn \code{"FORWARD"} en \code{"MIDFIELDER"}, en \code{weight\_kg} is een
+getal.
+
+\subsection*{Oefening 1 -- Groeperen per geslacht en leeftijdscategorie}
+
+\textbf{Gevraagd:} \code{gender\_age\_summary}: per combinatie van geslacht
+en leeftijdscategorie de gemiddelde lengte en het gemiddelde gewicht.
+
+\textbf{Wat je al hebt:} \code{athletes\_with\_age\_group}, met de kolom
+\code{age\_group}, en het voorbeeld dat per positie en leeftijdscategorie
+groepeert (zie ``Groeperen op meerdere kolommen en \code{agg}'').
+
+\begin{enumerate}
+  \item Groepeer op \emph{twee} kolommen: geef een lijst mee aan
+        \code{groupby}, met \code{gender} en \code{age\_group}. Voeg
+        \code{observed=True} toe, zodat lege combinaties wegvallen.
+  \item Gebruik \code{.agg(...)} met twee benoemde statistieken. Noem ze
+        \code{mean\_height\_cm} en \code{mean\_weight\_kg}: de controle
+        zoekt precies die namen. Elke statistiek schrijf je als
+        \code{naam=("kolom", "mean")}.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} je resultaat heeft 8 rijen (groepen) en twee
+kolommen met die namen.
+
+\subsection*{Oefening 2 -- Wat heeft ontdubbelen gekost?}
+
+\textbf{Gevraagd:} \code{rows\_lost\_to\_dedup}: het aantal rijen in
+\code{merged\_inner} waarvan de \code{athlete\_id} \emph{niet} meer in
+\code{combined} staat.
+
+\begin{enumerate}
+  \item Maak een verzameling van alle \code{athlete\_id}'s in
+        \code{merged\_inner} met \code{set(...)}, en net zo een voor
+        \code{combined}.
+  \item Trek ze van elkaar af (zie ``Verzamelingen en \code{isin}''). Je
+        houdt de ID's over die door het ontdubbelen verdwenen.
+  \item Maak met \code{.isin(...)} een masker op de kolom
+        \code{athlete\_id} van \code{merged\_inner}: \code{True} voor elke
+        rij met zo'n verdwenen ID.
+  \item Tel de \code{True}-waarden met \code{.sum()}.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} het resultaat is een klein getal: het aantal
+testen van de verwijderde kopie van de dubbele atleet (3).
+
+\subsection*{Oefening 3 -- Vooruitgang in spronghoogte}
+
+\textbf{Gevraagd:} \code{cmj\_wide} (één rij per atleet, een kolom per
+testmoment, met de spronghoogte) en \code{cmj\_progress\_1\_to\_2}
+(testmoment 2 min testmoment 1).
+
+\begin{enumerate}
+  \item Maak \code{cmj\_wide} met \code{.pivot\_table(...)} op
+        \code{combined}: \code{index} is de atleet, \code{columns} het
+        testmoment, \code{values} de spronghoogte
+        (\code{cmj\_height\_cm}). Het voorbeeld met de sprinttijd doet
+        hetzelfde (zie ``Twee vormen voor dezelfde data'').
+  \item Trek kolom 1 af van kolom 2. De kolomnamen zijn getallen, dus
+        zonder aanhalingstekens.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} \code{cmj\_wide} heeft de kolommen 1, 2 en 3.
+In \code{cmj\_progress\_1\_to\_2} betekent een positief getal dat de
+atleet hoger sprong; atleten zonder tweede test krijgen \code{NaN}.
+
+\subsection*{Oefening 4 -- Minuten in zone 4--5 per atleet}
+
+\textbf{Gevraagd:} \code{zone\_4\_5\_minutes}: per atleet het aantal
+minuten in zone 4 of zone 5 samen.
+
+\begin{enumerate}
+  \item Maak een masker met \code{.isin([...])} op de kolom
+        \code{hr\_zone}, met de twee zones \code{"Zone 4"} en
+        \code{"Zone 5"}.
+  \item Filter de rijen van \code{hr\_zoned} met dat masker.
+  \item Groepeer op \code{athlete\_id} en tel de rijen met \code{.size()}.
+  \item Deel door 60: elke rij is één seconde (zie ``Tijd per zone'').
+\end{enumerate}
+
+\textbf{Controleer jezelf:} je krijgt een Series met 5 waarden (één per
+atleet), elk ruim 20 minuten, met \code{athlete\_id} als index.
+
+\subsection*{Minicase -- Een trainingsrapport}
+
+\textbf{Gevraagd:} \code{training\_report}: één rij per atleet, met de
+kolommen \code{zone\_4\_5\_minutes}, \code{max\_speed\_kmh} en
+\code{distance\_km}.
+
+Het notebook geeft een hint in vier regels. Zo lees je ze:
+
+\begin{enumerate}
+  \item \code{in\_zone\_4\_5 = hr\_zoned["hr\_zone"].isin([...])} maakt een
+        masker: \code{True} voor elke seconde in zone 4 of 5.
+  \item \code{hr\_zoned.assign(distance\_km=hr\_zoned["speed\_kmh"] / 3600)}
+        voegt per seconde de afgelegde afstand toe (zie ``De minicase'').
+  \item \code{.groupby("athlete\_id").agg(...)} maakt één rij per atleet,
+        met de hoogste snelheid (\code{"max"}) en de totale afstand
+        (\code{"sum"}).
+  \item \code{in\_zone\_4\_5.groupby(hr\_zoned["athlete\_id"]).sum() / 60}
+        telt per atleet de \code{True}-waarden van het masker, dus het
+        aantal seconden in zone 4--5, en maakt er minuten van. Bij de
+        toewijzing komt elke waarde naast de juiste atleet te staan
+        (uitlijnen op de index).
+\end{enumerate}
+
+\textbf{Controleer jezelf:} 5 rijen, de drie kolommen, een topsnelheid
+rond 14\,km/u en een afstand van ruim 5\,km per atleet.
+
+% ---------------------------------------------------------------------------
 \section{Samenvatting}
 
 \begin{center}

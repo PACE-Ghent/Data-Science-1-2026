@@ -446,6 +446,114 @@ Een paar tips:
 \end{itemize}
 
 % ---------------------------------------------------------------------------
+\section{De oefeningen stap voor stap}
+
+Per oefening: wat er gevraagd wordt, de stappen, en hoe je zelf
+controleert of het klopt. Het antwoord zelf staat er niet. Elke grafiek
+volgt hetzelfde patroon (zie ``Grafieken maken met
+\code{plotly.express}''): eerst de functie kiezen, dan de tabel, dan de
+kolommen, dan de afwerking.
+
+\subsection*{Oefening 1 -- Een histogram van het gewicht}
+
+\textbf{Gevraagd:} \code{weight\_histogram}: een histogram van het gewicht
+van de atleten, met een titel en een aslabel.
+
+\begin{enumerate}
+  \item Kies de functie: een verdeling van één variabele is een
+        histogram, \code{px.histogram}.
+  \item De tabel is \code{athletes}; de kolom op de x-as is
+        \code{weight\_kg}. Een histogram heeft geen \code{y} nodig.
+  \item Geef een titel mee met \code{title="..."}.
+  \item Geef de x-as een leesbare naam met eenheid, via
+        \code{labels=\{"weight\_kg": "..."\}}.
+\end{enumerate}
+
+Het voorbeeld met de lengte (zie ``Histogram: hoe is één variabele
+verdeeld?'') volgt precies deze stappen.
+
+\textbf{Controleer jezelf:} het notebook toont een histogram met jouw
+titel, en onder de x-as staat jouw label in plaats van
+\code{weight\_kg}.
+
+\subsection*{Oefening 2 -- Yo-Yo-niveau per positie, met facetten}
+
+\textbf{Gevraagd:} \code{yoyo\_by\_age}: een boxplot van het Yo-Yo-niveau
+per positie, gekleurd per positie, met een apart paneel per geslacht.
+
+\begin{enumerate}
+  \item Kies de functie: verdelingen vergelijken per groep is een
+        boxplot, \code{px.box}.
+  \item De tabel is \code{combined}. Zet de positie op de x-as en
+        \code{yoyo\_level} op de y-as.
+  \item Kleur per positie met \code{color="position"} en gebruik de vaste
+        kleuren met:\newline \code{color\_discrete\_map=POSITION\_COLORS}
+  \item Maak een paneel per geslacht met \code{facet\_col="gender"} (zie
+        ``Meer dimensies'').
+\end{enumerate}
+
+\textbf{Controleer jezelf:} je ziet panelen met bovenaan
+\code{gender=F} en \code{gender=M}, en in elk paneel een doos per positie.
+Een extra paneel \code{gender=nan} is normaal: bij een paar rijen
+ontbreekt het geslacht.
+
+\subsection*{Oefening 3 -- Snelheid doorheen de tijd}
+
+\textbf{Gevraagd:} \code{speed\_line}: een lijngrafiek van de snelheid
+tijdens de training, voor één atleet, met een titel en aslabels.
+
+\textbf{Wat je al hebt:} \code{one\_athlete\_hr}: de rijen van één atleet,
+al gesorteerd op tijd (zie ``De hartslag als tijdreeks'').
+
+\begin{enumerate}
+  \item Kies de functie: een evolutie in de tijd is een lijngrafiek,
+        \code{px.line}.
+  \item De tabel is \code{one\_athlete\_hr}; \code{timestamp} komt op de
+        x-as en \code{speed\_kmh} op de y-as.
+  \item Voeg een titel toe en leesbare aslabels met eenheden, zoals
+        ``Snelheid (km/u)'' en ``Tijd''.
+\end{enumerate}
+
+De hartslaggrafiek erboven gebruikt dezelfde tabel en is een goed
+voorbeeld; je hebt hier geen zonebanden nodig.
+
+\textbf{Controleer jezelf:} één lijn die op en neer gaat over ongeveer
+40 minuten, met jouw titel en labels.
+
+\subsection*{Opdracht -- Het minidashboard}
+
+\textbf{Gevraagd:} \code{dashboard\_charts}: een lijst met precies drie
+plotly-figuren. Minstens één grafiek moet reageren op het keuzemenu
+\code{dashboard\_selector}.
+
+\textbf{Wat je al hebt:} \code{dashboard\_selector}, een keuzemenu met de
+posities, in een eigen cel. \code{dashboard\_selector.value} is de positie
+die gekozen is, bv.\ \code{"Forward"}.
+
+\begin{enumerate}
+  \item \textbf{Bedenk drie vragen} die een coach over de ploeg zou
+        stellen, en kies per vraag een grafiektype (zie ``Principes'').
+  \item \textbf{Filter de data voor de gekozen positie}: maak een masker
+        dat de kolom \code{position} van \code{combined} vergelijkt met
+        \code{dashboard\_selector.value}, en filter met \code{.loc[...]}.
+        Gebruik die gefilterde tabel in minstens één grafiek.
+  \item \textbf{Maak de drie figuren}, elk in een eigen variabele, met een
+        titel, aslabels en waar nodig \code{POSITION\_COLORS}.
+  \item \textbf{Zet ze in een lijst}: een lijst schrijf je tussen
+        vierkante haakjes, met komma's tussen de elementen. Die lijst
+        wordt \code{dashboard\_charts}.
+  \item Wil je de grafieken ook zien, zet dan als laatste regel van de cel:\newline
+        \code{mo.vstack(dashboard\_charts)}\newline Dat zet ze onder elkaar.
+\end{enumerate}
+
+\textbf{Controleer jezelf:} kies een andere positie in het keuzemenu. De
+grafiek die op de selectie reageert, moet meteen veranderen.
+
+\textbf{Typische fout:} het keuzemenu in dezelfde cel opnieuw maken.
+Gebruik het bestaande \code{dashboard\_selector}; je leest enkel zijn
+\code{.value}.
+
+% ---------------------------------------------------------------------------
 \section{Samenvatting}
 
 \begin{center}
