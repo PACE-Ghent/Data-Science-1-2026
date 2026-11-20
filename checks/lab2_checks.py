@@ -27,25 +27,6 @@ def check_exercise(check_fn, success_message):
     return mo.callout(mo.md(f"**Juist!** {success_message}"), kind="success")
 
 
-def flying_20m(flying_20m_kmh):
-    def _check():
-        result = flying_20m_kmh(1.92, 5.21)
-        assert result is not ..., NOT_FILLED_IN
-        assert result is not None, RETURNS_NONE
-        for args in [(1.92, 5.21), (1.85, 4.98), (2.05, 5.71)]:
-            result = flying_20m_kmh(*args)
-            exact = 20 / (args[1] - args[0]) * 3.6
-            assert abs(result - exact) <= 0.05 + 1e-9 and result == round(result, 1), (
-                WRONG_RESULT.format(call=f"flying_20m_kmh{args}", value=result)
-                + " Controleer de formule, de eenheden en de afronding op 1 decimaal."
-            )
-
-    return check_exercise(
-        _check,
-        "Stel je nu voor dat je dit moet doen voor 43 atleten, met elk 3 testmomenten... "
-        "Daarvoor dienen lussen.",
-    )
-
 
 def weeks_to_target(weeks_to_target):
     def _check():
@@ -150,26 +131,6 @@ def clean_position(clean_position):
     return check_exercise(_check, "Elk rommelig label wordt een net label.")
 
 
-def count_positions(count_positions):
-    def _check():
-        raw = [
-            "defender ", "midfielder", "Defender", "MID", "goalkeeper", "Forward",
-            "GK", "FWD", "forward", "Midfielder", "DEF", "forward ", "FWD", "midfielder",
-        ]
-        result = count_positions(raw)
-        assert result is not ..., NOT_FILLED_IN
-        assert isinstance(result, dict), f"`count_positions` moet een dictionary teruggeven, niet een {type(result).__name__}."
-        expected = {"Defender": 3, "Midfielder": 4, "Goalkeeper": 2, "Forward": 5}
-        assert result == expected, (
-            f"Voor de 14 voorbeeldlabels gaf je functie {result}. Zijn de sleutels de nette positienamen?"
-        )
-        assert count_positions(["coach", "GK"]) == {"Unknown": 1, "Goalkeeper": 1}, (
-            WRONG_RESULT.format(call="count_positions(['coach', 'GK'])", value=count_positions(["coach", "GK"]))
-        )
-        assert count_positions([]) == {}, WRONG_RESULT.format(call="count_positions([])", value=count_positions([]))
-
-    return check_exercise(_check, "14 rommelige labels, 4 nette posities.")
-
 
 def fastest(fastest):
     def _check():
@@ -230,29 +191,6 @@ def fix_index_error(last_sprint_s):
     )
 
 
-def parse_weight(parse_weight):
-    def _check():
-        assert parse_weight("65,5") is not ..., NOT_FILLED_IN
-        cases = [("65,5", 65.5), (" 59,6", 59.6), ("70", 70.0), ("61.1 ", 61.1), ("onbekend", None), ("", None)]
-        for text, expected in cases:
-            result = parse_weight(text)
-            call = f"parse_weight({text!r})"
-            if expected is None:
-                assert result is None, WRONG_RESULT.format(call=call, value=result) + " Verwacht: None."
-            else:
-                assert isinstance(result, float), f"`{call}` geeft het verkeerde datatype terug: een {type(result).__name__}."
-                assert result == expected, WRONG_RESULT.format(call=call, value=result)
-
-    return check_exercise(_check, "Komma's, spaties en onzin worden allemaal opgevangen - zonder crash.")
-
-
-def sprint_input(valid_sprint_s):
-    def _check():
-        assert valid_sprint_s is not ..., NOT_FILLED_IN
-        assert isinstance(valid_sprint_s, float), f"`valid_sprint_s` is een {type(valid_sprint_s).__name__}, geen float."
-        assert valid_sprint_s > 0, f"{valid_sprint_s} is geen geldige tijd: een tijd moet groter zijn dan 0."
-
-    return check_exercise(_check, f"{valid_sprint_s} s genoteerd. Probeer ook eens `abc`, `5,3` of `-2` te typen.")
 
 
 def lane(cones_needed, lane_length):
@@ -278,7 +216,7 @@ def lane(cones_needed, lane_length):
 
 def sprint_stats(sprint_stats):
     def _check():
-        import statistics
+        import statistics as stat
 
         times = [5.34, 5.62, 5.29, 5.71, 5.48]
         result = sprint_stats(times)
@@ -287,38 +225,7 @@ def sprint_stats(sprint_stats):
         assert isinstance(result, tuple) and len(result) == 3, (
             f"`sprint_stats` moet een tuple van 3 getallen teruggeven, je kreeg {result!r}."
         )
-        expected = tuple(round(f(times), 2) for f in (statistics.mean, statistics.median, statistics.stdev))
+        expected = tuple(round(f(times), 2) for f in (stat.mean, stat.median, stat.stdev))
         assert result == expected, WRONG_RESULT.format(call=f"sprint_stats({times})", value=result)
 
     return check_exercise(_check, "Gemiddelde, mediaan en standaardafwijking - zonder één formule zelf te schrijven.")
-
-
-def squad_summary(athlete_rows, average_height_by_position, squad_counts):
-    def _check():
-        assert squad_counts is not ... and average_height_by_position is not ..., NOT_FILLED_IN
-        position_map = {
-            "forward": "Forward", "fwd": "Forward", "midfielder": "Midfielder", "mid": "Midfielder",
-            "defender": "Defender", "def": "Defender", "goalkeeper": "Goalkeeper", "gk": "Goalkeeper",
-        }
-        expected_counts, heights = {}, {}
-        for row in athlete_rows:
-            position = position_map[row["position"].strip().lower()]
-            expected_counts[position] = expected_counts.get(position, 0) + 1
-            if row["height_cm"]:
-                heights.setdefault(position, []).append(float(row["height_cm"]))
-        expected_heights = {p: round(sum(h) / len(h), 1) for p, h in heights.items()}
-
-        assert squad_counts == expected_counts, (
-            f"`squad_counts` is nog niet juist (je kreeg {squad_counts}). "
-            "Zijn de sleutels de nette positienamen?"
-        )
-        assert average_height_by_position == expected_heights, (
-            f"`average_height_by_position` is nog niet juist (je kreeg {average_height_by_position}). "
-            "Denk aan ontbrekende waarden en de afronding."
-        )
-
-    return check_exercise(
-        _check,
-        "Je hebt net een echte export opgekuist en samengevat met niets dan gewone Python. "
-        "Volgende week doet pandas dit allemaal in een handvol regels.",
-    )

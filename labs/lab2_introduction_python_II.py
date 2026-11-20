@@ -23,13 +23,12 @@ def _(mo):
     plakken.
 
     Vandaag leer je je code **herhalen** met lussen, **veel waarden
-    tegelijk** bewaren in lijsten en dictionaries, **fouten opvangen** in
-    plaats van te crashen, en code van anderen gebruiken via **modules**.
+    tegelijk** bewaren in lijsten en dictionaries, **foutmeldingen lezen**
+    en de fout herstellen, en code van anderen gebruiken via **modules**.
 
     **Na dit labo kun je:** code herhalen met `while`- en `for`-lussen,
     data bewaren en verwerken in lijsten en dictionaries, een foutmelding
-    lezen en de fout herstellen, fouten opvangen met `try` / `except`,
-    blijven vragen tot de invoer geldig is, en modules zoals `math`,
+    lezen en de fout herstellen, blijven vragen tot de invoer geldig is, en modules zoals `math`,
     `random` en `statistics` importeren en gebruiken.
     """)
     return
@@ -58,10 +57,11 @@ def _(mo):
 
     # De antwoordcontroles staan in een apart bestand (checks/ in de
     # cursusrepository), zodat dit notebook de antwoorden niet verklapt.
-    # Het controlebestand staat in de map checks/ één niveau hoger, zoals
-    # in de cursusmap. Ontbreekt het daar (bv. omdat je enkel dit notebook
-    # gedownload hebt), dan wordt het er één keer naartoe gedownload. In de
-    # browser (marimo.app) wordt het rechtstreeks van GitHub gelezen.
+    # Open je het notebook vanuit de cursusrepository, dan wordt de map
+    # checks/ één niveau hoger gebruikt. Anders (bv. omdat je enkel dit
+    # notebook gedownload hebt) wordt het bestand één keer gedownload naar
+    # een nieuwe map checks/ in de huidige werkmap. In de browser
+    # (marimo.app) wordt het rechtstreeks van GitHub gelezen.
     _CHECKS_FILE = "lab2_checks.py"
     _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
     if _sys.platform == "emscripten":
@@ -69,12 +69,16 @@ def _(mo):
 
         _checks_source = _urlopen(_CHECKS_URL).read().decode("utf-8")
     else:
-        from urllib.request import urlretrieve
+        from urllib.request import urlretrieve as _urlretrieve
+
+        from pathlib import Path as _Path
 
         _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
         if not _checks_path.is_file():
-            _checks_path.parent.mkdir(exist_ok=True)
-            urlretrieve(_CHECKS_URL, _checks_path)
+            _checks_path = _Path.cwd() / "checks" / _CHECKS_FILE
+            if not _checks_path.is_file():
+                _checks_path.parent.mkdir(exist_ok=True)
+                _urlretrieve(_CHECKS_URL, _checks_path)
         _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
@@ -84,7 +88,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Herhalen met `while`
+    ## 1. Herhalen met `while`
 
     Een `while`-lus herhaalt haar (ingesprongen) body **zolang een
     voorwaarde `True` is**:
@@ -150,7 +154,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 2 - hoeveel weken tot het doel?
+    ### Oefening 1 - hoeveel weken tot het doel?
     """)
     return
 
@@ -186,7 +190,7 @@ def _(checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 3 - een geldig rugnummer
+    ### Oefening 2 - een geldig rugnummer
     """)
     return
 
@@ -240,7 +244,7 @@ def _(checks, jersey_number):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Lijsten en `for`-lussen
+    ## 2. Lijsten en `for`-lussen
 
     ### `list`
 
@@ -267,12 +271,42 @@ def _(mo):
 def _():
     season_sprints_s = [5.41, 5.34, 5.29, 5.36]
     print(season_sprints_s[0], season_sprints_s[-1])
-    print(season_sprints_s[1:3])
-    print(len(season_sprints_s), min(season_sprints_s), sum(season_sprints_s))
-    print(sorted(season_sprints_s))
-    print(5.29 in season_sprints_s)
+    return (season_sprints_s,)
 
-    season_sprints_s.append(5.22)  # dezelfde cel - geen probleem
+
+@app.cell
+def _(season_sprints_s):
+    print(season_sprints_s[1:3])
+    return
+
+
+@app.cell
+def _(season_sprints_s):
+    print(len(season_sprints_s), min(season_sprints_s), sum(season_sprints_s))
+    return
+
+
+@app.cell
+def _(season_sprints_s):
+    print(sorted(season_sprints_s))
+    return
+
+
+@app.cell
+def _(season_sprints_s):
+    print(season_sprints_s[0], season_sprints_s[-1])
+    return
+
+
+@app.cell
+def _(season_sprints_s):
+    print(5.29 in season_sprints_s)
+    return
+
+
+@app.cell
+def _(season_sprints_s):
+    season_sprints_s.append(5.22)
     print(season_sprints_s)
     return
 
@@ -322,16 +356,28 @@ def _():
     for _time in loop_sprints_s:
         loop_total_s += _time
     print("Gemiddelde:", round(loop_total_s / len(loop_sprints_s), 2))
+    return (loop_sprints_s,)
 
+
+@app.cell
+def _(loop_sprints_s):
     quick_times = []
     for _time in loop_sprints_s:
         if _time < 5.35:
             quick_times.append(_time)
     print("Onder 5.35 s:", quick_times)
+    return
 
+
+@app.cell
+def _(loop_sprints_s):
     for _number, _time in enumerate(loop_sprints_s, start=1):
         print(f"Test {_number}: {_time} s")
+    return
 
+
+@app.cell
+def _():
     for _lap in range(1, 4):
         print("Ronde", _lap)
     return
@@ -383,6 +429,15 @@ def _():
     return
 
 
+@app.cell
+def _():
+    #tuple uitpakken
+    uitslag_tuple = ("Yana", 5.41)
+    name, time = uitslag_tuple
+    print(name, "liep", time, "s")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -414,7 +469,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 4 - overloop de testdag
+    ### Oefening 3 - overloop de testdag
     """)
     return
 
@@ -458,7 +513,7 @@ def _(checks, count_under, to_kmh):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 5 - de ploeglijst
+    ### Oefening 4 - de ploeglijst
     """)
     return
 
@@ -512,7 +567,7 @@ def _(checks, roster_names):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. Dictionaries
+    ## 3. Dictionaries
 
     Een **dictionary** koppelt **sleutels** (keys) aan **waarden**
     (values). In plaats van een waarde op te zoeken via haar positie, zoek
@@ -600,7 +655,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 6 - een opzoektabel voor posities
+    ### Oefening 5 - een opzoektabel voor posities
     """)
     return
 
@@ -647,39 +702,6 @@ def _(checks, clean_position):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md("""
-    ### Oefening 7 - tel de atleten per positie
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Schrijf `count_positions(labels)`: overloop een lijst van rommelige
-    labels, kuis elk label op met je `clean_position`, en geef een
-    dictionary terug die telt hoe vaak elke nette positie voorkomt, bv.
-    `{"Defender": 3, "Midfielder": 4, ...}`. Test ze in de cel met
-    `raw_positions` van hierboven.
-    """)
-    return
-
-
-@app.function
-def count_positions(labels):
-    """Aantal keer dat elke nette positie voorkomt in labels."""
-    # TODO: begin met een lege dict en tel de nette labels
-    return ...
-
-
-@app.cell(hide_code=True)
-def _(checks):
-    checks.count_positions(count_positions)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
     mo.md(r"""
     ### Lijsten van dictionaries
 
@@ -712,7 +734,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 8 - wie was het snelst?
+    ### Oefening 6 - wie was het snelst?
     """)
     return
 
@@ -748,7 +770,7 @@ def _(checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Fouten
+    ## 4. Fouten
 
     Een foutmelding betekent niet dat je iets vreselijks gedaan hebt - het
     is Python dat je vrij precies vertelt wat er misliep. Professionele
@@ -847,7 +869,7 @@ def _(checks, last_sprint_s):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Modules: code van anderen gebruiken
+    ## 5. Modules: code van anderen gebruiken
 
     Python heeft veel meer functies dan `print`, `len` en `round`. Ze
     zitten verdeeld over **modules**, die je eerst moet **importeren**.
@@ -858,7 +880,7 @@ def _(mo):
     ```python
     import math                 # gebruik als math.sqrt(16)
     from math import sqrt       # gebruik als sqrt(16)
-    import statistics as stats  # gebruik als stats.mean(...) - handig voor lange namen
+    import statistics as stat   # gebruik als stat.mean(...) - handig voor lange namen
     ```
 
     Imports zet je **bovenaan** een notebook of script. Drie nuttige
@@ -918,7 +940,7 @@ def _(stat):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 11 - hoe lang is baan 8?
+    ### Oefening 7 - hoe lang is baan 8?
     """)
     return
 
@@ -967,7 +989,7 @@ def _(checks, cones_needed, lane_length):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md("""
-    ### Oefening 12 - statistieken van een testdag
+    ### Oefening 8 - statistieken van een testdag
     """)
     return
 
@@ -977,7 +999,8 @@ def _(mo):
     mo.md(r"""
     Schrijf `sprint_stats(times)` die drie getallen teruggeeft: het
     **gemiddelde**, de **mediaan** en de **standaardafwijking** van de
-    tijden, elk afgerond op 2 decimalen. Gebruik de module `statistics`.
+    tijden, elk afgerond op 2 decimalen. Gebruik de module `statistics`,
+    die hierboven al geïmporteerd is als `stat`.
 
     Meerdere waarden teruggeven doe je door ze met komma's te scheiden:
     `return a, b, c`. Python maakt daar een **tuple** van - een soort lijst
@@ -987,15 +1010,18 @@ def _(mo):
     return
 
 
-@app.function
-def sprint_stats(times):
-    """(gemiddelde, mediaan, standaardafwijking) van times, afgerond op 2 decimalen."""
-    # TODO: gebruik statistics.mean, statistics.median en statistics.stdev
-    return ...
+@app.cell
+def _(stat):
+    def sprint_stats(times):
+        """(gemiddelde, mediaan, standaardafwijking) van times, afgerond op 2 decimalen."""
+        # TODO: gebruik stat.mean, stat.median en stat.stdev
+        return ...
+
+    return (sprint_stats,)
 
 
 @app.cell(hide_code=True)
-def _(checks):
+def _(checks, sprint_stats):
     checks.sprint_stats(sprint_stats)
     return
 

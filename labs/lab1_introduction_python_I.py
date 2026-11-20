@@ -134,10 +134,11 @@ def _(mo):
 
     # De antwoordcontroles staan in een apart bestand (checks/ in de
     # cursusrepository), zodat dit notebook de antwoorden niet verklapt.
-    # Het controlebestand staat in de map checks/ één niveau hoger, zoals
-    # in de cursusmap. Ontbreekt het daar (bv. omdat je enkel dit notebook
-    # gedownload hebt), dan wordt het er één keer naartoe gedownload. In de
-    # browser (marimo.app) wordt het rechtstreeks van GitHub gelezen.
+    # Open je het notebook vanuit de cursusrepository, dan wordt de map
+    # checks/ één niveau hoger gebruikt. Anders (bv. omdat je enkel dit
+    # notebook gedownload hebt) wordt het bestand één keer gedownload naar
+    # een nieuwe map checks/ in de huidige werkmap. In de browser
+    # (marimo.app) wordt het rechtstreeks van GitHub gelezen.
     _CHECKS_FILE = "lab1_checks.py"
     _CHECKS_URL = f"https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/checks/{_CHECKS_FILE}"
     if _sys.platform == "emscripten":
@@ -147,10 +148,14 @@ def _(mo):
     else:
         from urllib.request import urlretrieve as _urlretrieve
 
-        _checks_path = (mo.notebook_dir() / "checks" / _CHECKS_FILE).resolve()
+        from pathlib import Path as _Path
+
+        _checks_path = (mo.notebook_dir() / ".." / "checks" / _CHECKS_FILE).resolve()
         if not _checks_path.is_file():
-            _checks_path.parent.mkdir(exist_ok=True)
-            _urlretrieve(_CHECKS_URL, _checks_path)
+            _checks_path = _Path.cwd() / "checks" / _CHECKS_FILE
+            if not _checks_path.is_file():
+                _checks_path.parent.mkdir(exist_ok=True)
+                _urlretrieve(_CHECKS_URL, _checks_path)
         _checks_source = _checks_path.read_text()
     checks = _types.ModuleType("checks")
     exec(_checks_source, checks.__dict__)
