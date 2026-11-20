@@ -25,8 +25,6 @@ def _(mo):
     Vandaag leer je je code **herhalen** met lussen, **veel waarden
     tegelijk** bewaren in lijsten en dictionaries, **fouten opvangen** in
     plaats van te crashen, en code van anderen gebruiken via **modules**.
-    We sluiten af door het echte bestand `athletes.csv` van de club in te
-    lezen en samen te vatten met gewone Python.
 
     **Na dit labo kun je:** code herhalen met `while`- en `for`-lussen,
     data bewaren en verwerken in lijsten en dictionaries, een foutmelding
@@ -85,87 +83,8 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    import sys
-
-    # De CSV-bestanden staan in de map data/ één niveau hoger, zoals in de
-    # cursusmap. Bestanden die daar ontbreken (bv. omdat je enkel dit
-    # notebook gedownload hebt), worden er één keer naartoe gedownload.
-    # In de browser (marimo.app) worden ze rechtstreeks van GitHub gelezen.
-    _DATA_URL = "https://raw.githubusercontent.com/PACE-Ghent/Data-Science-1-2026/main/data"
-    _DATA_FILES = ["athletes.csv"]
-    if sys.platform == "emscripten":
-        DATA_DIR = _DATA_URL
-    else:
-        from urllib.request import urlretrieve as _download
-
-        _data_dir = (mo.notebook_dir() / ".." / "data").resolve()
-        _data_dir.mkdir(exist_ok=True)
-        for _name in _DATA_FILES:
-            if not (_data_dir / _name).exists():
-                _download(f"{_DATA_URL}/{_name}", _data_dir / _name)
-        DATA_DIR = str(_data_dir)
-    return (DATA_DIR,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
     mo.md(r"""
-    ## 1. Opwarming: herhaling van vorige week (13:15-13:30)
-
-    Tijdens een sprinttest over 30 m registreren de tijdspoortjes ook de
-    tussentijd op 10 m. Het stuk tussen 10 m en 30 m (een "vliegende
-    20 m") zegt iets over de **maximale** snelheid van een atleet, omdat
-    de acceleratiefase dan grotendeels voorbij is.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    ### Oefening 1 - vliegende 20 m
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Schrijf `flying_20m_kmh(split_10m_s, time_30m_s)` die de gemiddelde
-    snelheid over de 20 m tussen de twee tijdspoortjes teruggeeft, in
-    km/u en afgerond op 1 decimaal. Voor een tussentijd van 1.92 s en een
-    eindtijd van 5.21 s is dat 21.9 km/u.
-
-    Probeer je functie daarna uit in de cel eronder: vraag beide tijden
-    met `input()` en druk de snelheid af.
-    """)
-    return
-
-
-@app.function
-def flying_20m_kmh(split_10m_s, time_30m_s):
-    """Gemiddelde snelheid in km/u tussen 10 m en 30 m."""
-    # TODO: tijd over de laatste 20 m, daarna de snelheid in km/u
-    return ...
-
-
-@app.cell(hide_code=True)
-def _(checks):
-    checks.flying_20m(flying_20m_kmh)
-    return
-
-
-@app.cell
-def _():
-    # Probeer je functie uit (wordt niet gecontroleerd): vraag met input()
-    # de tussentijd op 10 m en de eindtijd op 30 m, en druk de snelheid af.
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 2. Herhalen met `while` (13:30-14:00)
+    ## 2. Herhalen met `while`
 
     Een `while`-lus herhaalt haar (ingesprongen) body **zolang een
     voorwaarde `True` is**:
@@ -321,7 +240,9 @@ def _(checks, jersey_number):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Lijsten en `for`-lussen (14:00-14:40)
+    ## 3. Lijsten en `for`-lussen
+
+    ### `list`
 
     Een **lijst** bewaart veel waarden, in een vaste volgorde, onder één
     naam: `times = [5.41, 5.34, 5.29]`.
@@ -413,6 +334,80 @@ def _():
 
     for _lap in range(1, 4):
         print("Ronde", _lap)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### `tuple`
+
+    Een **tuple** bewaart ook meerdere waarden, in een vaste volgorde, onder
+    één naam. Het verschil met een lijst: een tuple kan je na het aanmaken
+    **niet meer veranderen**. Je schrijft een tuple met ronde haakjes:
+    `splits = (5.41, 5.34, 5.29)`.
+
+    - Index vanaf `0`, net als bij lijsten: `splits[0]` is het eerste
+      element, `splits[-1]` het laatste. De slice `splits[1:3]` geeft een
+      **nieuwe tuple** met de elementen 1 en 2.
+    - `len()`, `min()`, `max()`, `sum()` en `sorted()` werken ook op tuples.
+      Let op: `sorted()` geeft altijd een **lijst** terug.
+    - `x in splits` controleert of een waarde in de tuple zit.
+    - Er is geen `.append()`: je kunt niets toevoegen, verwijderen of
+      vervangen. Een element erbij geeft een nieuwe tuple:
+      `splits + (5.25,)`.
+    - Een lege tuple maak je met `()`. Een tuple met één element schrijf je
+      met een komma: `(5.41,)`. De komma maakt er een tuple van, niet de
+      haakjes: `(5.41)` is gewoon een getal.
+    - Je kunt een tuple **uitpakken** in aparte variabelen:
+      `naam, tijd = ("Wout", 5.41)`.
+    - Gebruik een tuple voor een vast groepje waarden dat bij elkaar hoort,
+      bv. `(lat, lon)` of `(naam, tijd)`. Moet de verzameling nog groeien of
+      veranderen, gebruik dan een lijst.
+
+    **marimo-tip:** een tuple kan niet ter plaatse veranderen, dus het
+    probleem van lijsten heb je hier niet. Elke "wijziging" maakt een nieuwe
+    tuple, en die nieuwe waarde ziet marimo wel. Geef de nieuwe tuple wel
+    een **nieuwe naam**, bv. `alle_splits = splits + (5.25,)`. marimo laat
+    niet toe dat twee cellen dezelfde variabele definiëren, dus
+    `splits = splits + (5.25,)` in een andere cel geeft een fout.
+    """)
+    return
+
+
+@app.cell
+def _():
+    uitslag = [("Yana", 5.41), ("Lotte", 5.34), ("Jana", 5.29), ("Lina", 5.36)]
+    for _naam, _tijd in uitslag:
+        print(f"{_naam}: {_tijd} s")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Waarom een tuple en geen lijst?** Een tuple zegt: "deze waarden horen
+    vast bij elkaar en veranderen niet". Neem een uitslag waarin elke renner
+    een paar `(naam, tijd)` is:
+
+    ```python
+    uitslag = [("Wout", 5.41), ("Remco", 5.34), ("Tadej", 5.29)]
+    ```
+
+    De buitenste structuur is een **lijst**, want er kunnen nog renners
+    bijkomen (`uitslag.append(("Jonas", 5.38))`). Elk paar is een **tuple**,
+    want een naam hoort altijd bij zijn eigen tijd. Met een tuple kan je die
+    koppeling niet per ongeluk breken:
+
+    ```python
+    renner = uitslag[0]
+    renner[1] = 5.00   # TypeError: 'tuple' object does not support item assignment
+    ```
+
+    Was `renner` een lijst geweest, dan had Python de tijd zonder
+    foutmelding overschreven, en zat er een verkeerde tijd in je uitslag.
+    Met een tuple krijg je meteen een fout, en zie je de vergissing.
+    """)
     return
 
 
@@ -517,7 +512,7 @@ def _(checks, roster_names):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. Dictionaries (14:40-15:30, met pauze)
+    ## 4. Dictionaries
 
     Een **dictionary** koppelt **sleutels** (keys) aan **waarden**
     (values). In plaats van een waarde op te zoeken via haar positie, zoek
@@ -546,11 +541,44 @@ def _():
         "position": "Defender",
         "height_cm": 167.1,
     }
-    print(yana["name"])
-    print(yana.get("yoyo_level", "niet getest"))
-    yana["weight_kg"] = 65.5  # dezelfde cel - geen probleem
     for _key, _value in yana.items():
-        print(f"{_key:>12}: {_value}")
+        print(f"{_key}: {_value}")
+    return (yana,)
+
+
+@app.cell
+def _(yana):
+    print(yana["name"])
+    return
+
+
+@app.cell
+def _(yana):
+    print(yana.get("yoyo_level", "niet getest"))
+    return
+
+
+@app.cell
+def _(yana):
+    yana["weight_kg"] = 65.5  # dezelfde cel - geen probleem
+    return
+
+
+@app.cell
+def _(yana):
+    print(yana.keys())
+    return
+
+
+@app.cell
+def _(yana):
+    print(yana.values())
+    return
+
+
+@app.cell
+def _(yana):
+    print(yana.items())
     return
 
 
@@ -566,26 +594,6 @@ def _():
         _key = _label.strip().lower()
         demo_counts[_key] = demo_counts.get(_key, 0) + 1
     print(demo_counts)
-    return (raw_positions,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ### Sets
-
-    Een **set** houdt enkel **unieke** waarden bij, zonder volgorde. Een
-    lijst omzetten naar een set is de snelste manier om te zien welke
-    verschillende waarden erin zitten - hier: hoe rommelig de kolom
-    `position` echt is.
-    """)
-    return
-
-
-@app.cell
-def _(raw_positions):
-    print(len(raw_positions), "labels,", len(set(raw_positions)), "verschillende:")
-    print(set(raw_positions))
     return
 
 
@@ -634,14 +642,6 @@ def _():
 @app.cell(hide_code=True)
 def _(checks, clean_position):
     checks.clean_position(clean_position)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## ☕ Pauze (15:00-15:10)
-    """)
     return
 
 
@@ -748,7 +748,7 @@ def _(checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Fouten en exceptions (15:30-16:25)
+    ## 5. Fouten
 
     Een foutmelding betekent niet dat je iets vreselijks gedaan hebt - het
     is Python dat je vrij precies vertelt wat er misliep. Professionele
@@ -847,128 +847,7 @@ def _(checks, last_sprint_s):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### Fouten opvangen met `try` / `except`
-
-    Sommige fouten kun je niet vermijden door je code beter te schrijven:
-    je weet op voorhand niet wat een gebruiker gaat typen, of wat er in
-    een exportbestand staat. Dan kun je de fout **opvangen**:
-
-    ```python
-    try:
-        weight_kg = float(text)
-    except ValueError:
-        print("Dat is geen geldig getal.")
-    else:
-        print("Gelukt:", weight_kg)
-    ```
-
-    - Python probeert de code in `try`. Loopt daar iets mis met een
-      `ValueError`, dan springt het meteen naar `except ValueError:` in
-      plaats van te crashen.
-    - Het (optionele) `else`-blok wordt enkel uitgevoerd als er **geen**
-      fout was.
-    - Vang altijd een **specifiek** type fout op. Een kale `except:` vangt
-      ook fouten op die je niet verwachtte (zoals een tikfout in je eigen
-      code), en verstopt zo echte bugs.
-
-    Zelf een fout opgooien kan ook, met `raise ValueError("uitleg")` - zo
-    laat je wie je functie verkeerd gebruikt duidelijk weten wat er mis is.
-    """)
-    return
-
-
-@app.cell
-def _():
-    for _text in ["65.5", "65,5", "zesenvijftig"]:
-        try:
-            print(repr(_text), "->", float(_text))
-        except ValueError:
-            print(repr(_text), "-> geen geldig getal")
-
-    total_training_min = 0
-    n_sessions_attended = 0
-    try:
-        average_session_min = total_training_min / n_sessions_attended
-    except ZeroDivisionError:
-        average_session_min = 0
-    print("Gemiddelde training:", average_session_min, "min")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    ### Oefening 9 - lees een gewicht in
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    De export van de club bewaart gewichten als tekst, met een **komma**
-    als decimaalteken (`"65,5"`), soms met verdwaalde spaties, en soms met
-    onzin (`"onbekend"`, of helemaal leeg). Schrijf `parse_weight(text)`
-    die het gewicht als `float` teruggeeft, en `None` als de tekst geen
-    geldig getal is. Gebruik `try` / `except` - je programma mag niet
-    crashen.
-    """)
-    return
-
-
-@app.function
-def parse_weight(text):
-    """Zet een gewicht zoals ' 65,5' om naar 65.5, of None als dat niet kan."""
-    # TODO: kuis de tekst op, vervang de komma, en vang een ValueError op
-    return ...
-
-
-@app.cell(hide_code=True)
-def _(checks):
-    checks.parse_weight(parse_weight)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    ### Oefening 10 - blijf vragen tot het lukt
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Combineer `while True`, `try` / `except` en `input()`: vraag een
-    sprinttijd in seconden, en blijf vragen tot de gebruiker een geldig
-    getal typt dat **groter dan 0** is. Bewaar het resultaat als `float`
-    in `valid_sprint_s`.
-
-    Test daarna met onzin (`abc`), een komma (`5,3`) en een negatief getal
-    (`-2`), en kijk of je programma telkens netjes opnieuw vraagt.
-    """)
-    return
-
-
-@app.cell
-def _():
-    # TODO: while True met daarin try / except ValueError rond float(input(...))
-    valid_sprint_s = ...
-    print("Genoteerd:", valid_sprint_s)
-    return (valid_sprint_s,)
-
-
-@app.cell(hide_code=True)
-def _(checks, valid_sprint_s):
-    checks.sprint_input(valid_sprint_s)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 6. Modules: code van anderen gebruiken (16:25-17:00)
+    ## 6. Modules: code van anderen gebruiken
 
     Python heeft veel meer functies dan `print`, `len` en `round`. Ze
     zitten verdeeld over **modules**, die je eerst moet **importeren**.
@@ -1000,16 +879,17 @@ def _(mo):
 @app.cell
 def _():
     import math
+    from math import sqrt
     import random
-    import statistics
+    import statistics as stat
 
-    return math, random, statistics
+    return math, random, sqrt, stat
 
 
 @app.cell
-def _(math):
+def _(math, sqrt):
     print(math.pi)
-    print(math.sqrt(16))
+    print(sqrt(16))
     print(math.ceil(4.1), math.floor(4.9))
     return
 
@@ -1027,21 +907,11 @@ def _(random):
 
 
 @app.cell
-def _(statistics):
+def _(stat):
     demo_times_s = [5.34, 5.62, 5.29, 5.71, 5.48]
-    print("Gemiddelde:", statistics.mean(demo_times_s))
-    print("Mediaan:", statistics.median(demo_times_s))
-    print("Standaardafwijking:", statistics.stdev(demo_times_s))
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Voer de `random`-cel een paar keer opnieuw uit: je krijgt telkens iets
-    anders. Wil je dat het toeval herhaalbaar is (handig om te testen),
-    roep dan eerst `random.seed(42)` op.
-    """)
+    print("Gemiddelde:", stat.mean(demo_times_s))
+    print("Mediaan:", stat.median(demo_times_s))
+    print("Standaardafwijking:", stat.stdev(demo_times_s))
     return
 
 
@@ -1127,78 +997,6 @@ def sprint_stats(times):
 @app.cell(hide_code=True)
 def _(checks):
     checks.sprint_stats(sprint_stats)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 7. Uitdaging (17:00-17:30) - het echte atletenbestand van de club
-
-    Tijd om alles samen te gebruiken op de echte export `athletes.csv`.
-    Een CSV-bestand inlezen is een taak voor de module `csv` uit de
-    standaardbibliotheek: `csv.DictReader` maakt van elke regel van het
-    bestand een **dictionary**, met de kolomnamen als sleutels - een lijst
-    van dictionaries, zoals in oefening 8. Let op: elke waarde komt binnen
-    als **tekst**.
-
-    De code om in te lezen krijg je - bekijk de eerste twee rijen die ze
-    afdrukt.
-    """)
-    return
-
-
-@app.cell
-def _(DATA_DIR):
-    import csv
-    from pathlib import Path
-    from urllib.request import urlopen
-
-    # Path begrijpt enkel lokale bestanden; in de browser is DATA_DIR een URL.
-    if DATA_DIR.startswith("http"):
-        athletes_text = urlopen(f"{DATA_DIR}/athletes.csv").read().decode("utf-8")
-    else:
-        athletes_text = Path(DATA_DIR, "athletes.csv").read_text()
-    athlete_rows = list(csv.DictReader(athletes_text.splitlines()))
-
-    print(len(athlete_rows), "atleten")
-    print(athlete_rows[0])
-    print(athlete_rows[1])
-    return (athlete_rows,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Bouw twee dictionaries, met de **nette** positie als sleutel (gebruik
-    je `clean_position` uit oefening 6):
-
-    - `squad_counts`: het aantal atleten per positie,
-    - `average_height_by_position`: de gemiddelde `height_cm` per positie,
-      afgerond op 1 decimaal.
-
-    Opgelet: een paar atleten hebben een **lege** `height_cm` (een lege
-    string). Sla die over bij het berekenen van de gemiddelden - maar tel
-    ze wel mee in `squad_counts`.
-
-    Hint: overloop `athlete_rows` één keer en houd drie dicts bij
-    (aantallen, som van de lengtes, aantal lengtes), en bereken daarna de
-    gemiddelden in een tweede lus over de posities.
-    """)
-    return
-
-
-@app.cell
-def _():
-    # TODO: vul beide dictionaries door athlete_rows te overlopen
-    squad_counts = ...
-    average_height_by_position = ...
-    return average_height_by_position, squad_counts
-
-
-@app.cell(hide_code=True)
-def _(athlete_rows, average_height_by_position, checks, squad_counts):
-    checks.squad_summary(athlete_rows, average_height_by_position, squad_counts)
     return
 
 

@@ -570,18 +570,6 @@ def _(birth_year, height_cm, is_injured, name):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Types hints
-
-    Type hints zijn annotaties in je code die aangeven welk type een variabele, parameter of returnwaarde hoort te hebben.
-
-    Een type hint wordt geschreven als `variabele: type` of `def functie(param: type) -> type:`. Ze zijn optioneel en hebben geen invloed op de uitvoering van het programma, maar kunnen helpen bij het begrijpen van de code en bij het gebruik van tools die type-informatie gebruiken.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
     ### Type conversions
 
 
@@ -595,6 +583,12 @@ def _(mo):
 
 
 @app.cell
+def _():
+    print("test " + "test")
+    return
+
+
+@app.cell
 def _(birth_year, name):
     print("2010" + "1")
     print(birth_year + 1)
@@ -602,8 +596,6 @@ def _(birth_year, name):
     print(int(5.9))
     print(float("63.9") * 2)
     print(f"{name} is geboren in {birth_year}.")
-
-    variable_met_type_hint: int = 42
     return
 
 
@@ -681,7 +673,7 @@ def _(mo):
 def _():
     yoyo_level = 16.5
     print("Begin van het seizoen:", yoyo_level)
-    yoyo_level = yoyo_level + 1.0
+    yoyo_level = yoyo_level + 0.5
     print("Na de voorbereiding:", yoyo_level)
     yoyo_level += 0.5
     print("Midden in het seizoen:", yoyo_level)
@@ -713,8 +705,9 @@ def _(mo):
 @app.cell
 def _():
     # TODO: vraag de tijd, zet ze om naar float en bereken de snelheid
-    sprint_time_s = ...
-    speed_kmh = ...
+    sprint_time_s = float(input("Tijd op de 30 m (s): "))
+    speed_kmh = round((30 / sprint_time_s) * 3.6, 1)
+    print(f"speed is {speed_kmh} km/u")
     return speed_kmh, sprint_time_s
 
 
@@ -748,6 +741,8 @@ def _():
     season_sessions = 12
     # TODO: vraag het aantal trainingen van deze week (een int) en gebruik +=
     sessions_this_week = ...
+    season_sessions += ...
+
     print("Trainingen dit seizoen:", season_sessions)
     return season_sessions, sessions_this_week
 
@@ -784,6 +779,7 @@ def _():
     yoyo_duration_s = ...
     yoyo_minutes = ...
     yoyo_seconds = ...
+    print(f"{yoyo_duration_s} s = {yoyo_minutes} min {yoyo_seconds} s")
     return yoyo_duration_s, yoyo_minutes, yoyo_seconds
 
 
@@ -826,17 +822,27 @@ def _(mo):
     return
 
 
+@app.function
+def average_speed_kmh(distance_m, time_s):
+    """Gemiddelde snelheid in km/u over een afstand gelopen in een gegeven tijd."""
+    speed_ms = distance_m / time_s
+    return speed_ms * 3.6
+
+
 @app.cell
 def _():
-    def average_speed_kmh(distance_m, time_s):
-        """Gemiddelde snelheid in km/u over een afstand gelopen in een gegeven tijd."""
-        speed_ms = distance_m / time_s
-        return speed_ms * 3.6
+    # printing the function itself
+    print(average_speed_kmh)
+    return
 
+
+@app.cell
+def _():
+    # Calling the function
     print(average_speed_kmh(30, 5.34))
     print(average_speed_kmh(20, 3.29))
     print(average_speed_kmh(time_s=5.34, distance_m=30))  # argumenten met naam: de volgorde maakt niet uit
-    return (average_speed_kmh,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -874,7 +880,7 @@ def _(mo):
 
 
 @app.cell
-def _(average_speed_kmh):
+def _():
     def sprint_speed_kmh(time_s, distance_m=30):
         """Snelheid in km/u voor een sprinttest; de standaardafstand is 30 m."""
         return round(average_speed_kmh(distance_m, time_s), 1)
@@ -1071,7 +1077,52 @@ def _(age_in_season, checks):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. Vergelijken en combineren
+    ## 5. Beslissingen: `if`, `elif`, `else`
+
+    Met voorwaarden kan je code **beslissingen** nemen:
+
+    ```python
+    if condition:
+        # wordt enkel uitgevoerd als condition True is
+    elif other_condition:
+        # wordt uitgevoerd als condition False was en other_condition True is
+    else:
+        # wordt uitgevoerd als geen van de vorige True was
+    ```
+
+    - De regel met `if` / `elif` / `else` eindigt op een **dubbelpunt** `:`.
+    - De code die erbij hoort, **springt in** (4 spaties).
+    - Python controleert de voorwaarden **van boven naar onder** en voert
+      enkel het **eerste** blok uit waarvan de voorwaarde `True` is. De
+      volgorde van je `elif`s doet er dus toe.
+
+    Binnen een functie kun je vanuit elke tak meteen `return`en - de rest
+    van de functie wordt dan niet meer uitgevoerd.
+    """)
+    return
+
+
+@app.cell
+def _():
+    def sprint_feedback(time_s):
+        """Feedback van de trainer op een 30 m-sprint."""
+        if time_s < 5.0:
+            return "Uitstekende sprint!"
+        elif time_s < 5.5:
+            return "Goede sprint."
+        else:
+            return "Er is ruimte voor verbetering."
+
+    print(4.95, "s ->", sprint_feedback(4.95))
+    print(5.34, "s ->", sprint_feedback(5.34))
+    print(5.80, "s ->", sprint_feedback(5.80))
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 6. Vergelijken en combineren
 
     Vergelijkingsoperatoren vergelijken twee waarden en geven altijd een
     `bool` (`True` of `False`):
@@ -1103,7 +1154,6 @@ def _(mo):
     | `a and b` | zowel `a` als `b` `True` zijn |
     | `a or b` | minstens één van beide `True` is |
     | `not a` | `a` `False` is |
-    | `a is b` | `a` en `b` naar **hetzelfde object** verwijzen (zelfde `id()`) naar hetzelfde element in memory |
 
     Python laat ook **geketende vergelijkingen** toe, die lezen zoals in
     de wiskunde: `140 <= heart_rate <= 160` betekent "*hartslag tussen 140
@@ -1126,10 +1176,25 @@ def _():
 
 
 @app.cell
-def _(sprint_30m_s):
-    print(sprint_30m_s < 5.5)
+def _():
+    # tekst vergelijken
     print("Forward" == "forward ")
     print("Forward".lower() == "forward ".strip().lower())
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ###Floating Errors
+
+    Floats zijn benaderingen van reële getallen, en worden bij benadering opgeslagen. Daardoor kan het gebeuren dat een vergelijking die je verwacht `True` te zijn, toch `False` oplevert. Bijvoorbeeld:
+    """)
+    return
+
+
+@app.cell
+def _():
     print(0.1 + 0.2 == 0.3, 0.1 + 0.2)
     return
 
@@ -1185,51 +1250,6 @@ def _():
     # Probeer je functie uit (wordt niet gecontroleerd): vraag met input()
     # een geboortejaar (int) en druk is_eligible_u16(...) af voor een
     # atleet die niet geblesseerd is.
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 6. Beslissingen: `if`, `elif`, `else` en `match`
-
-    Met voorwaarden kan je code **beslissingen** nemen:
-
-    ```python
-    if condition:
-        # wordt enkel uitgevoerd als condition True is
-    elif other_condition:
-        # wordt uitgevoerd als condition False was en other_condition True is
-    else:
-        # wordt uitgevoerd als geen van de vorige True was
-    ```
-
-    - De regel met `if` / `elif` / `else` eindigt op een **dubbelpunt** `:`.
-    - De code die erbij hoort, **springt in** (4 spaties).
-    - Python controleert de voorwaarden **van boven naar onder** en voert
-      enkel het **eerste** blok uit waarvan de voorwaarde `True` is. De
-      volgorde van je `elif`s doet er dus toe.
-
-    Binnen een functie kun je vanuit elke tak meteen `return`en - de rest
-    van de functie wordt dan niet meer uitgevoerd.
-    """)
-    return
-
-
-@app.cell
-def _():
-    def sprint_feedback(time_s):
-        """Feedback van de trainer op een 30 m-sprint."""
-        if time_s < 5.0:
-            return "Uitstekende sprint!"
-        elif time_s < 5.5:
-            return "Goede sprint."
-        else:
-            return "Er is ruimte voor verbetering."
-
-    print(4.95, "s ->", sprint_feedback(4.95))
-    print(5.34, "s ->", sprint_feedback(5.34))
-    print(5.80, "s ->", sprint_feedback(5.80))
     return
 
 
@@ -1318,145 +1338,6 @@ def _(checks):
 def _():
     # Probeer je functie uit (wordt niet gecontroleerd): vraag met input()
     # een hartslag (int) en druk de zone af.
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ### `match`: één waarde, veel mogelijke gevallen
-
-    Vergelijk je één waarde met een hele reeks vaste mogelijkheden, dan is
-    `match` vaak leesbaarder dan een lange `if` / `elif`-ketting:
-
-    ```python
-    match test_name:
-        case "sprint_10m" | "sprint_30m":
-            unit = "s"
-        case "cmj":
-            unit = "cm"
-        case _:
-            unit = "?"
-    ```
-
-    - Python overloopt de `case`s van boven naar onder en voert de eerste
-      uit die overeenkomt.
-    - `|` betekent "*of*": het geval past bij elk van de opgesomde waarden.
-    - `case _:` vangt al de rest op, zoals een `else`.
-    """)
-    return
-
-
-@app.cell
-def _():
-    def test_unit(test_name):
-        """Eenheid waarin een fysieke test gemeten wordt."""
-        match test_name:
-            case "sprint_10m" | "sprint_30m":
-                return "s"
-            case "cmj":
-                return "cm"
-            case "yoyo":
-                return "niveau"
-            case _:
-                return "?"
-
-    for _test in ["sprint_30m", "cmj", "yoyo", "bankdrukken"]:
-        print(_test, "->", test_unit(_test))
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    ### Oefening 13 - in welke linie speel je?
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    In de spelersdatabank staat de positie als afkorting, en niet altijd
-    netjes ingetypt (`"GK"`, `" def "`, `"mid"`, ...). Schrijf
-    `team_line(code)` die de afkorting eerst opkuist (spaties weg, alles
-    in hoofdletters) en daarna met `match` de linie teruggeeft:
-
-    | Afkorting | Linie |
-    |---|---|
-    | `GK` of `DEF` | `"verdediging"` |
-    | `MID` | `"middenveld"` |
-    | `FWD` | `"aanval"` |
-    | iets anders | `"onbekend"` |
-    """)
-    return
-
-
-@app.function
-def team_line(code):
-    """Linie (verdediging, middenveld, aanval) bij een positieafkorting."""
-    # TODO: kuis code op en gebruik match
-    return ...
-
-
-@app.cell(hide_code=True)
-def _(checks):
-    checks.team_line(team_line)
-    return
-
-
-@app.cell
-def _():
-    # Probeer je functie uit (wordt niet gecontroleerd): vraag met input()
-    # een afkorting en druk de linie af.
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 7. Uitdaging - welke ploeg traint er nu?
-
-    Een ouder komt aan op de club en wil weten welke ploeg er op dat
-    moment op het veld staat. Het trainingsschema:
-
-    | Van | Tot (niet inbegrepen) | Ploeg |
-    |---|---|---|
-    | 16:00 | 17:30 | `"U12"` |
-    | 17:30 | 19:00 | `"U14"` |
-    | 19:00 | 20:30 | `"U16"` |
-    | ander uur | | `"geen training"` |
-
-    1. Schrijf `to_hours(time_text)` die een tijd als `"17:45"` omzet naar
-       een kommagetal in uren: `17.75`. (Knip op bij de `:`, zet beide
-       stukken om naar getallen, en reken de minuten om naar een deel van
-       een uur.)
-    2. Schrijf `training_group(time_text)` die `to_hours` gebruikt en de
-       ploeg teruggeeft volgens het schema.
-    3. Maak in de laatste cel een klein programma: vraag met `input()` hoe
-       laat het is, en druk af welke ploeg er traint.
-    """)
-    return
-
-
-@app.cell
-def _():
-    def to_hours(time_text):
-        """Zet een tijd 'uu:mm' om naar uren als kommagetal, bv. '17:45' -> 17.75."""
-        # TODO: knip op bij ":" en reken om
-        return ...
-
-    def training_group(time_text):
-        """Ploeg die op het gegeven uur traint."""
-        # TODO: gebruik to_hours en if / elif / else
-        return ...
-
-    return to_hours, training_group
-
-
-@app.cell(hide_code=True)
-def _(checks, to_hours, training_group):
-    checks.training(to_hours, training_group)
     return
 
 
